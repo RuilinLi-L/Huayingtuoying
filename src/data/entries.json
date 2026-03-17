@@ -1,0 +1,198 @@
+[
+  {
+    "id": "violin-dialogue",
+    "title": "弦光小提琴",
+    "subtitle": "以弦乐主旋律演示“旋律线如何被听见”",
+    "description": "入口聚焦小提琴主旋律、伴奏分层与基础乐理提示，适合作为 NFC/扫码链路的单乐器示例。",
+    "orchestraZone": "弦乐组",
+    "themeColor": "#8b5cf6",
+    "sceneType": "mindar-image",
+    "targetImage": "/assets/markers/default-card.png",
+    "trackingTargetSrc": "/assets/markers/default-card.mind",
+    "posterImage": "/assets/posters/violin.svg",
+    "modelUrl": "/assets/models/softmind/scene.gltf",
+    "fallbackMode": "poster",
+    "audioStems": [
+      {
+        "id": "violin-melody",
+        "name": "旋律主线",
+        "file": "/assets/audio/violin-melody.wav",
+        "defaultEnabled": true,
+        "group": "melody",
+        "stereoPan": -0.2,
+        "gain": 1
+      },
+      {
+        "id": "violin-harmony",
+        "name": "和声垫底",
+        "file": "/assets/audio/violin-harmony.wav",
+        "defaultEnabled": true,
+        "group": "harmony",
+        "stereoPan": 0.2,
+        "gain": 0.72
+      },
+      {
+        "id": "violin-rhythm",
+        "name": "节奏支撑",
+        "file": "/assets/audio/violin-rhythm.wav",
+        "defaultEnabled": false,
+        "group": "rhythm",
+        "stereoPan": 0,
+        "gain": 0.6
+      }
+    ],
+    "knowledgeCards": [
+      {
+        "id": "violin-timbre",
+        "anchor": "小提琴音色",
+        "title": "为什么小提琴常承担主旋律",
+        "summary": "小提琴音区明亮、穿透力强，适合把主题旋律清晰地送到听众耳边，常位于舞台前排。",
+        "media": [
+          {
+            "type": "image",
+            "src": "/assets/posters/violin.svg",
+            "alt": "小提琴主题海报"
+          }
+        ]
+      },
+      {
+        "id": "violin-bowing",
+        "anchor": "运弓技巧",
+        "title": "运弓如何改变音乐性格",
+        "summary": "连弓更流动，顿弓更清晰。分轨切换时可对比不同节奏层，让学生听见动作与声音的对应关系。"
+      },
+      {
+        "id": "violin-campus",
+        "anchor": "校园叙事",
+        "title": "把演奏体验放回校园地标",
+        "summary": "后续正式内容可把青年园或音乐厅作为背景层，与演奏知识卡片一起构成校园美育 IP。"
+      }
+    ]
+  },
+  {
+    "id": "flute-color",
+    "title": "风影长笛",
+    "subtitle": "以木管声部展示“音色对比与呼吸感”",
+    "description": "示例聚焦长笛与和声铺底的关系，体现木管在配器中提供色彩和流动线条的方式。",
+    "orchestraZone": "木管组",
+    "themeColor": "#0ea5e9",
+    "sceneType": "mindar-image",
+    "targetImage": "/assets/markers/default-card.png",
+    "trackingTargetSrc": "/assets/markers/default-card.mind",
+    "posterImage": "/assets/posters/flute.svg",
+    "modelUrl": "/assets/models/softmind/scene.gltf",
+    "fallbackMode": "poster",
+    "audioStems": [
+      {
+        "id": "flute-air",
+        "name": "长笛主声部",
+        "file": "/assets/audio/flute-air.wav",
+        "defaultEnabled": true,
+        "group": "melody",
+        "stereoPan": 0.35,
+        "gain": 0.94
+      },
+      {
+        "id": "flute-pad",
+        "name": "和声织体",
+        "file": "/assets/audio/flute-pad.wav",
+        "defaultEnabled": true,
+        "group": "harmony",
+        "stereoPan": -0.15,
+        "gain": 0.7
+      },
+      {
+        "id": "flute-pulse",
+        "name": "律动脉冲",
+        "file": "/assets/audio/flute-pulse.wav",
+        "defaultEnabled": false,
+        "group": "rhythm",
+        "stereoPan": 0,
+        "gain": 0.6
+      }
+    ],
+    "knowledgeCards": [
+      {
+        "id": "flute-breath",
+        "anchor": "呼吸控制",
+        "title": "长笛的呼吸感来自哪里",
+        "summary": "木管乐器的气息组织会直接影响线条流动感。适合在 AR 里结合乐手热点解释呼吸、句法和停顿。"
+      },
+      {
+        "id": "flute-register",
+        "anchor": "高音区",
+        "title": "高音区为什么更容易被注意到",
+        "summary": "长笛高音区通透、轻盈，容易在整体织体中浮现。通过静音其他声部，能更直观理解“色彩性主角”的概念。"
+      },
+      {
+        "id": "flute-campus",
+        "anchor": "展陈路径",
+        "title": "适合放在展厅和文创店的互动点",
+        "summary": "长笛条目适合配合扫码海报与实体底座，作为“木管入门”互动点，降低首次体验门槛。"
+      }
+    ]
+  },
+  {
+    "id": "ensemble-stage",
+    "title": "华音合奏舞台",
+    "subtitle": "以合奏示例展示“完整演出 + 自由静音”",
+    "description": "舞台条目强调多人协作、分轨聆听和校园叙事，为二期扩展到 12 乐器提供结构样板。",
+    "orchestraZone": "全编制示例",
+    "themeColor": "#f97316",
+    "sceneType": "mindar-image",
+    "targetImage": "/assets/markers/default-card.png",
+    "trackingTargetSrc": "/assets/markers/default-card.mind",
+    "posterImage": "/assets/posters/ensemble.svg",
+    "modelUrl": "/assets/models/softmind/scene.gltf",
+    "fallbackMode": "model",
+    "audioStems": [
+      {
+        "id": "ensemble-strings",
+        "name": "弦乐层",
+        "file": "/assets/audio/ensemble-strings.wav",
+        "defaultEnabled": true,
+        "group": "strings",
+        "stereoPan": -0.25,
+        "gain": 0.9
+      },
+      {
+        "id": "ensemble-winds",
+        "name": "木管层",
+        "file": "/assets/audio/ensemble-winds.wav",
+        "defaultEnabled": true,
+        "group": "winds",
+        "stereoPan": 0.2,
+        "gain": 0.82
+      },
+      {
+        "id": "ensemble-percussion",
+        "name": "节奏层",
+        "file": "/assets/audio/ensemble-percussion.wav",
+        "defaultEnabled": true,
+        "group": "rhythm",
+        "stereoPan": 0,
+        "gain": 0.68
+      }
+    ],
+    "knowledgeCards": [
+      {
+        "id": "ensemble-layout",
+        "anchor": "舞台站位",
+        "title": "为什么交响乐团要按声部分区站位",
+        "summary": "分区站位让听众更容易辨识声部来源，也方便在 WebAR 中为未来空间音频和乐手热点建立坐标基础。"
+      },
+      {
+        "id": "ensemble-mix",
+        "anchor": "分轨聆听",
+        "title": "通过静音听懂“谁在支撑谁”",
+        "summary": "当用户关闭某一组声部时，能立刻感知配器结构变化，这正是古典音乐美育里最适合做成交互的知识点之一。"
+      },
+      {
+        "id": "ensemble-rollout",
+        "anchor": "试点场景",
+        "title": "适合后续试点的校园体验路径",
+        "summary": "当前底座可扩展为展厅、文创店、课堂演示三个入口场景，后续只需替换素材并增加清单项。"
+      }
+    ]
+  }
+]

@@ -1,0 +1,38 @@
+{
+  "name": "huayingtuoying",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "serve:dist": "node ./scripts/serve-dist.mjs",
+    "generate:demo-audio": "node ./scripts/generate-demo-audio.mjs",
+    "sync:demo-assets": "node ./scripts/sync-demo-assets.mjs",
+    "export:links": "node ./scripts/generate-links.mjs",
+    "check": "npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^25.3.5",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "dependencies": {
+    "aframe": "^1.7.1",
+    "mind-ar": "^1.1.5",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
+    "three": "^0.183.2"
+  }
+}

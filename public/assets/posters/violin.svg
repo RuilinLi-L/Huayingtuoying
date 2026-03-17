@@ -1,0 +1,26 @@
+<svg width="1200" height="750" viewBox="0 0 1200 750" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="750" rx="44" fill="#140A2E"/>
+  <rect x="32" y="32" width="1136" height="686" rx="32" fill="url(#paint0_linear)"/>
+  <circle cx="920" cy="164" r="112" fill="#A855F7" fill-opacity="0.28"/>
+  <circle cx="280" cy="560" r="168" fill="#38BDF8" fill-opacity="0.2"/>
+  <path d="M678 192C678 164.386 700.386 142 728 142H770C797.614 142 820 164.386 820 192V258C820 285.614 797.614 308 770 308H728C700.386 308 678 285.614 678 258V192Z" fill="#F5D0FE"/>
+  <rect x="732" y="300" width="34" height="208" rx="17" fill="#F5D0FE"/>
+  <ellipse cx="749" cy="542" rx="118" ry="90" fill="#C084FC"/>
+  <ellipse cx="749" cy="542" rx="72" ry="56" fill="#8B5CF6"/>
+  <rect x="735" y="470" width="28" height="168" rx="14" fill="#F5F3FF"/>
+  <rect x="694" y="142" width="110" height="30" rx="15" fill="#F5D0FE"/>
+  <path d="M350 196H616" stroke="#F8FAFC" stroke-width="14" stroke-linecap="round"/>
+  <path d="M350 232H560" stroke="#F8FAFC" stroke-width="14" stroke-linecap="round" opacity="0.78"/>
+  <path d="M350 268H584" stroke="#F8FAFC" stroke-width="14" stroke-linecap="round" opacity="0.58"/>
+  <text x="112" y="188" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700">华音拓影 · 弦光小提琴</text>
+  <text x="112" y="260" fill="#DDD6FE" font-family="Segoe UI, Arial, sans-serif" font-size="28">NFC / 扫码 → WebAR → 分轨音频 → 乐理热点</text>
+  <text x="112" y="432" fill="#E2E8F0" font-family="Segoe UI, Arial, sans-serif" font-size="82" font-weight="800">Violin Dialogue</text>
+  <text x="112" y="500" fill="#C4B5FD" font-family="Segoe UI, Arial, sans-serif" font-size="36">用旋律、和声、节奏三层示例理解“主旋律如何被听见”</text>
+  <text x="112" y="608" fill="#F8FAFC" font-family="Segoe UI, Arial, sans-serif" font-size="30">点击 AR 热点查看：音色 / 运弓 / 校园叙事</text>
+  <defs>
+    <linearGradient id="paint0_linear" x1="64" y1="72" x2="1122" y2="692" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1E1B4B"/>
+      <stop offset="1" stop-color="#312E81"/>
+    </linearGradient>
+  </defs>
+</svg>

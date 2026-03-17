@@ -1,0 +1,21 @@
+
+> huayingtuoying@1.0.0 dev
+> vite --host 0.0.0.0
+
+
+  [32m[1mVITE[22m v7.3.1[39m  [2mready in [0m[1m465[22m[2m[0m ms[22m
+
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://localhost:[1m5173[22m/[39m
+  [32m➜[39m  [1mNetwork[22m: [36mhttp://10.21.191.183:[1m5173[22m/[39m
+[2m19:23:22[22m [36m[1m[vite][22m[39m [32mvite.config.js changed, restarting server...[39m
+[2m19:23:22[22m [36m[1m[vite][22m[39m server restarted.
+[2m19:39:09[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mpage reload [39m[2msrc/lib/device.ts[22m
+[2m19:40:34[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/ar/MindArScene.tsx[22m
+[2m19:58:22[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ExperiencePage.tsx[22m
+[2m19:58:44[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ExperiencePage.tsx[22m
+[2m20:00:13[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/ar/MindArScene.tsx[22m
+[2m20:00:25[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/styles.css[22m
+[2m20:00:32[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/pages/ExperiencePage.tsx[22m
+[2m22:30:27[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m [32mhmr update [39m[2m/src/components/ar/MindArScene.tsx[22m
+
+D:\code\Projects\Huayingtuoying>

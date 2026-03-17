@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-03-17T03:50:14.298Z",
+  "baseUrl": "http://localhost:5173",
+  "entries": [
+    {
+      "id": "violin-dialogue",
+      "title": "弦光小提琴",
+      "nfcUrl": "http://localhost:5173/?entry=violin-dialogue&source=nfc&autostart=1",
+      "qrUrl": "http://localhost:5173/?entry=violin-dialogue&source=qr&autostart=1",
+      "qrPath": "generated/qrcodes/violin-dialogue.svg",
+      "targetImage": "/assets/markers/default-card.png"
+    },
+    {
+      "id": "flute-color",
+      "title": "风影长笛",
+      "nfcUrl": "http://localhost:5173/?entry=flute-color&source=nfc&autostart=1",
+      "qrUrl": "http://localhost:5173/?entry=flute-color&source=qr&autostart=1",
+      "qrPath": "generated/qrcodes/flute-color.svg",
+      "targetImage": "/assets/markers/default-card.png"
+    },
+    {
+      "id": "ensemble-stage",
+      "title": "华音合奏舞台",
+      "nfcUrl": "http://localhost:5173/?entry=ensemble-stage&source=nfc&autostart=1",
+      "qrUrl": "http://localhost:5173/?entry=ensemble-stage&source=qr&autostart=1",
+      "qrPath": "generated/qrcodes/ensemble-stage.svg",
+      "targetImage": "/assets/markers/default-card.png"
+    }
+  ]
+}
