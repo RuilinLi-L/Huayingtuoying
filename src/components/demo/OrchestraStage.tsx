@@ -72,6 +72,7 @@ export function OrchestraStage({
   onSceneChange,
 }: OrchestraStageProps) {
   const focusedMusician = focusedMusicianId ? getMusicianById(focusedMusicianId) : null;
+  const lineupProgress = `${selectedIds.length} / ${musicians.length}`;
 
   return (
     <section className="card orchestra-stage">
@@ -100,7 +101,7 @@ export function OrchestraStage({
             '--scene-haze': currentScene.palette.haze,
           } as CSSProperties
         }
-      >
+        >
         <div className="stage-shell__camera">
           <video autoPlay muted playsInline ref={videoRef} />
           {!cameraReady ? (
@@ -112,15 +113,23 @@ export function OrchestraStage({
         </div>
 
         <div className="stage-shell__overlay" />
-        <div className="stage-shell__anchor">
-          <span className="stage-anchor__mark">院徽锚点</span>
-          <small>{cameraReady ? 'Demo 已模拟锁定底座视觉锚点' : '等待开启相机'}</small>
-        </div>
-
-        <div className="stage-shell__mode">
-          <small>当前玩法</small>
-          <strong>{mode.title}</strong>
-          <span>{mode.unlockLabel}</span>
+        <div className="stage-shell__hud">
+          <div className="stage-shell__hud-chip stage-shell__hud-chip--anchor">
+            <span className="stage-anchor__mark">院徽锚点</span>
+            <small>{cameraReady ? '已锁定底座视觉锚点' : '等待开启相机'}</small>
+          </div>
+          <div className="stage-shell__hud-chip">
+            <small>当前玩法</small>
+            <strong>{mode.title}</strong>
+          </div>
+          <div className="stage-shell__hud-chip">
+            <small>当前场景</small>
+            <strong>{currentScene.shortLabel}</strong>
+          </div>
+          <div className="stage-shell__hud-chip">
+            <small>编制进度</small>
+            <strong>{lineupProgress}</strong>
+          </div>
         </div>
 
         <PlaybackConsole
@@ -169,24 +178,50 @@ export function OrchestraStage({
                 type="button"
               >
                 <span className="musician-node__avatar">{musician.shortLabel}</span>
-                <strong>{musician.instrument}</strong>
-                <small>{musician.roleSummary}</small>
+                <span className="musician-node__label">
+                  <strong>{musician.instrument}</strong>
+                  <small>
+                    {state.isFocused
+                      ? '查看中'
+                      : state.isSelected
+                        ? '已落子'
+                        : '点击查看'}
+                  </small>
+                </span>
               </button>
             );
           })}
         </div>
 
-        <div className="stage-shell__scene-card">
-          <strong>{currentScene.name}</strong>
-          <p>{currentScene.description}</p>
-          <small>{currentScene.atmosphere}</small>
-        </div>
-
         {focusedMusician ? (
-          <div className="stage-shell__focus-card">
-            <small>当前聚焦</small>
-            <strong>{focusedMusician.instrument}</strong>
-            <span>{focusedMusician.knowledgeSummary}</span>
+          <div className="stage-shell__summary-popup">
+            <div className="stage-shell__summary-header">
+              <div className="stage-shell__summary-title">
+                <span
+                  className="stage-shell__summary-swatch"
+                  style={{ backgroundColor: focusedMusician.color }}
+                />
+                <div>
+                  <small>乐器摘要</small>
+                  <strong>{focusedMusician.instrument}</strong>
+                </div>
+              </div>
+              <button
+                className="stage-shell__summary-close"
+                onClick={() => onSelectMusician(focusedMusician.id)}
+                type="button"
+              >
+                收起
+              </button>
+            </div>
+            <p>{focusedMusician.knowledgeSummary}</p>
+            <div className="stage-shell__summary-meta">
+              <span>{mode.name}</span>
+              <span>{currentScene.name}</span>
+            </div>
+            <small className="stage-shell__summary-note">
+              右侧面板保留完整数字名片与百科内容。
+            </small>
           </div>
         ) : null}
 

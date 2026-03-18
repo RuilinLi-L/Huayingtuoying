@@ -66,9 +66,7 @@ export function OrchestraDemoPage() {
   const [cameraError, setCameraError] = useState('');
   const [currentSceneId, setCurrentSceneId] = useState<OrchestraSceneId>(initialSceneId);
   const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
-  const [focusedMusicianId, setFocusedMusicianId] = useState<string | null>(
-    initialLineup[0] ?? null,
-  );
+  const [focusedMusicianId, setFocusedMusicianId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
@@ -143,19 +141,6 @@ export function OrchestraDemoPage() {
       setCurrentTrackId(unlockedTracks[0]?.id ?? null);
     }
   }, [currentTrackId, unlockedTracks]);
-
-  useEffect(() => {
-    if (!snapshot.placedMusicianIds.length) {
-      setFocusedMusicianId(null);
-      return;
-    }
-
-    if (focusedMusicianId && snapshot.placedMusicianIds.includes(focusedMusicianId)) {
-      return;
-    }
-
-    setFocusedMusicianId(highlightIds[0] ?? snapshot.placedMusicianIds[0] ?? null);
-  }, [focusedMusicianId, highlightIds, snapshot.placedMusicianIds]);
 
   useEffect(() => {
     if (!recommendedSceneIds.includes(currentSceneId)) {
@@ -250,6 +235,10 @@ export function OrchestraDemoPage() {
     setCurrentSceneId(sceneId);
   }
 
+  function handleSelectMusician(musicianId: string) {
+    setFocusedMusicianId((current) => (current === musicianId ? null : musicianId));
+  }
+
   return (
     <div className="page orchestra-page">
       <audio loop ref={audioRef} />
@@ -308,7 +297,7 @@ export function OrchestraDemoPage() {
             onOpenStage={() => void openStage()}
             onPreviousTrack={() => switchTrack(-1)}
             onSceneChange={handleSceneChange}
-            onSelectMusician={setFocusedMusicianId}
+            onSelectMusician={handleSelectMusician}
             onTogglePlayback={togglePlayback}
             sceneOptions={recommendedScenes.length ? recommendedScenes : allScenes}
             selectedIds={snapshot.placedMusicianIds}
