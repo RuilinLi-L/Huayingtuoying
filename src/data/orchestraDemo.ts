@@ -1,5 +1,6 @@
 import type {
   ComboRule,
+  CompositionDefinition,
   MusicianProfile,
   OrchestraModeDefinition,
   OrchestraSceneDefinition,
@@ -229,6 +230,112 @@ export const orchestraScenes: OrchestraSceneDefinition[] = [
     },
   },
 ];
+
+export const fixedComposition: CompositionDefinition = {
+  id: 'spring-overture-demo',
+  title: '固定乐曲示例',
+  subtitle: '全局时钟同步合奏',
+  description:
+    '当前演示统一使用同一首固定曲目。每位演奏家绑定一个独立音轨，插拔时按全局进度同步加入或退出。',
+  stems: [
+    {
+      id: 'flute',
+      musicianId: 'flute',
+      name: '长笛',
+      file: '/assets/audio/flute-air.wav',
+      stereoPan: -0.42,
+      gain: 0.92,
+    },
+    {
+      id: 'clarinet',
+      musicianId: 'clarinet',
+      name: '单簧管',
+      file: '/assets/audio/flute-pad.wav',
+      stereoPan: -0.18,
+      gain: 0.88,
+    },
+    {
+      id: 'oboe',
+      musicianId: 'oboe',
+      name: '双簧管',
+      file: '/assets/audio/flute-pulse.wav',
+      stereoPan: -0.06,
+      gain: 0.84,
+    },
+    {
+      id: 'bassoon',
+      musicianId: 'bassoon',
+      name: '巴松',
+      file: '/assets/audio/ensemble-winds.wav',
+      stereoPan: 0.12,
+      gain: 0.82,
+    },
+    {
+      id: 'horn',
+      musicianId: 'horn',
+      name: '圆号',
+      file: '/assets/audio/ensemble-winds.wav',
+      stereoPan: 0.28,
+      gain: 0.86,
+    },
+    {
+      id: 'trumpet',
+      musicianId: 'trumpet',
+      name: '小号',
+      file: '/assets/audio/ensemble-percussion.wav',
+      stereoPan: 0.4,
+      gain: 0.8,
+    },
+    {
+      id: 'trombone',
+      musicianId: 'trombone',
+      name: '长号',
+      file: '/assets/audio/ensemble-percussion.wav',
+      stereoPan: 0.18,
+      gain: 0.78,
+    },
+    {
+      id: 'tuba',
+      musicianId: 'tuba',
+      name: '大号',
+      file: '/assets/audio/ensemble-percussion.wav',
+      stereoPan: 0.04,
+      gain: 0.74,
+    },
+    {
+      id: 'violin',
+      musicianId: 'violin',
+      name: '小提琴',
+      file: '/assets/audio/violin-melody.wav',
+      stereoPan: -0.34,
+      gain: 0.96,
+    },
+    {
+      id: 'viola',
+      musicianId: 'viola',
+      name: '中提琴',
+      file: '/assets/audio/violin-harmony.wav',
+      stereoPan: -0.08,
+      gain: 0.9,
+    },
+    {
+      id: 'cello',
+      musicianId: 'cello',
+      name: '大提琴',
+      file: '/assets/audio/violin-rhythm.wav',
+      stereoPan: 0.14,
+      gain: 0.9,
+    },
+    {
+      id: 'double-bass',
+      musicianId: 'double-bass',
+      name: '低音提琴',
+      file: '/assets/audio/ensemble-strings.wav',
+      stereoPan: 0.3,
+      gain: 0.84,
+    },
+  ],
+};
 
 export const tracks: TrackDefinition[] = [
   {

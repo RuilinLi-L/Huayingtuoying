@@ -861,6 +861,24 @@ img {
   font-size: 0.9rem;
 }
 
+.playback-console__progress {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 12px;
+  align-items: center;
+  color: var(--text-soft);
+}
+
+.playback-console__progress input {
+  width: 100%;
+}
+
+.playback-console__progress strong {
+  color: #f8fafc;
+  white-space: nowrap;
+}
+
 .playback-console__actions {
   display: flex;
   gap: 10px;
@@ -1149,6 +1167,10 @@ img {
   .playback-console__actions {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+
+  .playback-console__progress {
+    grid-template-columns: 1fr;
   }
 
   .playback-console .button,

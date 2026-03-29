@@ -1,10 +1,10 @@
 import type { CSSProperties, RefObject } from 'react';
 import { getMusicianById } from '../../lib/orchestraSession';
 import type {
+  CompositionDefinition,
   MusicianProfile,
   OrchestraModeDefinition,
   OrchestraSceneDefinition,
-  TrackDefinition,
 } from '../../types/demo';
 import { PlaybackConsole } from './PlaybackConsole';
 
@@ -16,7 +16,9 @@ interface OrchestraStageProps {
   selectedIds: string[];
   highlightIds: string[];
   focusedMusicianId: string | null;
-  currentTrack: TrackDefinition | null;
+  composition: CompositionDefinition;
+  currentTime: number;
+  duration: number;
   isPlaying: boolean;
   cameraReady: boolean;
   cameraError: string;
@@ -25,9 +27,8 @@ interface OrchestraStageProps {
   onCloseStage: () => void;
   onSelectMusician: (musicianId: string) => void;
   onTogglePlayback: () => void;
-  onPreviousTrack: () => void;
-  onNextTrack: () => void;
   onSceneChange: (sceneId: OrchestraSceneDefinition['id']) => void;
+  onSeek: (timeInSeconds: number) => void;
 }
 
 function getMusicianState(
@@ -39,8 +40,7 @@ function getMusicianState(
   const isSelected = selectedIds.includes(musicianId);
   const isHighlighted = highlightIds.includes(musicianId);
   const isFocused = focusedMusicianId === musicianId;
-  const isDimmed =
-    highlightIds.length > 0 && !isHighlighted && !isFocused && !isSelected;
+  const isDimmed = highlightIds.length > 0 && !isHighlighted && !isFocused && !isSelected;
 
   return {
     isSelected,
@@ -58,7 +58,9 @@ export function OrchestraStage({
   selectedIds,
   highlightIds,
   focusedMusicianId,
-  currentTrack,
+  composition,
+  currentTime,
+  duration,
   isPlaying,
   cameraReady,
   cameraError,
@@ -67,9 +69,8 @@ export function OrchestraStage({
   onCloseStage,
   onSelectMusician,
   onTogglePlayback,
-  onPreviousTrack,
-  onNextTrack,
   onSceneChange,
+  onSeek,
 }: OrchestraStageProps) {
   const focusedMusician = focusedMusicianId ? getMusicianById(focusedMusicianId) : null;
   const lineupProgress = `${selectedIds.length} / ${musicians.length}`;
@@ -79,7 +80,7 @@ export function OrchestraStage({
       <div className="section-heading">
         <div>
           <h3>虚拟音乐厅</h3>
-          <p>用相机背景模拟 WebAR 演出现场，先验证组合玩法、场景切换和乐手交互。</p>
+          <p>用相机背景模拟 WebAR 演出现场，先验证落子、同步合奏、场景切换和乐手交互。</p>
         </div>
         {cameraReady ? (
           <button className="button button--ghost" onClick={onCloseStage} type="button">
@@ -87,7 +88,7 @@ export function OrchestraStage({
           </button>
         ) : (
           <button className="button" onClick={onOpenStage} type="button">
-            扫码进入演出现场
+            打开演示舞台
           </button>
         )}
       </div>
@@ -101,13 +102,13 @@ export function OrchestraStage({
             '--scene-haze': currentScene.palette.haze,
           } as CSSProperties
         }
-        >
+      >
         <div className="stage-shell__camera">
           <video autoPlay muted playsInline ref={videoRef} />
           {!cameraReady ? (
             <div className="stage-shell__placeholder">
-              <strong>等待扫码演示</strong>
-              <p>点击“扫码进入演出现场”后，页面会调用相机并进入 demo 版 AR 舞台。</p>
+              <strong>等待进入舞台</strong>
+              <p>开启相机后，这里会显示舞台背景，你可以继续用右侧的 NFC 模拟面板做插拔联动。</p>
             </div>
           ) : null}
         </div>
@@ -115,8 +116,8 @@ export function OrchestraStage({
         <div className="stage-shell__overlay" />
         <div className="stage-shell__hud">
           <div className="stage-shell__hud-chip stage-shell__hud-chip--anchor">
-            <span className="stage-anchor__mark">院徽锚点</span>
-            <small>{cameraReady ? '已锁定底座视觉锚点' : '等待开启相机'}</small>
+            <span className="stage-anchor__mark">底座锚点</span>
+            <small>{cameraReady ? '舞台已开启' : '等待开启相机'}</small>
           </div>
           <div className="stage-shell__hud-chip">
             <small>当前玩法</small>
@@ -133,12 +134,14 @@ export function OrchestraStage({
         </div>
 
         <PlaybackConsole
+          composition={composition}
           currentScene={currentScene}
-          currentTrack={currentTrack}
+          currentTime={currentTime}
+          duration={duration}
+          hasActiveMusicians={selectedIds.length > 0}
           isPlaying={isPlaying}
-          onNextTrack={onNextTrack}
-          onPreviousTrack={onPreviousTrack}
           onSceneChange={onSceneChange}
+          onSeek={onSeek}
           onTogglePlayback={onTogglePlayback}
           sceneOptions={sceneOptions}
         />
@@ -181,11 +184,7 @@ export function OrchestraStage({
                 <span className="musician-node__label">
                   <strong>{musician.instrument}</strong>
                   <small>
-                    {state.isFocused
-                      ? '查看中'
-                      : state.isSelected
-                        ? '已落子'
-                        : '点击查看'}
+                    {state.isFocused ? '查看中' : state.isSelected ? '已插入' : '点击查看'}
                   </small>
                 </span>
               </button>
@@ -220,7 +219,7 @@ export function OrchestraStage({
               <span>{currentScene.name}</span>
             </div>
             <small className="stage-shell__summary-note">
-              右侧面板保留完整数字名片与百科内容。
+              右侧面板保留更完整的数字名片与百科内容。
             </small>
           </div>
         ) : null}

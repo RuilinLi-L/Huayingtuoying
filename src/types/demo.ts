@@ -57,6 +57,23 @@ export interface TrackDefinition {
   modeIds: OrchestraModeId[];
 }
 
+export interface CompositionStemDefinition {
+  id: string;
+  musicianId: string;
+  name: string;
+  file: string;
+  stereoPan?: number;
+  gain?: number;
+}
+
+export interface CompositionDefinition {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  stems: CompositionStemDefinition[];
+}
+
 export interface OrchestraModeDefinition {
   id: OrchestraModeId;
   name: string;

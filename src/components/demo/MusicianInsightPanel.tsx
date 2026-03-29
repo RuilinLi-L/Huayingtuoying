@@ -1,9 +1,9 @@
 import { getSelectedMusicians } from '../../lib/orchestraSession';
 import type {
+  CompositionDefinition,
   MusicianProfile,
   OrchestraModeDefinition,
   OrchestraSceneDefinition,
-  TrackDefinition,
 } from '../../types/demo';
 
 interface MusicianInsightPanelProps {
@@ -11,7 +11,7 @@ interface MusicianInsightPanelProps {
   selectedIds: string[];
   mode: OrchestraModeDefinition;
   scene: OrchestraSceneDefinition;
-  track: TrackDefinition | null;
+  composition: CompositionDefinition | null;
 }
 
 export function MusicianInsightPanel({
@@ -19,7 +19,7 @@ export function MusicianInsightPanel({
   selectedIds,
   mode,
   scene,
-  track,
+  composition,
 }: MusicianInsightPanelProps) {
   const selectedMusicians = getSelectedMusicians(selectedIds);
 
@@ -47,13 +47,15 @@ export function MusicianInsightPanel({
             <div className="musician-card__meta">
               <span>当前模式：{mode.name}</span>
               <span>当前场景：{scene.name}</span>
-              <span>当前曲目：{track?.title ?? '待解锁'}</span>
+              <span>当前曲目：{composition?.title ?? '固定乐曲示例'}</span>
             </div>
           </article>
 
           <article className="encyclopedia-card">
             <h4>深度链接占位</h4>
-            <p>正式版本中，这里可接到独立的移动百科页，承载起源、发展史、名家名作和校内演出素材。</p>
+            <p>
+              正式版本中，这里可接到独立的移动百科页，承载起源、发展史、名家名作和校内演出素材。
+            </p>
             <ul className="feature-list">
               {musician.featuredWorks.map((work) => (
                 <li key={work}>{work}</li>

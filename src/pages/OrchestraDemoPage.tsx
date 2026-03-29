@@ -3,7 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { MusicianInsightPanel } from '../components/demo/MusicianInsightPanel';
 import { NfcDeckPanel } from '../components/demo/NfcDeckPanel';
 import { OrchestraStage } from '../components/demo/OrchestraStage';
-import { musicians } from '../data/orchestraDemo';
+import { fixedComposition, musicians } from '../data/orchestraDemo';
+import { AudioEngine } from '../lib/audio/AudioEngine';
 import { getCameraErrorMessage, getDeviceCapabilities } from '../lib/device';
 import {
   buildNfcPreviewPayload,
@@ -12,21 +13,15 @@ import {
 } from '../lib/nfcSession';
 import {
   describeLineup,
-  getDefaultTrackForMode,
   getMusicianById,
   getOrchestraScenes,
   getRecommendedSceneIds,
   getSceneById,
-  getTrackById,
-  getTracksForMode,
   resolveHighlightIds,
   resolveOrchestraMode,
 } from '../lib/orchestraSession';
-import type {
-  NfcSessionSnapshot,
-  OrchestraSceneId,
-  TrackDefinition,
-} from '../types/demo';
+import type { NfcSessionSnapshot, OrchestraSceneId } from '../types/demo';
+import type { AudioStem } from '../types/manifest';
 
 const allScenes = getOrchestraScenes();
 
@@ -52,7 +47,7 @@ export function OrchestraDemoPage() {
   const capabilities = useMemo(() => getDeviceCapabilities(), []);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioEngineRef = useRef<AudioEngine | null>(null);
   const mockAdapterRef = useRef(createMockNfcSessionAdapter(initialLineup));
   const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
   const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>({
@@ -65,9 +60,38 @@ export function OrchestraDemoPage() {
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState('');
   const [currentSceneId, setCurrentSceneId] = useState<OrchestraSceneId>(initialSceneId);
-  const [currentTrackId, setCurrentTrackId] = useState<string | null>(null);
   const [focusedMusicianId, setFocusedMusicianId] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackTime, setPlaybackTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  const compositionStems = useMemo<AudioStem[]>(
+    () =>
+      fixedComposition.stems.map((stem) => ({
+        id: stem.id,
+        name: stem.name,
+        file: stem.file,
+        defaultEnabled: true,
+        group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
+        stereoPan: stem.stereoPan,
+        gain: stem.gain,
+      })),
+    [],
+  );
+
+  useEffect(() => {
+    const engine = new AudioEngine();
+    audioEngineRef.current = engine;
+
+    void engine.preload(compositionStems).then(() => {
+      setDuration(engine.getDuration());
+    });
+
+    return () => {
+      engine.dispose();
+      audioEngineRef.current = null;
+    };
+  }, [compositionStems]);
 
   useEffect(() => {
     const adapter = mockAdapterRef.current;
@@ -84,6 +108,60 @@ export function OrchestraDemoPage() {
     };
   }, [deepLinkSource, initialLineup]);
 
+  useEffect(() => {
+    let frameId = 0;
+
+    const syncPlaybackState = () => {
+      const engine = audioEngineRef.current;
+      if (engine) {
+        const nextDuration = engine.getDuration();
+        const nextTime = engine.getCurrentTime();
+        const nextPlaying = engine.isPlaying();
+
+        setDuration((current) => (current === nextDuration ? current : nextDuration));
+        setPlaybackTime((current) =>
+          Math.abs(current - nextTime) < 0.01 ? current : nextTime,
+        );
+        setIsPlaying((current) => (current === nextPlaying ? current : nextPlaying));
+      }
+
+      frameId = window.requestAnimationFrame(syncPlaybackState);
+    };
+
+    frameId = window.requestAnimationFrame(syncPlaybackState);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+    };
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const syncSelectedStems = async () => {
+      const engine = audioEngineRef.current;
+      if (!engine) {
+        return;
+      }
+
+      await engine.setActiveStems(compositionStems, snapshot.placedMusicianIds);
+
+      if (cancelled) {
+        return;
+      }
+
+      setDuration(engine.getDuration());
+      setPlaybackTime(engine.getCurrentTime());
+      setIsPlaying(engine.isPlaying());
+    };
+
+    void syncSelectedStems();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [compositionStems, snapshot.placedMusicianIds]);
+
   const mode = useMemo(
     () => resolveOrchestraMode(snapshot.placedMusicianIds),
     [snapshot.placedMusicianIds],
@@ -91,13 +169,6 @@ export function OrchestraDemoPage() {
   const highlightIds = useMemo(
     () => resolveHighlightIds(snapshot.placedMusicianIds, mode),
     [mode, snapshot.placedMusicianIds],
-  );
-  const unlockedTracks = useMemo(() => getTracksForMode(mode.id), [mode.id]);
-  const currentTrack = useMemo(
-    () =>
-      (currentTrackId ? getTrackById(currentTrackId) : null) ??
-      getDefaultTrackForMode(mode.id),
-    [currentTrackId, mode.id],
   );
   const currentScene = useMemo(
     () => getSceneById(currentSceneId) ?? allScenes[0],
@@ -107,40 +178,6 @@ export function OrchestraDemoPage() {
   const recommendedSceneIds = getRecommendedSceneIds(mode.id);
   const recommendedScenes = allScenes.filter((scene) => recommendedSceneIds.includes(scene.id));
   const nfcPreviewPayload = buildNfcPreviewPayload(snapshot.placedMusicianIds);
-
-  useEffect(() => {
-    if (!currentTrack || !audioRef.current) {
-      setIsPlaying(false);
-      return;
-    }
-
-    const audio = audioRef.current;
-
-    if (audio.src !== new URL(currentTrack.audioSrc, window.location.origin).toString()) {
-      audio.src = currentTrack.audioSrc;
-      audio.load();
-    }
-
-    if (isPlaying) {
-      void audio.play().catch(() => {
-        setIsPlaying(false);
-      });
-    } else {
-      audio.pause();
-    }
-  }, [currentTrack, isPlaying]);
-
-  useEffect(() => {
-    if (!unlockedTracks.length) {
-      setCurrentTrackId(null);
-      setIsPlaying(false);
-      return;
-    }
-
-    if (!currentTrackId || !unlockedTracks.some((track) => track.id === currentTrackId)) {
-      setCurrentTrackId(unlockedTracks[0]?.id ?? null);
-    }
-  }, [currentTrackId, unlockedTracks]);
 
   useEffect(() => {
     if (!recommendedSceneIds.includes(currentSceneId)) {
@@ -162,7 +199,7 @@ export function OrchestraDemoPage() {
   async function openStage() {
     if (cameraReady || !capabilities.canUseCamera) {
       if (!capabilities.canUseCamera) {
-        setCameraError('当前浏览器不支持摄像头访问，demo 将仅展示静态舞台。');
+        setCameraError('当前浏览器不支持相机访问，页面会继续展示静态舞台。');
       }
       return;
     }
@@ -210,25 +247,31 @@ export function OrchestraDemoPage() {
     mockAdapterRef.current.pushSnapshot(nextIds, deepLinkSource);
   }
 
-  function togglePlayback() {
-    if (!currentTrack) {
+  async function togglePlayback() {
+    const engine = audioEngineRef.current;
+    if (!engine || !snapshot.placedMusicianIds.length) {
       return;
     }
 
-    setIsPlaying((current) => !current);
+    if (engine.isPlaying()) {
+      engine.pause();
+    } else {
+      await engine.resume();
+    }
+
+    setPlaybackTime(engine.getCurrentTime());
+    setIsPlaying(engine.isPlaying());
   }
 
-  function switchTrack(offset: number) {
-    if (!unlockedTracks.length) {
+  function handleSeek(timeInSeconds: number) {
+    const engine = audioEngineRef.current;
+    if (!engine) {
       return;
     }
 
-    const currentIndex = unlockedTracks.findIndex((track) => track.id === currentTrack?.id);
-    const safeIndex = currentIndex >= 0 ? currentIndex : 0;
-    const nextIndex = (safeIndex + offset + unlockedTracks.length) % unlockedTracks.length;
-    const nextTrack = unlockedTracks[nextIndex];
-
-    setCurrentTrackId(nextTrack?.id ?? null);
+    engine.seek(timeInSeconds);
+    setPlaybackTime(engine.getCurrentTime());
+    setDuration(engine.getDuration());
   }
 
   function handleSceneChange(sceneId: OrchestraSceneId) {
@@ -241,15 +284,13 @@ export function OrchestraDemoPage() {
 
   return (
     <div className="page orchestra-page">
-      <audio loop ref={audioRef} />
-
       <section className="orchestra-hero">
         <div className="orchestra-hero__content">
           <p className="eyebrow">Base Demo</p>
           <h1>智能底座 + 12 位演奏家 + WebAR 音乐会</h1>
           <p className="orchestra-hero__summary">
-            这个 demo 用占位素材把最终产品的交互结构先跑通：落子识别、扫码进入、
-            12 人乐团排位、玩法联动、曲目切换、场景切换和数字名片。
+            这版 demo 已切到固定曲目机制：每位乐器对应独立音轨，插入后按同一全局时间轴同步播放，
+            全部拔出时暂停，再次插入会从上次位置继续。
           </p>
           <div className="hero__actions">
             <button className="button" onClick={() => void openStage()} type="button">
@@ -271,7 +312,7 @@ export function OrchestraDemoPage() {
           </div>
           <div className="status-metric">
             <small>当前曲目</small>
-            <strong>{currentTrack?.title ?? '待解锁'}</strong>
+            <strong>{fixedComposition.title}</strong>
           </div>
           <div className="status-metric">
             <small>当前场景</small>
@@ -285,20 +326,21 @@ export function OrchestraDemoPage() {
           <OrchestraStage
             cameraError={cameraError}
             cameraReady={cameraReady}
+            composition={fixedComposition}
             currentScene={currentScene}
-            currentTrack={currentTrack}
+            currentTime={playbackTime}
+            duration={duration}
             focusedMusicianId={focusedMusicianId}
             highlightIds={highlightIds}
             isPlaying={isPlaying}
             mode={mode}
             musicians={musicians}
             onCloseStage={stopStage}
-            onNextTrack={() => switchTrack(1)}
             onOpenStage={() => void openStage()}
-            onPreviousTrack={() => switchTrack(-1)}
             onSceneChange={handleSceneChange}
+            onSeek={handleSeek}
             onSelectMusician={handleSelectMusician}
-            onTogglePlayback={togglePlayback}
+            onTogglePlayback={() => void togglePlayback()}
             sceneOptions={recommendedScenes.length ? recommendedScenes : allScenes}
             selectedIds={snapshot.placedMusicianIds}
             videoRef={videoRef}
@@ -308,7 +350,7 @@ export function OrchestraDemoPage() {
             <div className="section-heading">
               <div>
                 <h3>玩法联动说明</h3>
-                <p>当前组合会自动落入下面 4 类规则之一，后续真实 NFC 识别只需要替换数据来源。</p>
+                <p>保留原有编制判定和场景推荐逻辑，只把声音部分切到固定曲目的全局同步机制。</p>
               </div>
             </div>
             <div className="mode-overview__grid">
@@ -319,8 +361,8 @@ export function OrchestraDemoPage() {
               </article>
               <article className="mode-overview__card">
                 <small>高亮乐手</small>
-                <strong>{highlightIds.length ? highlightIds.length : 0} 位</strong>
-                <p>舞台中会按当前规则自动高亮目标乐手，其余角色弱化或退到背景层。</p>
+                <strong>{highlightIds.length} 位</strong>
+                <p>舞台会继续按当前组合规则突出展示重点乐手，其余角色自动弱化。</p>
               </article>
               <article className="mode-overview__card">
                 <small>推荐场景</small>
@@ -329,7 +371,7 @@ export function OrchestraDemoPage() {
                     .map((scene) => scene.shortLabel)
                     .join(' / ')}
                 </strong>
-                <p>正式版本中可按模式切换琴台、青年园、排练厅等校园地标背景。</p>
+                <p>场景切换不影响全局播放进度，乐器插拔和拖动进度条都会继续使用同一时间轴。</p>
               </article>
             </div>
           </section>
@@ -348,7 +390,7 @@ export function OrchestraDemoPage() {
             <div className="section-heading">
               <div>
                 <h3>NFC 接口预留</h3>
-                <p>当前页面使用 mock adapter 驱动；后续接硬件时只替换适配器实现，不改上层玩法逻辑。</p>
+                <p>页面仍由 mock adapter 驱动，后续接硬件时只需要替换适配器实现，不用改上层玩法逻辑。</p>
               </div>
             </div>
             <code className="payload-code">
@@ -364,11 +406,11 @@ export function OrchestraDemoPage() {
           </section>
 
           <MusicianInsightPanel
+            composition={fixedComposition}
             mode={mode}
             musician={focusedMusician}
             scene={currentScene}
             selectedIds={snapshot.placedMusicianIds}
-            track={currentTrack as TrackDefinition | null}
           />
         </div>
       </section>
