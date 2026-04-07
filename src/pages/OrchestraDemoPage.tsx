@@ -4,6 +4,7 @@ import { MusicianInsightPanel } from '../components/demo/MusicianInsightPanel';
 import { NfcDeckPanel } from '../components/demo/NfcDeckPanel';
 import { OrchestraStage } from '../components/demo/OrchestraStage';
 import { fixedComposition, musicians } from '../data/orchestraDemo';
+import { normalizeMusicianIds } from '../data/sleepingBeauty';
 import { AudioEngine } from '../lib/audio/AudioEngine';
 import { getCameraErrorMessage, getDeviceCapabilities } from '../lib/device';
 import {
@@ -30,10 +31,7 @@ function parseLineup(value: string | null) {
     return [];
   }
 
-  return value
-    .split(',')
-    .map((item) => item.trim())
-    .filter((item) => musicians.some((musician) => musician.id === item));
+  return normalizeMusicianIds(value.split(',').map((item) => item.trim()));
 }
 
 export function OrchestraDemoPage() {
@@ -289,7 +287,7 @@ export function OrchestraDemoPage() {
           <p className="eyebrow">Base Demo</p>
           <h1>智能底座 + 12 位演奏家 + WebAR 音乐会</h1>
           <p className="orchestra-hero__summary">
-            这版 demo 已切到固定曲目机制：每位乐器对应独立音轨，插入后按同一全局时间轴同步播放，
+            这版 demo 已接入《睡美人圆舞曲》12 条真实分轨：每位乐器对应独立声部，插入后按同一全局时间轴同步播放，
             全部拔出时暂停，再次插入会从上次位置继续。
           </p>
           <div className="hero__actions">
@@ -350,7 +348,7 @@ export function OrchestraDemoPage() {
             <div className="section-heading">
               <div>
                 <h3>玩法联动说明</h3>
-                <p>保留原有编制判定和场景推荐逻辑，只把声音部分切到固定曲目的全局同步机制。</p>
+                <p>保留原有编制判定和场景推荐逻辑，并统一切到《睡美人圆舞曲》12 轨全局同步机制。</p>
               </div>
             </div>
             <div className="mode-overview__grid">

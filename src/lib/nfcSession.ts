@@ -1,4 +1,5 @@
 import { baseAnchorId } from '../data/orchestraDemo';
+import { normalizeMusicianIds } from '../data/sleepingBeauty';
 import type { NfcSessionAdapter, NfcSessionSnapshot, NfcSnapshotSource } from '../types/demo';
 
 interface MockNfcSessionAdapter extends NfcSessionAdapter {
@@ -9,7 +10,7 @@ function createSnapshot(
   placedMusicianIds: string[],
   source: NfcSnapshotSource,
 ): NfcSessionSnapshot {
-  const normalizedIds = [...new Set(placedMusicianIds)].sort();
+  const normalizedIds = normalizeMusicianIds(placedMusicianIds);
 
   return {
     baseAnchorId,
@@ -82,10 +83,12 @@ export function createReservedNfcSessionAdapter(): NfcSessionAdapter {
 }
 
 export function buildNfcPreviewPayload(placedMusicianIds: string[]) {
+  const normalizedIds = normalizeMusicianIds(placedMusicianIds);
+
   return {
     baseAnchorId,
-    musicianIds: [...new Set(placedMusicianIds)].sort(),
-    count: [...new Set(placedMusicianIds)].length,
+    musicianIds: normalizedIds,
+    count: normalizedIds.length,
     anchorAction: 'launch-webar-session',
     timestamp: new Date().toISOString(),
   };
