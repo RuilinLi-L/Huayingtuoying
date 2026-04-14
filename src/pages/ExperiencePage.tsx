@@ -37,6 +37,10 @@ const statusTextMap: Record<SceneStatus, string> = {
   error: 'AR 启动失败，请查看错误信息后重试',
 };
 
+function getAudioErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function getLaunchTitle(trackingMode: string) {
   return trackingMode === 'surface-placement'
     ? '准备进入平面放置场景'
@@ -76,6 +80,7 @@ export function ExperiencePage() {
   const [status, setStatus] = useState<SceneStatus>('idle');
   const [sceneKey, setSceneKey] = useState(0);
   const [startupError, setStartupError] = useState('');
+  const [audioError, setAudioError] = useState('');
   const [debugMessages, setDebugMessages] = useState<string[]>([]);
   const capabilities = useMemo(() => getDeviceCapabilities(), []);
   const launchContext = useMemo(
@@ -100,6 +105,7 @@ export function ExperiencePage() {
     setStatus('idle');
     setSceneKey(0);
     setStartupError('');
+    setAudioError('');
     setDebugMessages([]);
     audioRef.current = new AudioEngine();
     autoLaunchKeyRef.current = '';
@@ -139,9 +145,18 @@ export function ExperiencePage() {
   }, []);
 
   const startAudio = useCallback(async () => {
-    await audioRef.current?.play(entry.audioStems);
-    setPlaying(true);
-  }, [entry.audioStems]);
+    setAudioError('');
+    const nextAudioError = (await audioRef.current?.play(entry.audioStems)) ?? null;
+    setPlaying(audioRef.current?.isPlaying() ?? false);
+
+    if (nextAudioError) {
+      setAudioError(nextAudioError);
+      pushDebugMessage(`音频加载异常：${nextAudioError}`);
+      return;
+    }
+
+    setAudioError('');
+  }, [entry.audioStems, pushDebugMessage]);
 
   const launchExperience = useCallback(async () => {
     setStartupError('');
@@ -151,8 +166,10 @@ export function ExperiencePage() {
     if (!canUseAr) {
       setSceneStarted(true);
       void startAudio().catch((error) => {
+        const message = getAudioErrorMessage(error);
+        setAudioError(message);
         pushDebugMessage(
-          `音频启动失败：${error instanceof Error ? error.message : String(error)}`,
+          `音频启动失败：${message}`,
         );
       });
       setStatus('fallback');
@@ -169,8 +186,10 @@ export function ExperiencePage() {
       pushDebugMessage('相机预检通过，准备挂载 WebAR 场景');
       setSceneStarted(true);
       void startAudio().catch((error) => {
+        const message = getAudioErrorMessage(error);
+        setAudioError(message);
         pushDebugMessage(
-          `音频启动失败：${error instanceof Error ? error.message : String(error)}`,
+          `音频启动失败：${message}`,
         );
       });
     } catch (error) {
@@ -214,8 +233,13 @@ export function ExperiencePage() {
       return;
     }
 
-    await audioRef.current.play(entry.audioStems);
-    setPlaying(true);
+    const nextAudioError = await audioRef.current.play(entry.audioStems);
+    setPlaying(audioRef.current.isPlaying());
+    setAudioError(nextAudioError ?? '');
+
+    if (nextAudioError) {
+      pushDebugMessage(`音频加载异常：${nextAudioError}`);
+    }
   };
 
   const toggleStem = (stemId: string) => {
@@ -240,6 +264,7 @@ export function ExperiencePage() {
 
   const resetScene = async () => {
     setStartupError('');
+    setAudioError('');
     setDebugMessages([]);
 
     if (!sceneStarted) {
@@ -251,8 +276,10 @@ export function ExperiencePage() {
     setStatus(canUseAr ? 'loading' : 'fallback');
     pushDebugMessage('已重置场景，准备重新初始化');
     void startAudio().catch((error) => {
+      const message = getAudioErrorMessage(error);
+      setAudioError(message);
       pushDebugMessage(
-        `音频重启失败：${error instanceof Error ? error.message : String(error)}`,
+        `音频重启失败：${message}`,
       );
     });
   };
@@ -294,6 +321,13 @@ export function ExperiencePage() {
             <div className="status-message status-message--error">
               <strong>启动失败</strong>
               <p>{startupError}</p>
+            </div>
+          ) : null}
+
+          {audioError ? (
+            <div className="status-message status-message--error">
+              <strong>音频加载失败</strong>
+              <p>{audioError}</p>
             </div>
           ) : null}
 

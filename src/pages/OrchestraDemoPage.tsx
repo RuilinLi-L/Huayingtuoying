@@ -26,6 +26,10 @@ import type { AudioStem } from '../types/manifest';
 
 const allScenes = getOrchestraScenes();
 
+function getAudioErrorMessage(error: unknown) {
+  return error instanceof Error ? error.message : String(error);
+}
+
 function parseLineup(value: string | null) {
   if (!value) {
     return [];
@@ -62,6 +66,7 @@ export function OrchestraDemoPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [playbackTime, setPlaybackTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [audioError, setAudioError] = useState('');
 
   const compositionStems = useMemo<AudioStem[]>(
     () =>
@@ -80,10 +85,6 @@ export function OrchestraDemoPage() {
   useEffect(() => {
     const engine = new AudioEngine();
     audioEngineRef.current = engine;
-
-    void engine.preload(compositionStems).then(() => {
-      setDuration(engine.getDuration());
-    });
 
     return () => {
       engine.dispose();
@@ -142,18 +143,31 @@ export function OrchestraDemoPage() {
         return;
       }
 
-      await engine.setActiveStems(compositionStems, snapshot.placedMusicianIds);
+      const nextAudioError = await engine.setActiveStems(
+        compositionStems,
+        snapshot.placedMusicianIds,
+      );
 
       if (cancelled) {
         return;
       }
 
+      setAudioError(nextAudioError ?? '');
       setDuration(engine.getDuration());
       setPlaybackTime(engine.getCurrentTime());
       setIsPlaying(engine.isPlaying());
     };
 
-    void syncSelectedStems();
+    void syncSelectedStems().catch((error) => {
+      if (cancelled) {
+        return;
+      }
+
+      setAudioError(getAudioErrorMessage(error));
+      setDuration(audioEngineRef.current?.getDuration() ?? 0);
+      setPlaybackTime(audioEngineRef.current?.getCurrentTime() ?? 0);
+      setIsPlaying(audioEngineRef.current?.isPlaying() ?? false);
+    });
 
     return () => {
       cancelled = true;
@@ -251,10 +265,15 @@ export function OrchestraDemoPage() {
       return;
     }
 
-    if (engine.isPlaying()) {
-      engine.pause();
-    } else {
-      await engine.resume();
+    try {
+      if (engine.isPlaying()) {
+        engine.pause();
+      } else {
+        setAudioError('');
+        await engine.resume();
+      }
+    } catch (error) {
+      setAudioError(getAudioErrorMessage(error));
     }
 
     setPlaybackTime(engine.getCurrentTime());
@@ -321,6 +340,13 @@ export function OrchestraDemoPage() {
 
       <section className="orchestra-layout">
         <div className="orchestra-layout__main">
+          {audioError ? (
+            <div className="status-message status-message--error">
+              <strong>音频加载失败</strong>
+              <p>{audioError}</p>
+            </div>
+          ) : null}
+
           <OrchestraStage
             cameraError={cameraError}
             cameraReady={cameraReady}
