@@ -6,6 +6,7 @@
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 132px;
 }
 
 body {
@@ -124,7 +125,7 @@ h4 {
 
 p {
   max-width: 68ch;
-  line-height: 1.76;
+  line-height: 1.72;
 }
 
 ul {
@@ -187,6 +188,10 @@ ul {
 .page {
   display: grid;
   gap: var(--section-gap);
+}
+
+[id] {
+  scroll-margin-top: 132px;
 }
 
 .panel,
@@ -512,19 +517,61 @@ ul {
 }
 
 @media (max-width: 768px) {
+  h1 {
+    font-size: clamp(2.26rem, 10vw, 3.24rem);
+    line-height: 0.98;
+  }
+
+  h2 {
+    font-size: clamp(1.72rem, 7.6vw, 2.3rem);
+    line-height: 1.04;
+  }
+
   body {
     background:
       radial-gradient(circle at 0 0, rgba(95, 125, 114, 0.16), transparent 22%),
       linear-gradient(180deg, var(--canvas) 0%, var(--canvas-strong) 100%);
   }
 
+  .page {
+    gap: clamp(24px, 8vw, 38px);
+  }
+
+  .panel,
+  .card {
+    padding: clamp(16px, 4.8vw, 22px);
+  }
+
   .section-heading {
     flex-direction: column;
     align-items: start;
+    gap: 14px;
   }
 
   .button,
   .button--ghost {
     width: 100%;
+  }
+
+  .chip-row,
+  .status-tags {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-inline: -2px;
+    padding-inline: 2px;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .chip-row::-webkit-scrollbar,
+  .status-tags::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chip,
+  .status-tag {
+    flex: none;
+    scroll-snap-align: start;
   }
 }

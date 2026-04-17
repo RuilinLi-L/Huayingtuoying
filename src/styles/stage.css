@@ -595,15 +595,34 @@
 }
 
 @media (max-width: 768px) {
-  .orchestra-hero__status,
+  .orchestra-hero__status {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(152px, 72vw);
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-inline: -2px;
+    padding-inline: 2px;
+    scrollbar-width: none;
+  }
+
+  .orchestra-hero__status::-webkit-scrollbar,
+  .scene-switcher::-webkit-scrollbar {
+    display: none;
+  }
+
   .deck-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .slider,
   .stem-row {
     grid-template-columns: 1fr;
     display: grid;
+    gap: 12px;
+  }
+
+  .stem-row {
+    align-items: start;
   }
 
   .stem-row__actions {
@@ -611,47 +630,91 @@
   }
 
   .stage-shell {
-    min-height: 980px;
+    min-height: clamp(620px, 78dvh, 760px);
   }
 
   .stage-shell__hud {
-    top: 16px;
-    left: 16px;
-    right: 16px;
+    top: 12px;
+    left: 12px;
+    right: 12px;
     width: auto;
+    gap: 8px;
+  }
+
+  .stage-shell__hud-chip {
+    min-height: 64px;
+    padding: 10px 12px;
+  }
+
+  .stage-shell__hud-chip strong {
+    font-size: 0.88rem;
   }
 
   .stage-shell__summary-popup {
-    right: 16px;
-    bottom: 198px;
-    top: auto;
-    left: 16px;
+    top: 106px;
+    right: 12px;
+    bottom: 144px;
+    left: 12px;
     width: auto;
+    overflow: auto;
   }
 
   .stage-shell__error {
-    right: 16px;
+    right: 12px;
     bottom: auto;
-    left: 16px;
-    top: 148px;
+    left: 12px;
+    top: 98px;
     width: auto;
     transform: none;
   }
 
   .playback-console {
-    right: 16px;
-    bottom: 16px;
-    left: 16px;
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
     width: auto;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .scene-switcher {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
   }
 
   .musician-node {
-    width: 88px;
-    min-height: 54px;
-    padding: 8px;
+    width: 76px;
+    min-height: 50px;
+    padding: 6px 8px;
+    gap: 6px;
+    border-radius: 16px;
+  }
+
+  .musician-node__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+  }
+
+  .musician-node__label strong {
+    font-size: 0.76rem;
+    line-height: 1.05;
   }
 
   .musician-node__label small {
-    font-size: 0.64rem;
+    display: none;
+  }
+
+  .scene-chip {
+    min-width: 88px;
+  }
+}
+
+@media (max-width: 420px) {
+  .deck-grid {
+    grid-template-columns: 1fr;
   }
 }

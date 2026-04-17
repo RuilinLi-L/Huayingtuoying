@@ -513,6 +513,32 @@
     min-height: auto;
   }
 
+  .home-hero,
+  .artifact-hero,
+  .experience-overview,
+  .orchestra-hero,
+  .home-route,
+  .artifact-grid,
+  .experience-layout {
+    gap: 16px;
+  }
+
+  .home-hero__content,
+  .artifact-hero__content,
+  .experience-overview__content,
+  .orchestra-hero__content,
+  .home-route__story,
+  .home-route__map,
+  .home-demo-band__content,
+  .home-demo-band__aside {
+    gap: 14px;
+  }
+
+  .home-hero__content,
+  .experience-overview__content {
+    padding: 0;
+  }
+
   .hero__actions,
   .detail-hero__actions,
   .entry-card__actions,
@@ -521,9 +547,87 @@
     flex-direction: column;
   }
 
+  .home-ledger,
+  .curation-note,
+  .artifact-note,
+  .artifact-catalog,
+  .launch-panel,
+  .fallback-view,
+  .home-demo-band,
+  .experience-stage,
+  .orchestra-stage {
+    padding: 16px;
+  }
+
+  .home-entries,
+  .entry-card__frame,
+  .artifact-grid__main,
+  .artifact-grid__side,
+  .experience-side {
+    gap: 16px;
+  }
+
+  .entry-card__frame {
+    padding: 16px;
+  }
+
+  .entry-card__head {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .entry-card__poster {
+    aspect-ratio: 4 / 3;
+  }
+
+  .entry-card__meta {
+    gap: 8px 12px;
+    font-size: 0.84rem;
+  }
+
+  .artifact-hero__content {
+    order: -1;
+    padding: 18px;
+  }
+
+  .artifact-hero__poster-frame {
+    padding: 12px;
+  }
+
+  .artifact-meta__preview img {
+    width: 100%;
+  }
+
+  .experience-overview__meta {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(152px, 72vw);
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-inline: -2px;
+    padding-inline: 2px;
+    scrollbar-width: none;
+  }
+
+  .experience-overview__meta::-webkit-scrollbar {
+    display: none;
+  }
+
   .launch-panel,
   .fallback-view {
     grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .launch-panel__content,
+  .fallback-view__content {
+    order: -1;
+    gap: 14px;
+  }
+
+  .launch-panel__visual img,
+  .fallback-view__visual img {
+    min-height: 180px;
   }
 
   .qr-preview img,
@@ -531,5 +635,27 @@
     width: min(100%, 220px);
     height: auto;
     aspect-ratio: 1;
+  }
+}
+
+@media (max-width: 540px) {
+  .home-ledger__list,
+  .curation-note__list,
+  .artifact-note__list,
+  .artifact-catalog__list {
+    gap: 12px;
+  }
+
+  .home-ledger__item,
+  .curation-note__item,
+  .artifact-note__item,
+  .artifact-catalog__item {
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .home-demo-band__aside .metric-grid,
+  .artifact-hero .metric-grid {
+    grid-template-columns: 1fr;
   }
 }
