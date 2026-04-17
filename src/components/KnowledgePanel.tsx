@@ -1,3 +1,4 @@
+import { BookOpenText } from '@phosphor-icons/react';
 import type { EntryManifest, KnowledgeCard } from '../types/manifest';
 
 interface KnowledgePanelProps {
@@ -15,8 +16,9 @@ export function KnowledgePanel({
     <section className="card knowledge-panel">
       <div className="section-heading">
         <div>
-          <h3>乐理与叙事热点</h3>
-          <p>点击 AR 热点或下方标签，可切换当前条目的知识卡片。</p>
+          <p className="eyebrow">策展说明栏</p>
+          <h3>乐理、叙事与入口说明汇总在这里</h3>
+          <p>点击 AR 热点或下方标签，侧栏会切换到对应条目的知识卡，让信息阅读像展签延伸，而不是额外弹窗。</p>
         </div>
       </div>
 
@@ -35,7 +37,7 @@ export function KnowledgePanel({
 
       {selectedCard ? (
         <article className="knowledge-card">
-          <small>{selectedCard.anchor}</small>
+          <small className="catalog-label">{selectedCard.anchor}</small>
           <h4>{selectedCard.title}</h4>
           <p>{selectedCard.summary}</p>
           {selectedCard.media?.map((media) => (
@@ -53,7 +55,12 @@ export function KnowledgePanel({
           ))}
         </article>
       ) : (
-        <p className="empty-state">暂无知识卡片。</p>
+        <div className="empty-state">
+          <strong>
+            <BookOpenText size={18} weight="regular" /> 还没有选中知识卡
+          </strong>
+          <p>先从舞台热点或上方标签中选择一个锚点，页面会在这里展开对应说明。</p>
+        </div>
       )}
     </section>
   );

@@ -1,3 +1,10 @@
+import {
+  ArrowLeft,
+  ArrowsClockwise,
+  Camera,
+  ProjectorScreenChart,
+} from '@phosphor-icons/react';
+import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { AudioMixer } from '../components/AudioMixer';
@@ -11,6 +18,7 @@ import {
 } from '../lib/device';
 import { buildEntryPath, getEntryById } from '../lib/entries';
 import { parseLaunchSearchParams } from '../lib/launch';
+import { resolveEntryTheme } from '../lib/theme';
 import {
   getSourceLabel,
   getTrackingModeLabel,
@@ -28,13 +36,13 @@ type SceneStatus =
   | 'error';
 
 const statusTextMap: Record<SceneStatus, string> = {
-  idle: '尚未启动',
-  loading: '正在请求相机权限并初始化 WebAR 引擎',
-  scanning: '请按提示完成识图或平面放置',
-  found: '触发成功，3D 内容已显示',
-  lost: '目标丢失，请重新对准或重新放置',
-  fallback: '当前已降级到 2D 预览',
-  error: 'AR 启动失败，请查看错误信息后重试',
+  idle: '等待启动',
+  loading: '正在准备相机权限与 WebAR 运行时',
+  scanning: '请对准识别图或根据提示完成摆放',
+  found: '识别成功，舞台内容已进入画面',
+  lost: '目标暂时丢失，请重新对准',
+  fallback: '当前环境已切换到 2D 预览',
+  error: '启动失败，请查看提示后重试',
 };
 
 function getAudioErrorMessage(error: unknown) {
@@ -44,7 +52,7 @@ function getAudioErrorMessage(error: unknown) {
 function getLaunchTitle(trackingMode: string) {
   return trackingMode === 'surface-placement'
     ? '准备进入平面放置场景'
-    : '准备进入识图触发场景';
+    : '准备进入识别图触发场景';
 }
 
 function getLaunchDescription(
@@ -57,10 +65,10 @@ function getLaunchDescription(
   }
 
   if (trackingMode === 'surface-placement') {
-    return `${sourceLabel}已选中当前条目。启动后请先允许相机权限，再在真实平面上放置 3D 模型。`;
+    return `${sourceLabel}已选中当前条目。启动后请先允许相机，再在真实平面上放置模型。`;
   }
 
-  return `${sourceLabel}已选中当前条目。启动后请将镜头对准可触发当前内容的识别图。`;
+  return `${sourceLabel}已选中当前条目。启动后请将镜头对准识别图，让舞台内容在画面中稳定出现。`;
 }
 
 export function ExperiencePage() {
@@ -122,7 +130,6 @@ export function ExperiencePage() {
 
   const scene = resolveWebArScene(entry, launchContext.source);
   const canUseAr = capabilities.canUseAr;
-  const isPlaying = playing;
   const sourceLabel = getSourceLabel(launchContext.source);
   const trackingModeLabel = getTrackingModeLabel(scene);
 
@@ -161,16 +168,14 @@ export function ExperiencePage() {
   const launchExperience = useCallback(async () => {
     setStartupError('');
     setDebugMessages([]);
-    pushDebugMessage(`开始启动 ${scene.provider} WebAR 场景`);
+    pushDebugMessage(`开始挂载 ${scene.provider} 场景`);
 
     if (!canUseAr) {
       setSceneStarted(true);
       void startAudio().catch((error) => {
         const message = getAudioErrorMessage(error);
         setAudioError(message);
-        pushDebugMessage(
-          `音频启动失败：${message}`,
-        );
+        pushDebugMessage(`音频启动失败：${message}`);
       });
       setStatus('fallback');
       pushDebugMessage('当前环境不满足 WebAR 条件，已切换到 2D 预览');
@@ -179,18 +184,16 @@ export function ExperiencePage() {
 
     try {
       setStatus('loading');
-      pushDebugMessage('开始预检相机权限');
+      pushDebugMessage('开始请求相机权限');
       await requestCameraAccess({
         releaseDelayMs: capabilities.isIPhone ? 420 : 160,
       });
-      pushDebugMessage('相机预检通过，准备挂载 WebAR 场景');
+      pushDebugMessage('相机权限通过，准备进入场景');
       setSceneStarted(true);
       void startAudio().catch((error) => {
         const message = getAudioErrorMessage(error);
         setAudioError(message);
-        pushDebugMessage(
-          `音频启动失败：${message}`,
-        );
+        pushDebugMessage(`音频启动失败：${message}`);
       });
     } catch (error) {
       setSceneStarted(false);
@@ -274,40 +277,60 @@ export function ExperiencePage() {
 
     setSceneKey((current) => current + 1);
     setStatus(canUseAr ? 'loading' : 'fallback');
-    pushDebugMessage('已重置场景，准备重新初始化');
+    pushDebugMessage('场景已重置，准备重新初始化');
     void startAudio().catch((error) => {
       const message = getAudioErrorMessage(error);
       setAudioError(message);
-      pushDebugMessage(
-        `音频重启失败：${message}`,
-      );
+      pushDebugMessage(`音频重启失败：${message}`);
     });
   };
 
   return (
-    <div className="page experience-page">
-      <section className="experience-header">
-        <div>
+    <div className="page experience-page" style={resolveEntryTheme(entry.themeColor)}>
+      <section className="experience-overview">
+        <div className="experience-overview__content" data-reveal>
           <p className="eyebrow">{entry.orchestraZone}</p>
           <h1>{entry.title}</h1>
-          <p>{entry.description}</p>
+          <p className="experience-overview__summary">{entry.description}</p>
+          <div className="experience-header__actions">
+            <Link className="button--ghost" to={buildEntryPath(entry.id)}>
+              <ArrowLeft size={18} weight="regular" />
+              <span>返回展签</span>
+            </Link>
+            <button className="button" onClick={resetScene} type="button">
+              <ArrowsClockwise size={18} weight="regular" />
+              <span>重置场景</span>
+            </button>
+          </div>
         </div>
-        <div className="experience-header__actions">
-          <Link className="button button--ghost" to={buildEntryPath(entry.id)}>
-            返回入口页
-          </Link>
-          <button className="button" onClick={resetScene} type="button">
-            重置场景
-          </button>
-        </div>
+
+        <aside
+          className="experience-overview__meta"
+          data-reveal
+          style={{ '--delay-index': '1' } as CSSProperties}
+        >
+          <div className="metric-chip">
+            <small>入口来源</small>
+            <strong>{sourceLabel}</strong>
+          </div>
+          <div className="metric-chip">
+            <small>追踪模式</small>
+            <strong>{trackingModeLabel}</strong>
+          </div>
+          <div className="metric-chip">
+            <small>当前引擎</small>
+            <strong>{scene.provider}</strong>
+          </div>
+        </aside>
       </section>
 
       <section className="experience-layout">
-        <div className="experience-stage card">
-          <div className="stage-toolbar">
+        <div className="experience-stage card" data-reveal>
+          <div className="section-heading">
             <div>
-              <strong>场景状态</strong>
-              <p>{statusTextMap[status]}</p>
+              <p className="eyebrow">舞台控制台</p>
+              <h3>{statusTextMap[status]}</h3>
+              <p>浅色壳层负责说明与控制，深色区专门负责沉浸舞台与相机画面。</p>
             </div>
             <div className="status-tags">
               <span className="status-tag">{canUseAr ? 'WebAR 可用' : '自动降级'}</span>
@@ -319,7 +342,7 @@ export function ExperiencePage() {
 
           {startupError ? (
             <div className="status-message status-message--error">
-              <strong>启动失败</strong>
+              <strong>场景启动失败</strong>
               <p>{startupError}</p>
             </div>
           ) : null}
@@ -328,6 +351,13 @@ export function ExperiencePage() {
             <div className="status-message status-message--error">
               <strong>音频加载失败</strong>
               <p>{audioError}</p>
+            </div>
+          ) : null}
+
+          {!canUseAr || status === 'fallback' ? (
+            <div className="status-message status-message--info">
+              <strong>已切换到 2D 预览</strong>
+              <p>当前环境不能稳定使用相机或 WebAR，页面会保留音频、知识卡与入口映射，方便继续演示。</p>
             </div>
           ) : null}
 
@@ -344,12 +374,25 @@ export function ExperiencePage() {
 
           {!sceneStarted ? (
             <div className="launch-panel">
-              <img
-                src={scene.target?.previewImage ?? entry.targetImage}
-                alt={`${entry.title} 场景入口图`}
-              />
-              <div>
-                <h2>{getLaunchTitle(scene.trackingMode)}</h2>
+              <div className="launch-panel__visual">
+                <img
+                  src={scene.target?.previewImage ?? entry.targetImage}
+                  alt={`${entry.title} 场景入口图`}
+                />
+                {status === 'loading' ? (
+                  <div className="loading-shell" aria-hidden="true">
+                    <div className="loading-shell__line"></div>
+                    <div className="loading-shell__line"></div>
+                    <div className="loading-shell__line"></div>
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="launch-panel__content">
+                <div>
+                  <p className="eyebrow">启动准备</p>
+                  <h2>{getLaunchTitle(scene.trackingMode)}</h2>
+                </div>
                 <p>
                   {getLaunchDescription(
                     sourceLabel,
@@ -357,28 +400,52 @@ export function ExperiencePage() {
                     scene.placementPrompt,
                   )}
                 </p>
-                <button className="button" onClick={() => void launchExperience()} type="button">
-                  启动体验
-                </button>
+
+                {launchContext.autostart ? (
+                  <div className="autostart-shell">
+                    <div className="autostart-shell__head">
+                      <span className="autostart-shell__label">自动进入</span>
+                      <Camera size={18} weight="regular" />
+                    </div>
+                    <p>当前入口带有自动启动参数，页面会在条件允许时直接进入体验，不需要再次确认。</p>
+                  </div>
+                ) : null}
+
+                <div className="launch-panel__hint">
+                  <button
+                    className="button"
+                    disabled={status === 'loading'}
+                    onClick={() => void launchExperience()}
+                    type="button"
+                  >
+                    <ProjectorScreenChart size={18} weight="regular" />
+                    <span>{status === 'loading' ? '正在准备中' : '启动体验'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           ) : canUseAr ? (
             <WebArScene
               entry={entry}
-              source={launchContext.source}
               key={`${entry.id}-${scene.id}-${sceneKey}`}
               onDebug={pushDebugMessage}
               onError={handleSceneError}
               onSelectCard={setSelectedCard}
               onStatusChange={handleStatusChange}
+              source={launchContext.source}
             />
           ) : (
             <div className="fallback-view">
-              <img src={entry.posterImage} alt={entry.title} />
-              <div>
-                <h2>2D 预览模式</h2>
+              <div className="fallback-view__visual">
+                <img src={entry.posterImage} alt={entry.title} />
+              </div>
+              <div className="fallback-view__content">
+                <div>
+                  <p className="eyebrow">降级模式</p>
+                  <h2>2D 预览仍然保留了核心说明与音频结构</h2>
+                </div>
                 <p>
-                  当前环境未满足相机或安全上下文要求。你仍然可以验证分轨音频、知识热点和入口映射。
+                  当前浏览环境不能稳定满足相机或安全上下文要求，但你仍然可以验证分轨音频、知识卡切换与入口映射关系。
                 </p>
                 <div className="chip-row">
                   {entry.knowledgeCards.map((card) => (
@@ -400,7 +467,7 @@ export function ExperiencePage() {
         <div className="experience-side">
           <AudioMixer
             enabledMap={enabledMap}
-            isPlaying={isPlaying}
+            isPlaying={playing}
             onSoloStem={toggleSolo}
             onTogglePlayback={togglePlayback}
             onToggleStem={toggleStem}
@@ -411,8 +478,8 @@ export function ExperiencePage() {
           />
           <KnowledgePanel
             entry={entry}
-            selectedCard={selectedCard}
             onSelect={setSelectedCard}
+            selectedCard={selectedCard}
           />
         </div>
       </section>

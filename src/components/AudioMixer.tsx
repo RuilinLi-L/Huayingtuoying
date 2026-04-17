@@ -1,3 +1,4 @@
+import { Pause, Play, SpeakerHigh, Waveform } from '@phosphor-icons/react';
 import type { AudioStem } from '../types/manifest';
 
 interface AudioMixerProps {
@@ -27,16 +28,20 @@ export function AudioMixer({
     <section className="card mixer-panel">
       <div className="section-heading">
         <div>
-          <h3>分轨音频控制</h3>
-          <p>支持同步播放、静音/独奏和总音量控制，为后续空间音频预留声像参数。</p>
+          <p className="eyebrow">分轨控制台</p>
+          <h3>让观众直接听见编配关系的变化</h3>
+          <p>控制区保留同步播放、静音、独奏与总音量，让体验不只是“看到舞台”，还能被听懂。</p>
         </div>
         <button className="button" onClick={onTogglePlayback} type="button">
-          {isPlaying ? '停止播放' : '开始播放'}
+          {isPlaying ? <Pause size={18} weight="regular" /> : <Play size={18} weight="regular" />}
+          <span>{isPlaying ? '暂停播放' : '开始播放'}</span>
         </button>
       </div>
 
       <label className="slider">
-        <span>总音量</span>
+        <span>
+          <SpeakerHigh size={18} weight="regular" />
+        </span>
         <input
           type="range"
           min="0"
@@ -58,7 +63,8 @@ export function AudioMixer({
               <div>
                 <strong>{stem.name}</strong>
                 <small>
-                  {stem.group} · 声像 {stem.stereoPan ?? 0}
+                  <Waveform size={14} weight="regular" /> {stem.group} / 声像{' '}
+                  {stem.stereoPan ?? 0}
                 </small>
               </div>
               <div className="stem-row__actions">

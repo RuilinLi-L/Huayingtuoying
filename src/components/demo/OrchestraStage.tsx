@@ -1,5 +1,7 @@
+import { Camera, CameraSlash, ProjectorScreenChart } from '@phosphor-icons/react';
 import type { CSSProperties, RefObject } from 'react';
 import { getMusicianById } from '../../lib/orchestraSession';
+import { resolveSceneTheme } from '../../lib/theme';
 import type {
   CompositionDefinition,
   MusicianProfile,
@@ -79,45 +81,43 @@ export function OrchestraStage({
     <section className="card orchestra-stage">
       <div className="section-heading">
         <div>
-          <h3>虚拟音乐厅</h3>
-          <p>用相机背景模拟 WebAR 演出现场，先验证落子、同步合奏、场景切换和乐手交互。</p>
+          <p className="eyebrow">沉浸舞台</p>
+          <h3>把底座识别结果翻译成一座可浏览的虚拟音乐厅</h3>
+          <p>相机背景、舞台站位、曲目进度和乐手焦点都集中在这一块，适合开放日现场直接演示。</p>
         </div>
         {cameraReady ? (
-          <button className="button button--ghost" onClick={onCloseStage} type="button">
-            关闭相机
+          <button className="button--ghost" onClick={onCloseStage} type="button">
+            <CameraSlash size={18} weight="regular" />
+            <span>关闭相机</span>
           </button>
         ) : (
           <button className="button" onClick={onOpenStage} type="button">
-            打开演示舞台
+            <Camera size={18} weight="regular" />
+            <span>打开舞台</span>
           </button>
         )}
       </div>
 
-      <div
-        className="stage-shell"
-        style={
-          {
-            '--scene-base': currentScene.palette.base,
-            '--scene-glow': currentScene.palette.glow,
-            '--scene-haze': currentScene.palette.haze,
-          } as CSSProperties
-        }
-      >
+      <div className="stage-shell" style={resolveSceneTheme(currentScene)}>
         <div className="stage-shell__camera">
           <video autoPlay muted playsInline ref={videoRef} />
           {!cameraReady ? (
             <div className="stage-shell__placeholder">
               <strong>等待进入舞台</strong>
-              <p>开启相机后，这里会显示舞台背景，你可以继续用右侧的 NFC 模拟面板做插拔联动。</p>
+              <p>打开相机后，这里会显示现场背景；右侧的落子控制台仍然可以先模拟 NFC 识别结果。</p>
             </div>
           ) : null}
         </div>
 
         <div className="stage-shell__overlay" />
+
         <div className="stage-shell__hud">
           <div className="stage-shell__hud-chip stage-shell__hud-chip--anchor">
-            <span className="stage-anchor__mark">底座锚点</span>
-            <small>{cameraReady ? '舞台已开启' : '等待开启相机'}</small>
+            <span className="stage-anchor__mark">
+              <ProjectorScreenChart size={14} weight="regular" />
+              <span>底座锚点</span>
+            </span>
+            <small>{cameraReady ? '舞台已打开' : '等待打开相机'}</small>
           </div>
           <div className="stage-shell__hud-chip">
             <small>当前玩法</small>
@@ -184,7 +184,7 @@ export function OrchestraStage({
                 <span className="musician-node__label">
                   <strong>{musician.instrument}</strong>
                   <small>
-                    {state.isFocused ? '查看中' : state.isSelected ? '已插入' : '点击查看'}
+                    {state.isFocused ? '查看中' : state.isSelected ? '已入场' : '点击查看'}
                   </small>
                 </span>
               </button>
@@ -201,7 +201,7 @@ export function OrchestraStage({
                   style={{ backgroundColor: focusedMusician.color }}
                 />
                 <div>
-                  <small>乐器摘要</small>
+                  <small>乐手摘要</small>
                   <strong>{focusedMusician.instrument}</strong>
                 </div>
               </div>
@@ -219,7 +219,7 @@ export function OrchestraStage({
               <span>{currentScene.name}</span>
             </div>
             <small className="stage-shell__summary-note">
-              右侧面板保留更完整的数字名片与百科内容。
+              更完整的数字名片与百科说明保留在右侧策展说明栏中。
             </small>
           </div>
         ) : null}

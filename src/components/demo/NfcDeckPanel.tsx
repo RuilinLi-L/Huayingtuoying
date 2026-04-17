@@ -21,8 +21,9 @@ export function NfcDeckPanel({
     <section className="card deck-panel">
       <div className="section-heading">
         <div>
-          <h3>底座落子模拟</h3>
-          <p>先在这里勾选演奏家，模拟底座通过 NFC 识别到当前摆件组合。</p>
+          <p className="eyebrow">落子控制台</p>
+          <h3>先在这里模拟底座识别，再把结果投到舞台</h3>
+          <p>当前仍由 mock 适配器驱动，但页面结构已经按真实 NFC 会话的节奏组织好了。</p>
         </div>
       </div>
 
@@ -63,6 +64,7 @@ export function NfcDeckPanel({
       <div className="payload-panel">
         <small>识别结果</small>
         <strong>{describeLineup(snapshot.placedMusicianIds)}</strong>
+        <p>这段结果会继续被舞台模式、推荐场景与数字名片模块复用，不需要额外的中间转换层。</p>
         <code className="payload-code">
           {JSON.stringify(
             {

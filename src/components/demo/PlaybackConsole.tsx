@@ -1,3 +1,4 @@
+import { Pause, Play } from '@phosphor-icons/react';
 import type { CompositionDefinition, OrchestraSceneDefinition } from '../../types/demo';
 
 interface PlaybackConsoleProps {
@@ -42,7 +43,7 @@ export function PlaybackConsole({
         <span>
           {hasActiveMusicians
             ? composition.subtitle
-            : '放入任意乐器后，将从全局时间轴开始同步播放。'}
+            : '放入任意演奏家后，系统会按统一时间轴继续播放。'}
         </span>
       </div>
 
@@ -53,7 +54,8 @@ export function PlaybackConsole({
           onClick={onTogglePlayback}
           type="button"
         >
-          {isPlaying ? '暂停' : '播放'}
+          {isPlaying ? <Pause size={18} weight="regular" /> : <Play size={18} weight="regular" />}
+          <span>{isPlaying ? '暂停' : '播放'}</span>
         </button>
       </div>
 

@@ -27,6 +27,9 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@fontsource/noto-sans-sc": "^5.2.9",
+    "@fontsource/noto-serif-sc": "^5.2.9",
+    "@phosphor-icons/react": "^2.1.10",
     "aframe": "^1.7.1",
     "mind-ar": "^1.1.5",
     "qrcode": "^1.5.4",

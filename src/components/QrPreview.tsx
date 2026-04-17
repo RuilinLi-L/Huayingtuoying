@@ -11,14 +11,24 @@ export function QrPreview({
   const [dataUrl, setDataUrl] = useState('');
 
   useEffect(() => {
+    let cancelled = false;
+
     void QRCode.toDataURL(value, {
       margin: 1,
       width: 220,
       color: {
-        dark: '#111827',
+        dark: '#243128',
         light: '#ffffff',
       },
-    }).then(setDataUrl);
+    }).then((nextDataUrl: string) => {
+      if (!cancelled) {
+        setDataUrl(nextDataUrl);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [value]);
 
   return (

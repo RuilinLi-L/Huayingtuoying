@@ -1,3 +1,4 @@
+import { BookOpenText } from '@phosphor-icons/react';
 import { getSelectedMusicians } from '../../lib/orchestraSession';
 import type {
   CompositionDefinition,
@@ -27,8 +28,9 @@ export function MusicianInsightPanel({
     <section className="card insight-panel">
       <div className="section-heading">
         <div>
-          <h3>数字名片与百科</h3>
-          <p>点击舞台中的任意乐手，可切换当前乐器名片和深度科普占位内容。</p>
+          <p className="eyebrow">策展说明栏</p>
+          <h3>数字名片与百科内容集中收纳在这里</h3>
+          <p>点击舞台中的任意乐手，就能把它在当前模式和场景中的角色切换到这块说明面板里。</p>
         </div>
       </div>
 
@@ -38,7 +40,7 @@ export function MusicianInsightPanel({
             <div className="musician-card__header">
               <span className="musician-card__swatch" style={{ backgroundColor: musician.color }} />
               <div>
-                <small>{musician.section}</small>
+                <small className="catalog-label">{musician.section}</small>
                 <h4>{musician.instrument}</h4>
               </div>
             </div>
@@ -52,10 +54,8 @@ export function MusicianInsightPanel({
           </article>
 
           <article className="encyclopedia-card">
-            <h4>深度链接占位</h4>
-            <p>
-              正式版本中，这里可接到独立的移动百科页，承载起源、发展史、名家名作和校内演出素材。
-            </p>
+            <h4>延伸阅读入口</h4>
+            <p>正式版本可以在这里接入更完整的移动百科页，承载作曲家、演出史、校园叙事与馆藏素材。</p>
             <ul className="feature-list">
               {musician.featuredWorks.map((work) => (
                 <li key={work}>{work}</li>
@@ -65,8 +65,8 @@ export function MusicianInsightPanel({
         </>
       ) : (
         <article className="encyclopedia-card">
-          <h4>等待选择乐手</h4>
-          <p>先在右侧模拟底座落子，再点击舞台中的乐手查看对应数字名片。</p>
+          <h4>等待选中乐手</h4>
+          <p>先在右侧落子控制台中放入演奏家，再点击舞台中的任一角色，右侧会切换到对应数字名片。</p>
         </article>
       )}
 
@@ -81,7 +81,10 @@ export function MusicianInsightPanel({
               </span>
             ))
           ) : (
-            <span className="chip">等待落子</span>
+            <span className="chip">
+              <BookOpenText size={16} weight="regular" />
+              <span>等待落子</span>
+            </span>
           )}
         </div>
       </article>

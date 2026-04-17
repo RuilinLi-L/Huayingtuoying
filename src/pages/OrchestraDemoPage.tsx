@@ -1,3 +1,5 @@
+import { ProjectorScreenChart } from '@phosphor-icons/react';
+import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MusicianInsightPanel } from '../components/demo/MusicianInsightPanel';
@@ -90,7 +92,7 @@ export function OrchestraDemoPage() {
       engine.dispose();
       audioEngineRef.current = null;
     };
-  }, [compositionStems]);
+  }, []);
 
   useEffect(() => {
     const adapter = mockAdapterRef.current;
@@ -211,7 +213,7 @@ export function OrchestraDemoPage() {
   async function openStage() {
     if (cameraReady || !capabilities.canUseCamera) {
       if (!capabilities.canUseCamera) {
-        setCameraError('当前浏览器不支持相机访问，页面会继续展示静态舞台。');
+        setCameraError('当前浏览器不能稳定访问相机，页面会继续保留静态舞台与控制台说明。');
       }
       return;
     }
@@ -302,40 +304,47 @@ export function OrchestraDemoPage() {
   return (
     <div className="page orchestra-page">
       <section className="orchestra-hero">
-        <div className="orchestra-hero__content">
+        <div className="orchestra-hero__content" data-reveal>
           <p className="eyebrow">Base Demo</p>
-          <h1>智能底座 + 12 位演奏家 + WebAR 音乐会</h1>
+          <h1>智能底座、12 位演奏家与一座可进入的虚拟音乐厅。</h1>
           <p className="orchestra-hero__summary">
-            这版 demo 已接入《睡美人圆舞曲》12 条真实分轨：每位乐器对应独立声部，插入后按同一全局时间轴同步播放，
-            全部拔出时暂停，再次插入会从上次位置继续。
+            这页负责完整展示“落子识别、声部联动、场景切换、知识导览”的全流程，是当前最适合对外讲解项目价值的前端样板。
           </p>
-          <div className="hero__actions">
+          <div className="orchestra-hero__actions">
             <button className="button" onClick={() => void openStage()} type="button">
-              进入演示
+              <ProjectorScreenChart size={18} weight="regular" />
+              <span>打开舞台</span>
             </button>
-            <Link className="button button--ghost" to="/">
-              返回概览
+            <Link className="button--ghost" to="/">
+              <span>返回总览</span>
             </Link>
           </div>
         </div>
-        <div className="orchestra-hero__status card">
-          <div className="status-metric">
-            <small>当前玩法</small>
-            <strong>{mode.name}</strong>
+
+        <aside
+          className="orchestra-hero__aside"
+          data-reveal
+          style={{ '--delay-index': '1' } as CSSProperties}
+        >
+          <div className="orchestra-hero__status">
+            <div className="status-metric">
+              <small>当前玩法</small>
+              <strong>{mode.name}</strong>
+            </div>
+            <div className="status-metric">
+              <small>识别结果</small>
+              <strong>{snapshot.detectedCount} / 12</strong>
+            </div>
+            <div className="status-metric">
+              <small>当前曲目</small>
+              <strong>{fixedComposition.title}</strong>
+            </div>
+            <div className="status-metric">
+              <small>当前场景</small>
+              <strong>{currentScene.name}</strong>
+            </div>
           </div>
-          <div className="status-metric">
-            <small>识别结果</small>
-            <strong>{snapshot.detectedCount} / 12</strong>
-          </div>
-          <div className="status-metric">
-            <small>当前曲目</small>
-            <strong>{fixedComposition.title}</strong>
-          </div>
-          <div className="status-metric">
-            <small>当前场景</small>
-            <strong>{currentScene.name}</strong>
-          </div>
-        </div>
+        </aside>
       </section>
 
       <section className="orchestra-layout">
@@ -373,8 +382,9 @@ export function OrchestraDemoPage() {
           <section className="card mode-overview">
             <div className="section-heading">
               <div>
-                <h3>玩法联动说明</h3>
-                <p>保留原有编制判定和场景推荐逻辑，并统一切到《睡美人圆舞曲》12 轨全局同步机制。</p>
+                <p className="eyebrow">玩法联动</p>
+                <h3>底座识别结果会同时驱动舞台、场景与解释层</h3>
+                <p>这层规则保持稳定，后续接真实硬件时只需替换适配器，不必推翻页面结构。</p>
               </div>
             </div>
             <div className="mode-overview__grid">
@@ -386,7 +396,7 @@ export function OrchestraDemoPage() {
               <article className="mode-overview__card">
                 <small>高亮乐手</small>
                 <strong>{highlightIds.length} 位</strong>
-                <p>舞台会继续按当前组合规则突出展示重点乐手，其余角色自动弱化。</p>
+                <p>舞台会按当前组合突出重点乐手，其余角色自动弱化，方便现场讲解。</p>
               </article>
               <article className="mode-overview__card">
                 <small>推荐场景</small>
@@ -395,7 +405,7 @@ export function OrchestraDemoPage() {
                     .map((scene) => scene.shortLabel)
                     .join(' / ')}
                 </strong>
-                <p>场景切换不影响全局播放进度，乐器插拔和拖动进度条都会继续使用同一时间轴。</p>
+                <p>场景切换不会影响全局播放进度，方便在展示中快速对比不同视觉语境。</p>
               </article>
             </div>
           </section>
@@ -413,8 +423,9 @@ export function OrchestraDemoPage() {
           <section className="card nfc-bridge-card">
             <div className="section-heading">
               <div>
-                <h3>NFC 接口预留</h3>
-                <p>页面仍由 mock adapter 驱动，后续接硬件时只需要替换适配器实现，不用改上层玩法逻辑。</p>
+                <p className="eyebrow">接口预留</p>
+                <h3>NFC 只是入口，不直接绑死页面逻辑</h3>
+                <p>这块说明真实硬件接入时的职责边界，便于对接同学快速理解该替换哪里。</p>
               </div>
             </div>
             <code className="payload-code">

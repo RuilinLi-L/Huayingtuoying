@@ -1,0 +1,59 @@
+:root {
+  color-scheme: light;
+  --font-display:
+    'Noto Serif SC', 'Source Han Serif SC', 'Songti SC', 'STSong', serif;
+  --font-body:
+    'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-data:
+    'SFMono-Regular', 'Cascadia Mono', 'JetBrains Mono', 'Consolas', monospace;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --space-xl: 24px;
+  --space-2xl: 32px;
+  --space-3xl: 48px;
+  --space-4xl: 64px;
+  --space-5xl: 96px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-xl: 34px;
+  --radius-pill: 999px;
+  --page-width: min(1400px, calc(100vw - 40px));
+  --page-width-tight: min(1120px, calc(100vw - 40px));
+  --section-gap: clamp(32px, 4vw, 56px);
+  --canvas: oklch(0.974 0.008 95);
+  --canvas-strong: oklch(0.956 0.012 95);
+  --surface: oklch(0.988 0.005 95);
+  --surface-alt: oklch(0.962 0.009 95);
+  --surface-inked: oklch(0.93 0.014 95);
+  --ink-strong: oklch(0.27 0.012 238);
+  --ink-body: oklch(0.37 0.01 236);
+  --ink-muted: oklch(0.55 0.012 228);
+  --ink-soft: oklch(0.67 0.01 225);
+  --line-soft: oklch(0.9 0.008 95);
+  --line-strong: oklch(0.84 0.013 95);
+  --brand: #5f7d72;
+  --brand-strong: #49645a;
+  --brand-soft: rgba(95, 125, 114, 0.14);
+  --brand-border: rgba(95, 125, 114, 0.25);
+  --brand-cloud: rgba(95, 125, 114, 0.18);
+  --warning-soft: rgba(159, 98, 73, 0.14);
+  --warning-border: rgba(159, 98, 73, 0.22);
+  --error-soft: rgba(153, 74, 66, 0.12);
+  --error-border: rgba(153, 74, 66, 0.24);
+  --shadow-soft: 0 28px 60px rgba(72, 72, 60, 0.06);
+  --shadow-panel: 0 24px 52px rgba(70, 69, 59, 0.08);
+  --shadow-stage: 0 24px 60px rgba(10, 14, 24, 0.26);
+  --motion-standard: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-slow: 560ms cubic-bezier(0.19, 1, 0.22, 1);
+  --stage-panel: rgba(17, 23, 35, 0.9);
+  --stage-panel-strong: rgba(10, 15, 24, 0.95);
+  --stage-line: rgba(227, 234, 241, 0.12);
+  --stage-line-strong: rgba(227, 234, 241, 0.24);
+  --stage-ink: rgba(248, 250, 252, 0.96);
+  --stage-muted: rgba(208, 220, 231, 0.72);
+  --stage-soft: rgba(182, 198, 213, 0.52);
+}
