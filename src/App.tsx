@@ -3,6 +3,7 @@ import { AppShell } from './components/AppShell';
 import { EntryPage } from './pages/EntryPage';
 import { ExperiencePage } from './pages/ExperiencePage';
 import { HomePage } from './pages/HomePage';
+import { LearnPage } from './pages/LearnPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OrchestraDemoPage } from './pages/OrchestraDemoPage';
 
@@ -14,6 +15,7 @@ export default function App() {
         <Route path="/demo/base" element={<OrchestraDemoPage />} />
         <Route path="/entry/:entryId" element={<EntryPage />} />
         <Route path="/experience/:entryId" element={<ExperiencePage />} />
+        <Route path="/learn/:moduleId" element={<LearnPage />} />
         <Route path="/home" element={<Navigate to="/" replace />} />
         <Route path="/not-found" element={<NotFoundPage />} />
         <Route path="*" element={<NotFoundPage />} />

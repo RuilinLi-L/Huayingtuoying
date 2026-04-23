@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {
+  BookOpenText,
   CardsThree,
   Compass,
   HouseLine,
@@ -21,12 +22,20 @@ function getCurrentLabel(pathname: string) {
     return '底座演示';
   }
 
+  if (pathname.startsWith('/learn/')) {
+    return '节奏与乐理';
+  }
+
   return '当前页面';
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const isHomeRoute = location.pathname === '/' || location.pathname === '/home';
+  const isLearnRoute = location.pathname.startsWith('/learn/');
+  const isDemoRoute = location.pathname.startsWith('/demo/base');
+  const shouldShowCurrentLabel =
+    !isHomeRoute && !isLearnRoute && !isDemoRoute;
 
   return (
     <div className="app-shell">
@@ -55,6 +64,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <HouseLine size={16} weight="regular" />
                   <span>项目总览</span>
                 </a>
+                <a className="topnav__link" href="#learn">
+                  <BookOpenText size={16} weight="regular" />
+                  <span>节奏与乐理</span>
+                </a>
                 <a className="topnav__link" href="#entries">
                   <CardsThree size={16} weight="regular" />
                   <span>展陈条目</span>
@@ -71,8 +84,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <span>返回总览</span>
                 </Link>
                 <Link
+                  className={isLearnRoute ? 'topnav__link topnav__link--active' : 'topnav__link'}
+                  to="/learn/fundamentals"
+                >
+                  <BookOpenText size={16} weight="regular" />
+                  <span>节奏与乐理</span>
+                </Link>
+                <Link
                   className={
-                    location.pathname.startsWith('/demo/base')
+                    isDemoRoute
                       ? 'topnav__link topnav__link--active'
                       : 'topnav__link'
                   }
@@ -81,10 +101,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <ProjectorScreenChart size={16} weight="regular" />
                   <span>底座演示</span>
                 </Link>
-                <span className="topnav__link topnav__link--active">
-                  <Compass size={16} weight="regular" />
-                  <span>{getCurrentLabel(location.pathname)}</span>
-                </span>
+                {shouldShowCurrentLabel ? (
+                  <span className="topnav__link topnav__link--active">
+                    <Compass size={16} weight="regular" />
+                    <span>{getCurrentLabel(location.pathname)}</span>
+                  </span>
+                ) : null}
               </>
             )}
           </nav>

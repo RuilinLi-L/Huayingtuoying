@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  BookOpenText,
   Broadcast,
   CardsThree,
   ProjectorScreenChart,
@@ -16,6 +17,7 @@ import {
   getAllEntries,
 } from '../lib/entries';
 import { parseLaunchSearchParams } from '../lib/launch';
+import { buildTutorialPath, getTutorialModule } from '../lib/tutorials';
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -25,6 +27,25 @@ export function HomePage() {
     [searchParams],
   );
   const entries = useMemo(() => getAllEntries(), []);
+  const learnModule = useMemo(() => getTutorialModule('fundamentals'), []);
+  const learnSpotlights = useMemo(
+    () =>
+      learnModule?.entrySpotlights
+        .map((spotlight) => {
+          const entry = entries.find((item) => item.id === spotlight.entryId);
+
+          if (!entry) {
+            return null;
+          }
+
+          return {
+            spotlight,
+            entry,
+          };
+        })
+        .filter((item) => item !== null) ?? [],
+    [entries, learnModule],
+  );
 
   useEffect(() => {
     if (launchContext.entryId) {
@@ -150,6 +171,62 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {learnModule ? (
+        <section className="home-learn" id="learn">
+          <div className="home-learn__hero" data-reveal>
+            <div>
+              <p className="eyebrow">数字导学层</p>
+              <h2>{learnModule.homeTitle}</h2>
+              <p>{learnModule.homeSummary}</p>
+            </div>
+            <div className="home-learn__note">
+              <BookOpenText size={20} weight="regular" />
+              <p>
+                教程不是另一套脱离实体的课程，而是帮观众先听懂现有乐器小人和底座示例为什么值得继续看下去。
+              </p>
+            </div>
+            <div className="hero__actions">
+              <Link className="button" to={buildTutorialPath(learnModule.id)}>
+                <BookOpenText size={18} weight="regular" />
+                <span>进入节奏与乐理入门</span>
+              </Link>
+              <Link className="button--ghost" to="/demo/base">
+                <ProjectorScreenChart size={18} weight="regular" />
+                <span>先看底座 Demo</span>
+              </Link>
+            </div>
+          </div>
+
+          <div
+            className="home-learn__grid"
+            data-reveal
+            style={{ '--delay-index': '1' } as CSSProperties}
+          >
+            {learnSpotlights.map(({ spotlight, entry }) => (
+              <article className="home-learn__card" key={entry.id}>
+                <img src={entry.posterImage} alt={`${entry.title} 海报`} />
+                <div className="home-learn__card-copy">
+                  <small className="catalog-label">{spotlight.label}</small>
+                  <strong>{spotlight.title}</strong>
+                  <p>{spotlight.summary}</p>
+                </div>
+                <div className="home-learn__card-actions">
+                  <Link
+                    className="button--ghost"
+                    to={buildTutorialPath(learnModule.id, spotlight.chapterId)}
+                  >
+                    对应章节
+                  </Link>
+                  <Link className="button--quiet" to={buildEntryPath(entry.id)}>
+                    查看条目
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section className="home-entries" id="entries">
         <div className="home-entries__head" data-reveal>

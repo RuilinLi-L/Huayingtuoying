@@ -1,5 +1,6 @@
 import {
   ArrowRight,
+  BookOpenText,
   Copy,
   ProjectorScreenChart,
 } from '@phosphor-icons/react';
@@ -14,6 +15,7 @@ import {
 } from '../lib/entries';
 import { parseLaunchSearchParams } from '../lib/launch';
 import { resolveEntryTheme } from '../lib/theme';
+import { buildTutorialPath, getTutorialSpotlightForEntry } from '../lib/tutorials';
 
 function getLaunchSourceLabel(source: 'manual' | 'qr' | 'nfc') {
   if (source === 'nfc') {
@@ -35,6 +37,10 @@ export function EntryPage() {
   const launchContext = useMemo(
     () => parseLaunchSearchParams(searchParams),
     [searchParams],
+  );
+  const tutorialSpotlight = useMemo(
+    () => (entry ? getTutorialSpotlightForEntry(entry.id) : null),
+    [entry],
   );
 
   const nfcDeepLink = useMemo(() => {
@@ -195,6 +201,44 @@ export function EntryPage() {
               <span>继续进入体验页</span>
             </Link>
           </article>
+
+          {tutorialSpotlight ? (
+            <article
+              className="card artifact-learning"
+              data-reveal
+              style={{ '--delay-index': '2' } as CSSProperties}
+            >
+              <div className="section-heading">
+                <div>
+                  <p className="eyebrow">导学入口</p>
+                  <h3>先补一点节奏与乐理，再回来看这个小人。</h3>
+                </div>
+                <BookOpenText size={18} weight="regular" />
+              </div>
+              <div className="artifact-learning__copy">
+                <small className="catalog-label">{tutorialSpotlight.spotlight.label}</small>
+                <strong>{tutorialSpotlight.spotlight.title}</strong>
+                <p>{tutorialSpotlight.spotlight.summary}</p>
+              </div>
+              <div className="hero__actions">
+                <Link
+                  className="button"
+                  to={buildTutorialPath(
+                    tutorialSpotlight.module.id,
+                    tutorialSpotlight.spotlight.chapterId,
+                  )}
+                >
+                  <span>查看对应章节</span>
+                </Link>
+                <Link
+                  className="button--ghost"
+                  to={buildTutorialPath(tutorialSpotlight.module.id)}
+                >
+                  <span>打开完整导学</span>
+                </Link>
+              </div>
+            </article>
+          ) : null}
         </aside>
       </section>
     </div>
