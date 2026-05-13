@@ -68,6 +68,7 @@ export function TutorialChapterSection({
             <div className="chip-row">
               {chapter.concepts.map((concept) => (
                 <button
+                  aria-pressed={selectedConcept.id === concept.id}
                   className={
                     selectedConcept.id === concept.id ? 'chip chip--active' : 'chip'
                   }
@@ -98,6 +99,7 @@ export function TutorialChapterSection({
               <div className="chip-row">
                 {chapter.examples.map((example) => (
                   <button
+                    aria-pressed={selectedExample.id === example.id}
                     className={
                       selectedExample.id === example.id ? 'chip chip--active' : 'chip'
                     }

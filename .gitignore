@@ -1,5 +1,8 @@
 node_modules/
 dist/
 .npm-cache/
+*.tsbuildinfo
+.learnings/
+Set-Service -Name ssh-agent -StartupType Automatic*
 .DS_Store
 Thumbs.db
