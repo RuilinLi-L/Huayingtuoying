@@ -4,6 +4,7 @@ import {
   CardsThree,
   Compass,
   HouseLine,
+  MagicWand,
   MusicNotesSimple,
   ProjectorScreenChart,
 } from '@phosphor-icons/react';
@@ -26,6 +27,10 @@ function getCurrentLabel(pathname: string) {
     return '节奏与乐理';
   }
 
+  if (pathname.startsWith('/compose')) {
+    return '音乐编创';
+  }
+
   return '当前页面';
 }
 
@@ -33,9 +38,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const location = useLocation();
   const isHomeRoute = location.pathname === '/' || location.pathname === '/home';
   const isLearnRoute = location.pathname.startsWith('/learn/');
+  const isComposeRoute = location.pathname.startsWith('/compose');
   const isDemoRoute = location.pathname.startsWith('/demo/base');
   const shouldShowCurrentLabel =
-    !isHomeRoute && !isLearnRoute && !isDemoRoute;
+    !isHomeRoute && !isLearnRoute && !isComposeRoute && !isDemoRoute;
 
   return (
     <div className="app-shell">
@@ -64,10 +70,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <HouseLine size={16} weight="regular" />
                   <span>项目总览</span>
                 </a>
-                <a className="topnav__link" href="#learn">
+                <Link className="topnav__link" to="/learn/fundamentals">
                   <BookOpenText size={16} weight="regular" />
                   <span>节奏与乐理</span>
-                </a>
+                </Link>
+                <Link className="topnav__link" to="/compose">
+                  <MagicWand size={16} weight="regular" />
+                  <span>音乐编创</span>
+                </Link>
                 <a className="topnav__link" href="#entries">
                   <CardsThree size={16} weight="regular" />
                   <span>展陈条目</span>
@@ -89,6 +99,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                 >
                   <BookOpenText size={16} weight="regular" />
                   <span>节奏与乐理</span>
+                </Link>
+                <Link
+                  className={
+                    isComposeRoute
+                      ? 'topnav__link topnav__link--active'
+                      : 'topnav__link'
+                  }
+                  to="/compose"
+                >
+                  <MagicWand size={16} weight="regular" />
+                  <span>音乐编创</span>
                 </Link>
                 <Link
                   className={

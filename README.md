@@ -19,6 +19,21 @@ npm run dev
 
 默认开发地址：`http://localhost:5173`
 
+## 音乐编创 API
+
+`/compose` 页面会把用户录制或上传的哼唱动机提交到服务端代理，再由代理调用第三方 Suno API。密钥只放在服务端环境变量中，不要写入 `VITE_*` 前端变量。
+
+需要配置：
+
+```bash
+SUNO_API_KEY=你的第三方SunoToken
+SUNO_API_BASE_URL=https://api.sunoapi.org
+SUNO_UPLOAD_BASE_URL=https://sunoapiorg.redpandaai.co
+PUBLIC_APP_URL=http://localhost:5173
+```
+
+默认接口路径按 `上传文件 -> upload-cover -> record-info` 流程实现；如果你拿到的第三方 API 路径不同，可以用 `.env.example` 里的 `SUNO_UPLOAD_URL`、`SUNO_COVER_URL`、`SUNO_STATUS_URL` 覆盖。前端用 Vite 开发时只负责页面预览，完整 API 流程建议用 Vercel 部署环境或 `vercel dev` 验证。
+
 ## 主要目录
 
 - `src/data/entries.json`：条目内容清单

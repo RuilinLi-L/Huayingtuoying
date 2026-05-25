@@ -3,9 +3,11 @@ import {
   BookOpenText,
   Broadcast,
   CardsThree,
+  MagicWand,
+  MicrophoneStage,
+  MusicNotesPlus,
   ProjectorScreenChart,
   QrCode,
-  Waveform,
 } from '@phosphor-icons/react';
 import type { CSSProperties } from 'react';
 import { useEffect, useMemo } from 'react';
@@ -28,23 +30,13 @@ export function HomePage() {
   );
   const entries = useMemo(() => getAllEntries(), []);
   const learnModule = useMemo(() => getTutorialModule('fundamentals'), []);
-  const learnSpotlights = useMemo(
+  const learnConceptCount = useMemo(
     () =>
-      learnModule?.entrySpotlights
-        .map((spotlight) => {
-          const entry = entries.find((item) => item.id === spotlight.entryId);
-
-          if (!entry) {
-            return null;
-          }
-
-          return {
-            spotlight,
-            entry,
-          };
-        })
-        .filter((item) => item !== null) ?? [],
-    [entries, learnModule],
+      learnModule?.chapters.reduce(
+        (count, chapter) => count + chapter.concepts.length,
+        0,
+      ) ?? 0,
+    [learnModule],
   );
 
   useEffect(() => {
@@ -117,74 +109,54 @@ export function HomePage() {
         </aside>
       </section>
 
-      <section className="home-route" id="journey">
-        <article className="curation-note" data-reveal>
-          <p className="eyebrow">体验路径</p>
-          <div className="curation-note__list">
-            <div className="curation-note__item">
-              <strong>先看到入口，再理解它为何值得停留</strong>
-              <p>首页负责讲清楚这是一个校园美育体验，不让用户直接掉进技术术语与参数。</p>
-            </div>
-            <div className="curation-note__item">
-              <strong>展签页像实体装置旁的说明牌</strong>
-              <p>海报、识别图、二维码与 NFC 链接分开讲清，降低首次体验门槛。</p>
-            </div>
-            <div className="curation-note__item">
-              <strong>深色舞台只承担沉浸，不承担全部叙事</strong>
-              <p>外层仍是浅色展陈壳层，用户不会在信息与控制之间迷路。</p>
-            </div>
-          </div>
-        </article>
+      <section className="home-route home-route--compact" id="journey">
+        <div className="home-route__intro" data-reveal>
+          <p className="eyebrow">参观流程</p>
+          <h2>保留三步主线：进入条目、打开舞台、回到底座。</h2>
+          <p>
+            首页只负责帮观众建立方向感。更细的节奏、拍号和乐理说明会放到独立导学入口，避免和项目总览挤在一起。
+          </p>
+        </div>
 
         <div
-          className="home-route__map"
+          className="route-flow"
           data-reveal
           style={{ '--delay-index': '1' } as CSSProperties}
         >
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">参观流程</p>
-              <h2>从入口装置到音乐舞台，页面顺着现场动线展开。</h2>
-            </div>
-          </div>
-          <div className="route-grid">
-            <article className="route-card">
-              <QrCode size={18} weight="regular" />
-              <strong>入口触发</strong>
-              <p>海报二维码与 NFC 深链进入同一条目，减少线下装置与线上页面的割裂感。</p>
-            </article>
-            <article className="route-card">
-              <Broadcast size={18} weight="regular" />
-              <strong>舞台生成</strong>
-              <p>进入条目后可以继续打开 AR 场景，也可以在不支持相机时自动降级到 2D 预览。</p>
-            </article>
-            <article className="route-card">
-              <Waveform size={18} weight="regular" />
-              <strong>分轨聆听</strong>
-              <p>观众能立刻感受到“少一个声部会发生什么”，这是最适合做成交互的美育知识点。</p>
-            </article>
-            <article className="route-card">
-              <CardsThree size={18} weight="regular" />
-              <strong>知识导览</strong>
-              <p>知识卡和数字名片不只是补充说明，而是把校园叙事与乐理内容收拢成策展说明栏。</p>
-            </article>
-          </div>
+          <article className="route-step">
+            <span className="route-step__icon" aria-hidden="true">
+              <QrCode size={20} weight="regular" />
+            </span>
+            <small>01</small>
+            <strong>扫码或 NFC 进入条目</strong>
+            <p>每个实体入口先讲清对应乐器、识别图和体验方式。</p>
+          </article>
+          <article className="route-step">
+            <span className="route-step__icon" aria-hidden="true">
+              <Broadcast size={20} weight="regular" />
+            </span>
+            <small>02</small>
+            <strong>进入 AR 或 2D 舞台</strong>
+            <p>设备支持时打开相机，不支持时保留可演示的降级体验。</p>
+          </article>
+          <article className="route-step">
+            <span className="route-step__icon" aria-hidden="true">
+              <ProjectorScreenChart size={20} weight="regular" />
+            </span>
+            <small>03</small>
+            <strong>到底座里听完整结构</strong>
+            <p>把分轨、场景切换和知识卡集中到最有说服力的演示页。</p>
+          </article>
         </div>
       </section>
 
       {learnModule ? (
-        <section className="home-learn" id="learn">
-          <div className="home-learn__hero" data-reveal>
+        <section className="home-learn home-learn-gateway" id="learn" data-reveal>
+          <div className="home-learn-gateway__copy">
             <div>
-              <p className="eyebrow">数字导学层</p>
-              <h2>{learnModule.homeTitle}</h2>
+              <p className="eyebrow">独立导学入口</p>
+              <h2>节奏与乐理入门单独进入，首页不再堆知识卡。</h2>
               <p>{learnModule.homeSummary}</p>
-            </div>
-            <div className="home-learn__note">
-              <BookOpenText size={20} weight="regular" />
-              <p>
-                教程不是另一套脱离实体的课程，而是帮观众先听懂现有乐器小人和底座示例为什么值得继续看下去。
-              </p>
             </div>
             <div className="hero__actions">
               <Link className="button" to={buildTutorialPath(learnModule.id)}>
@@ -198,35 +170,75 @@ export function HomePage() {
             </div>
           </div>
 
-          <div
-            className="home-learn__grid"
-            data-reveal
-            style={{ '--delay-index': '1' } as CSSProperties}
-          >
-            {learnSpotlights.map(({ spotlight, entry }) => (
-              <article className="home-learn__card" key={entry.id}>
-                <img src={entry.posterImage} alt={`${entry.title} 海报`} />
-                <div className="home-learn__card-copy">
-                  <small className="catalog-label">{spotlight.label}</small>
-                  <strong>{spotlight.title}</strong>
-                  <p>{spotlight.summary}</p>
-                </div>
-                <div className="home-learn__card-actions">
-                  <Link
-                    className="button--ghost"
-                    to={buildTutorialPath(learnModule.id, spotlight.chapterId)}
-                  >
-                    对应章节
-                  </Link>
-                  <Link className="button--quiet" to={buildEntryPath(entry.id)}>
-                    查看条目
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
+          <aside className="home-learn-gateway__panel">
+            <div className="home-learn-gateway__panel-head">
+              <BookOpenText size={24} weight="regular" />
+              <div>
+                <strong>入门内容已移到独立页面</strong>
+                <p>从这里进入后再展开章节、概念和实体例子。</p>
+              </div>
+            </div>
+            <div className="home-learn-gateway__stats" aria-label="导学内容概览">
+              <span>
+                <strong>{learnModule.chapters.length}</strong>
+                <small>章路径</small>
+              </span>
+              <span>
+                <strong>{learnConceptCount}</strong>
+                <small>个概念</small>
+              </span>
+              <span>
+                <strong>{learnModule.entrySpotlights.length}</strong>
+                <small>个入口</small>
+              </span>
+            </div>
+          </aside>
         </section>
       ) : null}
+
+      <section className="home-compose-gateway" id="compose" data-reveal>
+        <div className="home-compose-gateway__copy">
+          <p className="eyebrow">音乐编创</p>
+          <h2>把观众自己的哼唱动机，变成一次可听见的编曲实验。</h2>
+          <p>
+            这个入口负责连接“我听懂了什么”和“我能不能自己试着创作”。用户录入一段旋律，再用 prompt 约定风格、乐器与情绪，由 AI 生成可试听的编曲草图。
+          </p>
+          <div className="hero__actions">
+            <Link className="button" to="/compose">
+              <MagicWand size={18} weight="regular" />
+              <span>进入音乐编创</span>
+            </Link>
+            <Link className="button--ghost" to={buildTutorialPath('fundamentals')}>
+              <BookOpenText size={18} weight="regular" />
+              <span>先补节奏与乐理</span>
+            </Link>
+          </div>
+        </div>
+
+        <aside className="home-compose-gateway__panel">
+          <div className="home-compose-gateway__panel-head">
+            <MicrophoneStage size={26} weight="regular" />
+            <div>
+              <strong>哼唱动机 + Prompt + AI 编曲</strong>
+              <p>第一版聚焦即时生成，不做作品库和账号系统，适合开放日现场演示。</p>
+            </div>
+          </div>
+          <div className="home-compose-gateway__steps" aria-label="音乐编创流程">
+            <span>
+              <MicrophoneStage size={18} weight="regular" />
+              <strong>录入</strong>
+            </span>
+            <span>
+              <MusicNotesPlus size={18} weight="regular" />
+              <strong>描述</strong>
+            </span>
+            <span>
+              <MagicWand size={18} weight="regular" />
+              <strong>生成</strong>
+            </span>
+          </div>
+        </aside>
+      </section>
 
       <section className="home-entries" id="entries">
         <div className="home-entries__head" data-reveal>
@@ -237,13 +249,6 @@ export function HomePage() {
               目前三组条目分别承担“单乐器导览、木管入口、全编制舞台”的不同角色，页面结构保持统一，便于后续继续扩展。
             </p>
           </div>
-          <article className="story-card">
-            <small className="catalog-label">策展提示</small>
-            <strong>入口与识别图逻辑分离</strong>
-            <p>
-              海报更偏视觉展示，识别图优先保证追踪稳定；前端会把这两类信息分别放进不同区域，避免观众误解。
-            </p>
-          </article>
         </div>
 
         <div className="entry-grid">

@@ -4,6 +4,7 @@ import { EntryPage } from './pages/EntryPage';
 import { ExperiencePage } from './pages/ExperiencePage';
 import { HomePage } from './pages/HomePage';
 import { LearnPage } from './pages/LearnPage';
+import { MusicComposePage } from './pages/MusicComposePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OrchestraDemoPage } from './pages/OrchestraDemoPage';
 
@@ -12,6 +13,7 @@ export default function App() {
     <AppShell>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/compose" element={<MusicComposePage />} />
         <Route path="/demo/base" element={<OrchestraDemoPage />} />
         <Route path="/entry/:entryId" element={<EntryPage />} />
         <Route path="/experience/:entryId" element={<ExperiencePage />} />
