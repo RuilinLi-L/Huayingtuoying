@@ -2,7 +2,31 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/compose",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/demo/base",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/entry/:entryId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/experience/:entryId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/learn/:moduleId",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/home",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/not-found",
       "destination": "/index.html"
     }
   ]

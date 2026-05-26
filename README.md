@@ -32,7 +32,7 @@ SUNO_UPLOAD_BASE_URL=https://sunoapiorg.redpandaai.co
 PUBLIC_APP_URL=http://localhost:5173
 ```
 
-默认接口路径按 `上传文件 -> upload-cover -> record-info` 流程实现；如果你拿到的第三方 API 路径不同，可以用 `.env.example` 里的 `SUNO_UPLOAD_URL`、`SUNO_COVER_URL`、`SUNO_STATUS_URL` 覆盖。前端用 Vite 开发时只负责页面预览，完整 API 流程建议用 Vercel 部署环境或 `vercel dev` 验证。
+默认接口路径按 `file-stream-upload -> upload-cover -> record-info` 流程实现，文件上传目录默认传 `uploadPath=audio/user-uploads`，提交生成任务时默认传 `callBackUrl=${PUBLIC_APP_URL}/api/music/callback`；如果你拿到的第三方 API 路径、上传目录或回调地址不同，可以用 `.env.example` 里的 `SUNO_UPLOAD_URL`、`SUNO_COVER_URL`、`SUNO_STATUS_URL`、`SUNO_FILE_UPLOAD_PATH`、`SUNO_CALLBACK_URL` 覆盖。前端用 Vite 开发时只负责页面预览，完整 API 流程建议用 Vercel 部署环境或 `vercel dev` 验证。
 
 ## 主要目录
 

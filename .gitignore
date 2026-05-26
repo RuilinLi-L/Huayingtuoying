@@ -4,6 +4,10 @@ dist/
 .npm-cache/
 *.tsbuildinfo
 .learnings/
+.env.local
+.env.*.local
 Set-Service -Name ssh-agent -StartupType Automatic*
 .DS_Store
 Thumbs.db
+
+.vercel

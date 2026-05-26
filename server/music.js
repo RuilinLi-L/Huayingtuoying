@@ -1,6 +1,10 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 const DEFAULT_API_BASE_URL = 'https://api.sunoapi.org';
 const DEFAULT_UPLOAD_BASE_URL = 'https://sunoapiorg.redpandaai.co';
-const DEFAULT_UPLOAD_PATH = '/api/file-upload';
+const DEFAULT_UPLOAD_PATH = '/api/file-stream-upload';
+const DEFAULT_FILE_UPLOAD_PATH = 'audio/user-uploads';
 const DEFAULT_COVER_PATH = '/api/v1/generate/upload-cover';
 const DEFAULT_STATUS_PATH = '/api/v1/generate/record-info';
 const MAX_AUDIO_BYTES = 30 * 1024 * 1024;
@@ -12,6 +16,8 @@ export function sendJson(response, statusCode, payload) {
 }
 
 export function getConfig() {
+  loadLocalEnv();
+
   const apiKey = process.env.SUNO_API_KEY;
 
   if (!apiKey) {
@@ -27,11 +33,65 @@ export function getConfig() {
     uploadUrl: process.env.SUNO_UPLOAD_URL,
     coverUrl: process.env.SUNO_COVER_URL,
     statusUrl: process.env.SUNO_STATUS_URL,
+    callbackUrl: process.env.SUNO_CALLBACK_URL,
+    publicAppUrl: normalizeOptionalBaseUrl(
+      process.env.PUBLIC_APP_URL ?? readVercelUrl(),
+    ),
     audioUrlField: process.env.SUNO_AUDIO_URL_FIELD ?? 'uploadUrl',
     uploadPath: process.env.SUNO_UPLOAD_PATH ?? DEFAULT_UPLOAD_PATH,
+    fileUploadPath: trimSlashes(
+      process.env.SUNO_FILE_UPLOAD_PATH ?? DEFAULT_FILE_UPLOAD_PATH,
+    ),
     coverPath: process.env.SUNO_COVER_PATH ?? DEFAULT_COVER_PATH,
     statusPath: process.env.SUNO_STATUS_PATH ?? DEFAULT_STATUS_PATH,
   };
+}
+
+function loadLocalEnv() {
+  for (const filename of ['.env.local', '.env.development.local']) {
+    const envPath = resolve(process.cwd(), filename);
+
+    if (!existsSync(envPath)) {
+      continue;
+    }
+
+    const content = readFileSync(envPath, 'utf8');
+
+    for (const rawLine of content.split(/\r?\n/)) {
+      const line = rawLine.trim();
+
+      if (!line || line.startsWith('#')) {
+        continue;
+      }
+
+      const match = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+
+      if (!match) {
+        continue;
+      }
+
+      const [, key, rawValue] = match;
+
+      if (process.env[key] !== undefined) {
+        continue;
+      }
+
+      process.env[key] = stripEnvQuotes(rawValue.trim());
+    }
+
+    return;
+  }
+}
+
+function stripEnvQuotes(value) {
+  if (
+    (value.startsWith('"') && value.endsWith('"')) ||
+    (value.startsWith("'") && value.endsWith("'"))
+  ) {
+    return value.slice(1, -1);
+  }
+
+  return value;
 }
 
 export async function parseMultipartRequest(request) {
@@ -83,6 +143,8 @@ export async function uploadAudioFile(audio, config) {
   const fileBlob = new Blob([audio.buffer], { type: audio.contentType });
 
   formData.append('file', fileBlob, audio.filename || 'motif.webm');
+  formData.append('uploadPath', config.fileUploadPath);
+  formData.append('fileName', safeFileName(audio.filename || 'motif.webm'));
 
   const json = await fetchJson(
     uploadUrl,
@@ -120,6 +182,7 @@ export async function createCoverTask(fields, audioUrl, config) {
     customMode: true,
     instrumental: normalizeBoolean(fields.instrumental, true),
     model: fields.model?.trim() || 'V4_5ALL',
+    callBackUrl: fields.callBackUrl?.trim() || buildCallbackUrl(config),
     negativeTags:
       fields.negativeTags?.trim() || 'copyrighted melody, low quality, noisy recording',
   };
@@ -466,6 +529,44 @@ function normalizeNumber(value) {
 
 function normalizeBaseUrl(value) {
   return value.replace(/\/+$/, '');
+}
+
+function normalizeOptionalBaseUrl(value) {
+  if (!value) {
+    return '';
+  }
+
+  return normalizeBaseUrl(value);
+}
+
+function readVercelUrl() {
+  if (!process.env.VERCEL_URL) {
+    return '';
+  }
+
+  return `https://${process.env.VERCEL_URL}`;
+}
+
+function buildCallbackUrl(config) {
+  if (config.callbackUrl) {
+    return config.callbackUrl;
+  }
+
+  const baseUrl = config.publicAppUrl || 'http://localhost:3000';
+
+  return `${baseUrl}/api/music/callback`;
+}
+
+function trimSlashes(value) {
+  return String(value).replace(/^\/+|\/+$/g, '') || DEFAULT_FILE_UPLOAD_PATH;
+}
+
+function safeFileName(value) {
+  const extension = value.includes('.') ? value.split('.').pop() : 'webm';
+  const baseName = value.replace(/\.[^.]+$/, '');
+  const safeBaseName = baseName.replace(/[^a-zA-Z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
+
+  return `${safeBaseName || 'motif'}.${extension || 'webm'}`;
 }
 
 function buildUrl(baseUrl, path) {
