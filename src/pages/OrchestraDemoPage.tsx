@@ -1,5 +1,4 @@
 import { ProjectorScreenChart } from '@phosphor-icons/react';
-import type { CSSProperties } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { MusicianInsightPanel } from '../components/demo/MusicianInsightPanel';
@@ -305,46 +304,39 @@ export function OrchestraDemoPage() {
     <div className="page orchestra-page">
       <section className="orchestra-hero">
         <div className="orchestra-hero__content" data-reveal>
-          <p className="eyebrow">Base Demo</p>
-          <h1>智能底座、12 位演奏家与一座可进入的虚拟音乐厅。</h1>
-          <p className="orchestra-hero__summary">
-            这页负责完整展示“落子识别、声部联动、场景切换、知识导览”的全流程，是当前最适合对外讲解项目价值的前端样板。
-          </p>
-          <div className="orchestra-hero__actions">
-            <button className="button" onClick={() => void openStage()} type="button">
-              <ProjectorScreenChart size={18} weight="regular" />
-              <span>打开舞台</span>
-            </button>
-            <Link className="button--ghost" to="/">
-              <span>返回总览</span>
-            </Link>
+          <div>
+            <p className="eyebrow">Base Demo</p>
+            <h1>智能底座演示</h1>
           </div>
+          <p className="orchestra-hero__summary">
+            落子识别、分轨播放、舞台切换和数字名片集中在同一座虚拟音乐厅里，适合展陈现场直接讲解。
+          </p>
         </div>
 
-        <aside
-          className="orchestra-hero__aside"
-          data-reveal
-          style={{ '--delay-index': '1' } as CSSProperties}
-        >
-          <div className="orchestra-hero__status">
-            <div className="status-metric">
-              <small>当前玩法</small>
-              <strong>{mode.name}</strong>
-            </div>
-            <div className="status-metric">
-              <small>识别结果</small>
-              <strong>{snapshot.detectedCount} / 12</strong>
-            </div>
-            <div className="status-metric">
-              <small>当前曲目</small>
-              <strong>{fixedComposition.title}</strong>
-            </div>
-            <div className="status-metric">
-              <small>当前场景</small>
-              <strong>{currentScene.name}</strong>
-            </div>
+        <div className="orchestra-hero__actions" data-reveal>
+          <button className="button" onClick={() => void openStage()} type="button">
+            <ProjectorScreenChart size={18} weight="regular" />
+            <span>打开舞台</span>
+          </button>
+          <Link className="button--ghost" to="/">
+            <span>返回总览</span>
+          </Link>
+        </div>
+
+        <dl className="orchestra-hero__status" data-reveal>
+          <div className="status-metric">
+            <dt>当前玩法</dt>
+            <dd>{mode.name}</dd>
           </div>
-        </aside>
+          <div className="status-metric">
+            <dt>识别结果</dt>
+            <dd>{snapshot.detectedCount} / 12</dd>
+          </div>
+          <div className="status-metric">
+            <dt>当前场景</dt>
+            <dd>{currentScene.shortLabel}</dd>
+          </div>
+        </dl>
       </section>
 
       <section className="orchestra-layout">
@@ -378,37 +370,6 @@ export function OrchestraDemoPage() {
             selectedIds={snapshot.placedMusicianIds}
             videoRef={videoRef}
           />
-
-          <section className="card mode-overview">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">玩法联动</p>
-                <h3>底座识别结果会同时驱动舞台、场景与解释层</h3>
-                <p>这层规则保持稳定，后续接真实硬件时只需替换适配器，不必推翻页面结构。</p>
-              </div>
-            </div>
-            <div className="mode-overview__grid">
-              <article className="mode-overview__card">
-                <small>落子结果</small>
-                <strong>{describeLineup(snapshot.placedMusicianIds)}</strong>
-                <p>{mode.description}</p>
-              </article>
-              <article className="mode-overview__card">
-                <small>高亮乐手</small>
-                <strong>{highlightIds.length} 位</strong>
-                <p>舞台会按当前组合突出重点乐手，其余角色自动弱化，方便现场讲解。</p>
-              </article>
-              <article className="mode-overview__card">
-                <small>推荐场景</small>
-                <strong>
-                  {(recommendedScenes.length ? recommendedScenes : allScenes)
-                    .map((scene) => scene.shortLabel)
-                    .join(' / ')}
-                </strong>
-                <p>场景切换不会影响全局播放进度，方便在展示中快速对比不同视觉语境。</p>
-              </article>
-            </div>
-          </section>
         </div>
 
         <div className="orchestra-layout__side">
@@ -420,14 +381,52 @@ export function OrchestraDemoPage() {
             snapshot={snapshot}
           />
 
-          <section className="card nfc-bridge-card">
-            <div className="section-heading">
-              <div>
-                <p className="eyebrow">接口预留</p>
-                <h3>NFC 只是入口，不直接绑死页面逻辑</h3>
-                <p>这块说明真实硬件接入时的职责边界，便于对接同学快速理解该替换哪里。</p>
-              </div>
-            </div>
+          <MusicianInsightPanel
+            composition={fixedComposition}
+            mode={mode}
+            musician={focusedMusician}
+            scene={currentScene}
+            selectedIds={snapshot.placedMusicianIds}
+          />
+        </div>
+      </section>
+
+      <section className="orchestra-details" aria-label="底座演示说明">
+        <details className="demo-disclosure">
+          <summary>
+            <span>玩法联动</span>
+            <small>查看识别结果如何驱动舞台、场景与解释层</small>
+          </summary>
+          <div className="mode-overview__grid">
+            <article className="mode-overview__card">
+              <small>落子结果</small>
+              <strong>{describeLineup(snapshot.placedMusicianIds)}</strong>
+              <p>{mode.description}</p>
+            </article>
+            <article className="mode-overview__card">
+              <small>高亮乐手</small>
+              <strong>{highlightIds.length} 位</strong>
+              <p>舞台会按当前组合突出重点乐手，其余角色自动弱化，方便现场讲解。</p>
+            </article>
+            <article className="mode-overview__card">
+              <small>推荐场景</small>
+              <strong>
+                {(recommendedScenes.length ? recommendedScenes : allScenes)
+                  .map((scene) => scene.shortLabel)
+                  .join(' / ')}
+              </strong>
+              <p>场景切换不会影响全局播放进度，方便在展示中快速对比不同视觉语境。</p>
+            </article>
+          </div>
+        </details>
+
+        <details className="demo-disclosure">
+          <summary>
+            <span>NFC 接口与 payload</span>
+            <small>硬件替换边界和当前模拟识别数据</small>
+          </summary>
+          <div className="nfc-bridge-card__body">
+            <p>NFC 只负责提供会话快照，页面继续复用同一套舞台、播放和数字名片逻辑。</p>
             <code className="payload-code">
               {`interface NfcSessionAdapter {
   connect(): Promise<void>
@@ -438,16 +437,8 @@ export function OrchestraDemoPage() {
             <code className="payload-code">
               {JSON.stringify(nfcPreviewPayload, null, 2)}
             </code>
-          </section>
-
-          <MusicianInsightPanel
-            composition={fixedComposition}
-            mode={mode}
-            musician={focusedMusician}
-            scene={currentScene}
-            selectedIds={snapshot.placedMusicianIds}
-          />
-        </div>
+          </div>
+        </details>
       </section>
     </div>
   );

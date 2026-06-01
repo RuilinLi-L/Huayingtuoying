@@ -19,27 +19,18 @@ export function NfcDeckPanel({
 }: NfcDeckPanelProps) {
   return (
     <section className="card deck-panel">
-      <div className="section-heading">
+      <div className="deck-panel__head">
         <div>
           <p className="eyebrow">落子控制台</p>
-          <h3>先在这里模拟底座识别，再把结果投到舞台</h3>
-          <p>当前仍由 mock 适配器驱动，但页面结构已经按真实 NFC 会话的节奏组织好了。</p>
+          <h3>选择底座上的演奏家</h3>
         </div>
+        <strong>{snapshot.detectedCount} / {musicians.length}</strong>
       </div>
 
-      <div className="nfc-status-grid">
-        <div className="nfc-status-chip">
-          <small>Mock 适配器</small>
-          <strong>{mockAdapter.mode}</strong>
-        </div>
-        <div className="nfc-status-chip">
-          <small>预留硬件接口</small>
-          <strong>{reservedAdapter.isAvailable ? '可探测' : '待接硬件'}</strong>
-        </div>
-        <div className="nfc-status-chip">
-          <small>当前识别数量</small>
-          <strong>{snapshot.detectedCount}</strong>
-        </div>
+      <div className="deck-panel__meta" aria-label="底座适配器状态">
+        <span>Mock：{mockAdapter.mode}</span>
+        <span>硬件：{reservedAdapter.isAvailable ? '可探测' : '待接入'}</span>
+        <span>来源：{snapshot.source}</span>
       </div>
 
       <div className="deck-grid">
@@ -49,22 +40,27 @@ export function NfcDeckPanel({
           return (
             <button
               className={active ? 'deck-tile deck-tile--active' : 'deck-tile'}
+              aria-pressed={active}
               key={musician.id}
               onClick={() => onToggleMusician(musician.id)}
               type="button"
             >
               <span className="deck-tile__dot" style={{ backgroundColor: musician.color }} />
-              <strong>{musician.instrument}</strong>
-              <small>{musician.section}</small>
+              <span className="deck-tile__copy">
+                <strong>{musician.instrument}</strong>
+                <small>{musician.section}</small>
+              </span>
             </button>
           );
         })}
       </div>
 
-      <div className="payload-panel">
-        <small>识别结果</small>
-        <strong>{describeLineup(snapshot.placedMusicianIds)}</strong>
-        <p>这段结果会继续被舞台模式、推荐场景与数字名片模块复用，不需要额外的中间转换层。</p>
+      <details className="payload-panel">
+        <summary>
+          <span>识别结果</span>
+          <strong>{describeLineup(snapshot.placedMusicianIds)}</strong>
+        </summary>
+        <p>这段结果会继续被舞台模式、推荐场景与数字名片模块复用。</p>
         <code className="payload-code">
           {JSON.stringify(
             {
@@ -77,7 +73,7 @@ export function NfcDeckPanel({
             2,
           )}
         </code>
-      </div>
+      </details>
     </section>
   );
 }

@@ -26,11 +26,10 @@ export function MusicianInsightPanel({
 
   return (
     <section className="card insight-panel">
-      <div className="section-heading">
+      <div className="insight-panel__head">
         <div>
           <p className="eyebrow">策展说明栏</p>
-          <h3>数字名片与百科内容集中收纳在这里</h3>
-          <p>点击舞台中的任意乐手，就能把它在当前模式和场景中的角色切换到这块说明面板里。</p>
+          <h3>{musician ? `${musician.instrument}数字名片` : '等待选中乐手'}</h3>
         </div>
       </div>
 
@@ -47,26 +46,25 @@ export function MusicianInsightPanel({
             <p>{musician.knowledgeSummary}</p>
             <p>{musician.knowledgeDetail}</p>
             <div className="musician-card__meta">
-              <span>当前模式：{mode.name}</span>
-              <span>当前场景：{scene.name}</span>
-              <span>当前曲目：{composition?.title ?? '固定乐曲示例'}</span>
+              <span>{mode.name}</span>
+              <span>{scene.name}</span>
+              <span>{composition?.title ?? '固定乐曲示例'}</span>
             </div>
           </article>
 
-          <article className="encyclopedia-card">
-            <h4>延伸阅读入口</h4>
+          <details className="encyclopedia-card insight-panel__details">
+            <summary>延伸阅读入口</summary>
             <p>正式版本可以在这里接入更完整的移动百科页，承载作曲家、演出史、校园叙事与馆藏素材。</p>
             <ul className="feature-list">
               {musician.featuredWorks.map((work) => (
                 <li key={work}>{work}</li>
               ))}
             </ul>
-          </article>
+          </details>
         </>
       ) : (
         <article className="encyclopedia-card">
-          <h4>等待选中乐手</h4>
-          <p>先在右侧落子控制台中放入演奏家，再点击舞台中的任一角色，右侧会切换到对应数字名片。</p>
+          <p>先在落子控制台中放入演奏家，再点击舞台中的任一角色，这里会切换到对应数字名片。</p>
         </article>
       )}
 

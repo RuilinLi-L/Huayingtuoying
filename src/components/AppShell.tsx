@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     !isHomeRoute && !isLearnRoute && !isComposeRoute && !isDemoRoute;
 
   return (
-    <div className="app-shell">
+    <div className={isDemoRoute ? 'app-shell app-shell--demo' : 'app-shell'}>
       <div className="topbar-wrap">
         <header className="topbar">
           <div className="topbar__row">

@@ -37,6 +37,16 @@ export function PlaybackConsole({
 
   return (
     <div className="playback-console">
+      <button
+        className="button playback-console__button"
+        disabled={!hasActiveMusicians}
+        onClick={onTogglePlayback}
+        type="button"
+      >
+        {isPlaying ? <Pause size={18} weight="regular" /> : <Play size={18} weight="regular" />}
+        <span>{isPlaying ? '暂停' : '播放'}</span>
+      </button>
+
       <div className="playback-console__meta">
         <small>当前曲目</small>
         <strong>{composition.title}</strong>
@@ -47,20 +57,8 @@ export function PlaybackConsole({
         </span>
       </div>
 
-      <div className="playback-console__actions">
-        <button
-          className="button"
-          disabled={!hasActiveMusicians}
-          onClick={onTogglePlayback}
-          type="button"
-        >
-          {isPlaying ? <Pause size={18} weight="regular" /> : <Play size={18} weight="regular" />}
-          <span>{isPlaying ? '暂停' : '播放'}</span>
-        </button>
-      </div>
-
       <label className="playback-console__progress" htmlFor="orchestra-progress">
-        <span>全局进度</span>
+        <span>进度</span>
         <input
           id="orchestra-progress"
           max={sliderMax}
@@ -70,7 +68,7 @@ export function PlaybackConsole({
           type="range"
           value={Math.min(currentTime, sliderMax)}
         />
-        <strong>
+        <strong className="playback-console__time">
           {formatTime(currentTime)} / {formatTime(duration)}
         </strong>
       </label>

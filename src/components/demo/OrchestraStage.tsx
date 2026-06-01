@@ -78,12 +78,11 @@ export function OrchestraStage({
   const lineupProgress = `${selectedIds.length} / ${musicians.length}`;
 
   return (
-    <section className="card orchestra-stage">
-      <div className="section-heading">
+    <section className="orchestra-stage">
+      <div className="orchestra-stage__bar">
         <div>
           <p className="eyebrow">沉浸舞台</p>
-          <h3>把底座识别结果翻译成一座可浏览的虚拟音乐厅</h3>
-          <p>相机背景、舞台站位、曲目进度和乐手焦点都集中在这一块，适合开放日现场直接演示。</p>
+          <h3>虚拟音乐厅</h3>
         </div>
         {cameraReady ? (
           <button className="button--ghost" onClick={onCloseStage} type="button">
@@ -112,23 +111,23 @@ export function OrchestraStage({
         <div className="stage-shell__overlay" />
 
         <div className="stage-shell__hud">
-          <div className="stage-shell__hud-chip stage-shell__hud-chip--anchor">
+          <div className="stage-shell__hud-item stage-shell__hud-item--anchor">
             <span className="stage-anchor__mark">
               <ProjectorScreenChart size={14} weight="regular" />
               <span>底座锚点</span>
             </span>
             <small>{cameraReady ? '舞台已打开' : '等待打开相机'}</small>
           </div>
-          <div className="stage-shell__hud-chip">
-            <small>当前玩法</small>
+          <div className="stage-shell__hud-item">
+            <span>玩法</span>
             <strong>{mode.title}</strong>
           </div>
-          <div className="stage-shell__hud-chip">
-            <small>当前场景</small>
+          <div className="stage-shell__hud-item">
+            <span>场景</span>
             <strong>{currentScene.shortLabel}</strong>
           </div>
-          <div className="stage-shell__hud-chip">
-            <small>编制进度</small>
+          <div className="stage-shell__hud-item">
+            <span>编制</span>
             <strong>{lineupProgress}</strong>
           </div>
         </div>
@@ -168,6 +167,7 @@ export function OrchestraStage({
                 ]
                   .filter(Boolean)
                   .join(' ')}
+                aria-label={`${musician.instrument}${state.isSelected ? '已入场' : '未入场'}`}
                 key={musician.id}
                 onClick={() => onSelectMusician(musician.id)}
                 style={
@@ -219,7 +219,7 @@ export function OrchestraStage({
               <span>{currentScene.name}</span>
             </div>
             <small className="stage-shell__summary-note">
-              更完整的数字名片与百科说明保留在右侧策展说明栏中。
+              更完整的数字名片与百科说明保留在策展说明栏中。
             </small>
           </div>
         ) : null}
