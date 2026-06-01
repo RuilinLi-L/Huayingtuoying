@@ -210,8 +210,8 @@ export function EntryPage() {
             >
               <div className="section-heading">
                 <div>
-                  <p className="eyebrow">导学入口</p>
-                  <h3>先补一点节奏与乐理，再回来看这个小人。</h3>
+                  <p className="eyebrow">乐理与百科入口</p>
+                  <h3>先认识相关乐器与基础乐理，再回来看这个小人。</h3>
                 </div>
                 <BookOpenText size={18} weight="regular" />
               </div>
@@ -234,7 +234,7 @@ export function EntryPage() {
                   className="button--ghost"
                   to={buildTutorialPath(tutorialSpotlight.module.id)}
                 >
-                  <span>打开完整导学</span>
+                  <span>打开乐器百科</span>
                 </Link>
               </div>
             </article>

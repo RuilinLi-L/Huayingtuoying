@@ -1311,6 +1311,237 @@
   gap: 22px;
 }
 
+.learn-theory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.theory-card {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+}
+
+.theory-card__head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.theory-card > p,
+.theory-card__example p {
+  color: var(--ink-muted);
+}
+
+.theory-card__concepts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.theory-card__example {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(246, 243, 237, 0.88);
+}
+
+.instrument-encyclopedia {
+  display: grid;
+  gap: 22px;
+}
+
+.instrument-filter {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.instrument-filter__chip {
+  justify-content: start;
+  align-items: start;
+  min-height: 84px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  text-align: left;
+}
+
+.instrument-filter__chip small {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.instrument-browser {
+  display: grid;
+  grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.instrument-list {
+  display: grid;
+  gap: 10px;
+}
+
+.instrument-tile {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  min-height: 74px;
+  padding: 14px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(250, 247, 241, 0.88)),
+    var(--surface);
+  color: var(--ink-body);
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform var(--motion-standard),
+    border-color var(--motion-standard),
+    background-color var(--motion-standard);
+}
+
+.instrument-tile:hover {
+  transform: translate3d(0, -1px, 0);
+}
+
+.instrument-tile--active {
+  border-color: var(--theme-accent-border, var(--brand-border));
+  background: color-mix(in oklch, var(--theme-accent-soft, var(--brand-soft)) 72%, white);
+}
+
+.instrument-tile__swatch {
+  width: 14px;
+  height: 42px;
+  border-radius: var(--radius-pill);
+}
+
+.instrument-tile strong,
+.instrument-tile small {
+  display: block;
+}
+
+.instrument-tile small,
+.instrument-tile em {
+  color: var(--ink-muted);
+  font-size: 0.82rem;
+  font-style: normal;
+}
+
+.instrument-detail {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.88fr) minmax(0, 1.12fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.instrument-detail__model,
+.instrument-detail__copy,
+.instrument-info-grid,
+.instrument-audio {
+  display: grid;
+  gap: 18px;
+}
+
+.instrument-detail__copy {
+  align-content: start;
+}
+
+.instrument-detail__title {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.instrument-detail__title p,
+.instrument-detail__summary,
+.instrument-info-grid p {
+  color: var(--ink-muted);
+}
+
+.instrument-detail__mark {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 7px rgba(255, 255, 255, 0.48);
+}
+
+.instrument-info-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.instrument-info-grid section {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background: rgba(246, 243, 237, 0.78);
+}
+
+.instrument-audio {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  background:
+    linear-gradient(180deg, rgba(244, 240, 231, 0.9), rgba(255, 255, 255, 0.86)),
+    var(--surface);
+}
+
+.instrument-audio audio {
+  width: 100%;
+}
+
+.instrument-model {
+  position: relative;
+  display: grid;
+  min-height: 420px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.82), transparent 30%),
+    linear-gradient(180deg, rgba(238, 232, 220, 0.76), rgba(249, 247, 241, 0.96));
+}
+
+.instrument-model__stage {
+  min-height: 420px;
+}
+
+.instrument-model__stage canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.instrument-model__status {
+  position: absolute;
+  inset: auto 18px 18px;
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-md);
+  background: rgba(252, 250, 246, 0.88);
+  color: var(--ink-muted);
+  backdrop-filter: blur(8px);
+}
+
+.instrument-model__status strong {
+  font-size: 0.95rem;
+}
+
+.instrument-model__status span {
+  font-size: 0.86rem;
+}
+
 .tutorial-chapter {
   grid-template-columns: minmax(140px, 0.3fr) minmax(0, 1fr);
   align-items: start;
@@ -1462,6 +1693,8 @@
   .home-compose-gateway,
   .learn-hero,
   .learn-outline__head,
+  .instrument-browser,
+  .instrument-detail,
   .tutorial-chapter,
   .tutorial-chapter__grid,
   .tutorial-continue,
@@ -1502,6 +1735,8 @@
   .orchestra-hero,
   .home-route,
   .learn-hero,
+  .instrument-browser,
+  .instrument-detail,
   .artifact-grid,
   .experience-layout {
     gap: 16px;
@@ -1595,6 +1830,9 @@
 
   .learn-hero__content,
   .learn-hero__ledger,
+  .theory-card,
+  .instrument-detail__model,
+  .instrument-detail__copy,
   .learn-return,
   .tutorial-chapter,
   .tutorial-block,
@@ -1624,8 +1862,22 @@
   .home-compose-gateway__steps,
   .compose-field-grid,
   .compose-slider-grid,
-  .compose-style-presets {
+  .compose-style-presets,
+  .instrument-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .instrument-filter {
+    grid-template-columns: 1fr;
+  }
+
+  .instrument-tile {
+    min-height: 66px;
+  }
+
+  .instrument-model,
+  .instrument-model__stage {
+    min-height: 320px;
   }
 
   .compose-section-head {
@@ -1754,9 +2006,18 @@
 
   .home-learn__grid,
   .learn-outline__nav,
+  .learn-theory-grid,
   .tutorial-entry-grid,
   .compose-track {
     grid-template-columns: 1fr;
+  }
+
+  .instrument-tile {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .instrument-tile em {
+    grid-column: 2;
   }
 
   .compose-track img,

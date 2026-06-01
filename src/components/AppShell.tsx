@@ -24,7 +24,7 @@ function getCurrentLabel(pathname: string) {
   }
 
   if (pathname.startsWith('/learn/')) {
-    return '节奏与乐理';
+    return '乐理与乐器百科';
   }
 
   if (pathname.startsWith('/compose')) {
@@ -72,7 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </a>
                 <Link className="topnav__link" to="/learn/fundamentals">
                   <BookOpenText size={16} weight="regular" />
-                  <span>节奏与乐理</span>
+                  <span>乐理与百科</span>
                 </Link>
                 <Link className="topnav__link" to="/compose">
                   <MagicWand size={16} weight="regular" />
@@ -98,7 +98,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   to="/learn/fundamentals"
                 >
                   <BookOpenText size={16} weight="regular" />
-                  <span>节奏与乐理</span>
+                  <span>乐理与百科</span>
                 </Link>
                 <Link
                   className={

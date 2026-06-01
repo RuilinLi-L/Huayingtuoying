@@ -13,6 +13,7 @@ import type { CSSProperties } from 'react';
 import { useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { EntryCard } from '../components/EntryCard';
+import { instrumentEncyclopedia } from '../data/instrumentEncyclopedia';
 import {
   buildEntryPath,
   buildExperiencePath,
@@ -114,7 +115,7 @@ export function HomePage() {
           <p className="eyebrow">参观流程</p>
           <h2>保留三步主线：进入条目、打开舞台、回到底座。</h2>
           <p>
-            首页只负责帮观众建立方向感。更细的节奏、拍号和乐理说明会放到独立导学入口，避免和项目总览挤在一起。
+            首页只负责帮观众建立方向感。更细的乐理说明和 12 件乐器百科会放到独立导学入口，避免和项目总览挤在一起。
           </p>
         </div>
 
@@ -154,14 +155,14 @@ export function HomePage() {
         <section className="home-learn home-learn-gateway" id="learn" data-reveal>
           <div className="home-learn-gateway__copy">
             <div>
-              <p className="eyebrow">独立导学入口</p>
-              <h2>节奏与乐理入门单独进入，首页不再堆知识卡。</h2>
+              <p className="eyebrow">乐理与百科入口</p>
+              <h2>乐理入门与 12 件乐器百科单独进入。</h2>
               <p>{learnModule.homeSummary}</p>
             </div>
             <div className="hero__actions">
               <Link className="button" to={buildTutorialPath(learnModule.id)}>
                 <BookOpenText size={18} weight="regular" />
-                <span>进入节奏与乐理入门</span>
+                <span>进入乐理与乐器百科</span>
               </Link>
               <Link className="button--ghost" to="/demo/base">
                 <ProjectorScreenChart size={18} weight="regular" />
@@ -174,22 +175,22 @@ export function HomePage() {
             <div className="home-learn-gateway__panel-head">
               <BookOpenText size={24} weight="regular" />
               <div>
-                <strong>入门内容已移到独立页面</strong>
-                <p>从这里进入后再展开章节、概念和实体例子。</p>
+                <strong>乐理与乐器百科集中在独立页面</strong>
+                <p>从这里进入后再展开概念、分轨试听和模型预览。</p>
               </div>
             </div>
             <div className="home-learn-gateway__stats" aria-label="导学内容概览">
               <span>
                 <strong>{learnModule.chapters.length}</strong>
-                <small>章路径</small>
+                <small>组乐理</small>
               </span>
               <span>
                 <strong>{learnConceptCount}</strong>
                 <small>个概念</small>
               </span>
               <span>
-                <strong>{learnModule.entrySpotlights.length}</strong>
-                <small>个入口</small>
+                <strong>{instrumentEncyclopedia.length}</strong>
+                <small>件乐器</small>
               </span>
             </div>
           </aside>
@@ -210,7 +211,7 @@ export function HomePage() {
             </Link>
             <Link className="button--ghost" to={buildTutorialPath('fundamentals')}>
               <BookOpenText size={18} weight="regular" />
-              <span>先补节奏与乐理</span>
+              <span>先看乐理与百科</span>
             </Link>
           </div>
         </div>

@@ -343,7 +343,7 @@ export function MusicComposePage() {
               <span>开始录入动机</span>
             </a>
             <Link className="button--ghost" to="/learn/fundamentals">
-              <span>先看节奏与乐理</span>
+              <span>先看乐理与百科</span>
             </Link>
           </div>
         </div>
