@@ -85,3 +85,20 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
     ): void;
   }
 }
+
+declare module 'three/examples/jsm/controls/OrbitControls.js' {
+  import type { PerspectiveCamera, Vector3 } from 'three';
+
+  export class OrbitControls {
+    dampingFactor: number;
+    enableDamping: boolean;
+    enablePan: boolean;
+    maxDistance: number;
+    minDistance: number;
+    screenSpacePanning: boolean;
+    target: Vector3;
+    constructor(camera: PerspectiveCamera, domElement: HTMLElement);
+    dispose(): void;
+    update(): boolean;
+  }
+}

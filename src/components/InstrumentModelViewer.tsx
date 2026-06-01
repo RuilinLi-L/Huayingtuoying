@@ -14,12 +14,21 @@ import {
   type Material,
   type Mesh,
 } from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 interface InstrumentModelViewerProps {
   modelUrl?: string;
   title: string;
   accentColor: string;
+}
+
+interface NormalizedModel {
+  object: Object3D;
+  fitSize: {
+    width: number;
+    height: number;
+  };
 }
 
 function disposeObject(root: Object3D) {
@@ -39,14 +48,33 @@ function disposeObject(root: Object3D) {
   });
 }
 
-function normalizeModel(model: Object3D) {
+function normalizeModel(model: Object3D): NormalizedModel {
   const bounds = new Box3().setFromObject(model);
   const size = bounds.getSize(new Vector3());
   const center = bounds.getCenter(new Vector3());
   const largestAxis = Math.max(size.x, size.y, size.z) || 1;
+  const scale = 1.8 / largestAxis;
+  const normalizedModel = new Group();
+  const rotateLongDepthToSide = size.z > Math.max(size.x, size.y) * 1.15;
+  const displayWidth = rotateLongDepthToSide ? size.z : size.x;
+  const displayDepth = rotateLongDepthToSide ? size.x : size.z;
 
   model.position.sub(center);
-  model.scale.multiplyScalar(1.8 / largestAxis);
+  normalizedModel.scale.set(scale, scale, scale);
+
+  if (rotateLongDepthToSide) {
+    normalizedModel.rotation.y = Math.PI / 2;
+  }
+
+  normalizedModel.add(model);
+
+  return {
+    object: normalizedModel,
+    fitSize: {
+      width: Math.hypot(displayWidth, displayDepth) * scale,
+      height: size.y * scale,
+    },
+  };
 }
 
 export function InstrumentModelViewer({
@@ -75,9 +103,11 @@ export function InstrumentModelViewer({
     container.replaceChildren();
 
     const scene = new Scene();
-    const camera = new PerspectiveCamera(36, 1, 0.1, 100);
+    const cameraFov = 36;
+    const camera = new PerspectiveCamera(cameraFov, 1, 0.1, 100);
     const root = new Group();
     const renderer = new WebGLRenderer({ alpha: true, antialias: true });
+    let modelFitSize = { width: 1.8, height: 1.8 };
     let disposed = false;
     let animationFrame = 0;
 
@@ -93,16 +123,57 @@ export function InstrumentModelViewer({
     rimLight.position.set(-2, 1.8, -2.6);
     scene.add(rimLight);
 
-    camera.position.set(0, 0.28, 4.2);
+    camera.position.set(0, 0, 4.2);
     renderer.outputColorSpace = SRGBColorSpace;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(renderer.domElement);
 
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = true;
+    controls.screenSpacePanning = true;
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    const handleContextMenu = (event: MouseEvent) => {
+      event.preventDefault();
+    };
+
+    renderer.domElement.addEventListener('contextmenu', handleContextMenu);
+
+    const getCameraDistance = () => {
+      const width = container.clientWidth || 640;
+      const height = container.clientHeight || 420;
+      const aspect = width / height || 1;
+      const requiredViewHeight = Math.max(
+        modelFitSize.height,
+        modelFitSize.width / aspect,
+      );
+      const fovRadians = (cameraFov * Math.PI) / 180;
+
+      return Math.max(
+        (requiredViewHeight * 1.16) / (2 * Math.tan(fovRadians / 2)),
+        2.2,
+      );
+    };
+
+    const fitInitialView = () => {
+      const cameraDistance = getCameraDistance();
+
+      camera.position.set(0, 0, cameraDistance);
+      controls.target.set(0, 0, 0);
+      controls.minDistance = Math.max(cameraDistance * 0.35, 0.4);
+      controls.maxDistance = cameraDistance * 3.2;
+      controls.update();
+    };
+
     const resize = () => {
       const width = container.clientWidth || 640;
       const height = container.clientHeight || 420;
+      const aspect = width / height || 1;
 
-      camera.aspect = width / height;
+      camera.aspect = aspect;
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
     };
@@ -121,8 +192,12 @@ export function InstrumentModelViewer({
           return;
         }
 
-        normalizeModel(gltf.scene);
-        root.add(gltf.scene);
+        const normalizedModel = normalizeModel(gltf.scene);
+
+        modelFitSize = normalizedModel.fitSize;
+        resize();
+        fitInitialView();
+        root.add(normalizedModel.object);
         setStatus('ready');
       },
       undefined,
@@ -134,7 +209,7 @@ export function InstrumentModelViewer({
     );
 
     const render = () => {
-      root.rotation.y += 0.006;
+      controls.update();
       renderer.render(scene, camera);
       animationFrame = window.requestAnimationFrame(render);
     };
@@ -145,6 +220,8 @@ export function InstrumentModelViewer({
       disposed = true;
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
+      renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
+      controls.dispose();
       disposeObject(root);
       renderer.dispose();
       renderer.domElement.remove();
@@ -165,6 +242,11 @@ export function InstrumentModelViewer({
         <div className="instrument-model__status">
           <strong>{title}</strong>
           <span>{message}</span>
+        </div>
+      ) : null}
+      {status === 'ready' ? (
+        <div className="instrument-model__hint" aria-hidden="true">
+          拖拽旋转 · 滚轮/双指缩放 · 右键/双指平移
         </div>
       ) : null}
     </div>
