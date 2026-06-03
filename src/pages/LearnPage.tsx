@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   BookOpenText,
-  CardsThree,
   ProjectorScreenChart,
 } from '@phosphor-icons/react';
 import type { CSSProperties } from 'react';
@@ -15,7 +14,7 @@ import {
 } from '../data/instrumentEncyclopedia';
 import type { MusicianSection } from '../types/demo';
 import { getEntryById } from '../lib/entries';
-import { buildTutorialPath, getTutorialModule } from '../lib/tutorials';
+import { getTutorialModule } from '../lib/tutorials';
 import { resolveEntryTheme } from '../lib/theme';
 
 type InstrumentSectionFilter = MusicianSection | 'all';
@@ -30,16 +29,9 @@ export function LearnPage() {
   const { moduleId } = useParams();
   const location = useLocation();
   const module = getTutorialModule(moduleId);
-  const [activeChapterId, setActiveChapterId] = useState('');
   const [activeSection, setActiveSection] = useState<InstrumentSectionFilter>('all');
   const [selectedInstrumentId, setSelectedInstrumentId] = useState(
     instrumentEncyclopedia[0]?.id ?? 'flute',
-  );
-
-  const conceptCount = useMemo(
-    () =>
-      module?.chapters.reduce((count, chapter) => count + chapter.concepts.length, 0) ?? 0,
-    [module],
   );
 
   const filteredInstruments = useMemo(
@@ -56,24 +48,10 @@ export function LearnPage() {
       return;
     }
 
-    setActiveChapterId(module.chapters[0]?.id ?? '');
-  }, [module]);
-
-  useEffect(() => {
-    if (!module) {
-      return;
-    }
-
     const hashId = location.hash.replace('#', '');
 
     if (!hashId) {
       return;
-    }
-
-    const matchingChapter = module.chapters.find((chapter) => chapter.id === hashId);
-
-    if (matchingChapter) {
-      setActiveChapterId(matchingChapter.id);
     }
 
     window.requestAnimationFrame(() => {
@@ -87,6 +65,9 @@ export function LearnPage() {
   if (!module || !selectedInstrument) {
     return <Navigate replace to="/not-found" />;
   }
+
+  const knowledgeCards = module.knowledgeCards ?? [];
+  const knowledgeCardCount = knowledgeCards.length;
 
   const spotlightEntries = module.entrySpotlights
     .map((spotlight) => {
@@ -102,15 +83,6 @@ export function LearnPage() {
       };
     })
     .filter((item) => item !== null);
-
-  const handleJumpToChapter = (chapterId: string) => {
-    setActiveChapterId(chapterId);
-    window.history.replaceState(null, '', buildTutorialPath(module.id, chapterId));
-    document.getElementById(chapterId)?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start',
-    });
-  };
 
   const handleSelectSection = (sectionId: InstrumentSectionFilter) => {
     const nextInstruments = getInstrumentsBySection(sectionId);
@@ -159,12 +131,12 @@ export function LearnPage() {
             </div>
             <div className="metric-grid">
               <div className="metric-chip">
-                <small>乐理线索</small>
-                <strong>{module.chapters.length} 组</strong>
+                <small>乐理卡片</small>
+                <strong>{knowledgeCardCount} 张</strong>
               </div>
               <div className="metric-chip">
-                <small>概念锚点</small>
-                <strong>{conceptCount} 个</strong>
+                <small>章节锚点</small>
+                <strong>{module.chapters.length} 组</strong>
               </div>
               <div className="metric-chip">
                 <small>乐器百科</small>
@@ -188,87 +160,68 @@ export function LearnPage() {
         </aside>
       </section>
 
-      <section className="learn-outline" data-reveal>
-        <div className="learn-outline__head">
-          <div>
-            <p className="eyebrow">乐理速览</p>
-            <h2>先用 3 组概念建立听觉地图。</h2>
-            <p>
-              这里不要求背术语，而是把音高、节奏和织体压缩成能直接用于展陈体验的观察方式。每一组都能回到展签、AR 或底座。
-            </p>
+      {knowledgeCards.length ? (
+        <section className="knowledge-card-board" data-reveal aria-label="乐理知识卡片">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">乐理知识卡片</p>
+              <h2>把图片里的基础乐理要点直接铺开。</h2>
+              <p>
+                按卡片查阅即可：节奏、音程、和弦、调式、升降号和中国调式都整理成清单，不需要先进入单独章节。
+              </p>
+            </div>
           </div>
-          <div className="learn-outline__summary">
-            <CardsThree size={22} weight="regular" />
-            <p>
-              章节按钮会定位到对应概念；乐器百科则继续提供模型预览、分轨试听和具体角色介绍。
-            </p>
-          </div>
-        </div>
-        <div className="learn-outline__nav">
-          {module.chapters.map((chapter) => (
-            <button
-              className={
-                activeChapterId === chapter.id
-                  ? 'learn-outline__link learn-outline__link--active'
-                  : 'learn-outline__link'
-              }
-              key={chapter.id}
-              onClick={() => handleJumpToChapter(chapter.id)}
-              type="button"
-            >
-              <small>{chapter.shortLabel}</small>
-              <strong>{chapter.title}</strong>
-              <span>{chapter.intro}</span>
-            </button>
-          ))}
-        </div>
-      </section>
 
-      <section className="learn-theory-grid" aria-label="基础乐理概念">
-        {module.chapters.map((chapter, index) => (
-          <article
-            className="theory-card panel"
-            data-reveal
-            id={chapter.id}
-            key={chapter.id}
-            style={{ '--delay-index': String(index) } as CSSProperties}
-          >
-            <div className="theory-card__head">
-              <span className="tutorial-chapter__index">
-                {String(index + 1).padStart(2, '0')}
-              </span>
-              <div>
-                <small className="catalog-label">{chapter.shortLabel}</small>
-                <h3>{chapter.title}</h3>
-              </div>
-            </div>
-            <p>{chapter.intro}</p>
-            <div className="theory-card__concepts">
-              {chapter.concepts.map((concept) => (
-                <span className="chip" key={concept.id}>
-                  {concept.label}
-                </span>
-              ))}
-            </div>
-            <div className="theory-card__example">
-              <small className="catalog-label">{chapter.examples[0]?.label}</small>
-              <strong>{chapter.examples[0]?.title}</strong>
-              <p>{chapter.examples[0]?.observation}</p>
-            </div>
-            <div className="hero__actions">
-              {chapter.continueLinks.slice(0, 2).map((link) => (
-                <Link
-                  className={link.variant === 'ghost' ? 'button--ghost' : 'button'}
-                  key={`${chapter.id}-${link.to}`}
-                  to={link.to}
-                >
-                  <span>{link.label}</span>
-                </Link>
-              ))}
-            </div>
-          </article>
-        ))}
-      </section>
+          <div className="knowledge-card-grid">
+            {knowledgeCards.map((card, index) => (
+              <article
+                className="knowledge-topic-card panel"
+                data-reveal
+                id={card.id}
+                key={card.id}
+                style={{ '--delay-index': String(index) } as CSSProperties}
+              >
+                <div className="knowledge-topic-card__head">
+                  <span className="tutorial-chapter__index">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div>
+                    <small className="catalog-label">{card.label}</small>
+                    <h3>{card.title}</h3>
+                    <p>{card.summary}</p>
+                  </div>
+                </div>
+
+                <div className="knowledge-topic-card__sections">
+                  {card.sections.map((section) => (
+                    <section
+                      className="knowledge-topic-card__section"
+                      key={`${card.id}-${section.title}`}
+                    >
+                      <h4>{section.title}</h4>
+                      <ul>
+                        {section.items.map((item) => (
+                          <li key={`${card.id}-${section.title}-${item.label ?? item.text}`}>
+                            {item.label ? <strong>{item.label}</strong> : null}
+                            <span>{item.text}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {section.note ? (
+                        <p className="knowledge-topic-card__note">{section.note}</p>
+                      ) : null}
+                    </section>
+                  ))}
+                </div>
+
+                {card.note ? (
+                  <p className="knowledge-topic-card__footnote">{card.note}</p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
       <section
         className="instrument-encyclopedia"

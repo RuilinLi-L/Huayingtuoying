@@ -24,6 +24,26 @@ export interface TutorialExample {
   links?: TutorialLink[];
 }
 
+export interface TutorialKnowledgeCardItem {
+  label?: string;
+  text: string;
+}
+
+export interface TutorialKnowledgeCardSection {
+  title: string;
+  items: TutorialKnowledgeCardItem[];
+  note?: string;
+}
+
+export interface TutorialKnowledgeCard {
+  id: string;
+  label: string;
+  title: string;
+  summary: string;
+  sections: TutorialKnowledgeCardSection[];
+  note?: string;
+}
+
 export interface TutorialChapter {
   id: string;
   shortLabel: string;
@@ -55,6 +75,7 @@ export interface TutorialModule {
   homeTitle: string;
   homeSummary: string;
   heroNotes: string[];
+  knowledgeCards?: TutorialKnowledgeCard[];
   chapters: TutorialChapter[];
   entrySpotlights: TutorialEntrySpotlight[];
 }
