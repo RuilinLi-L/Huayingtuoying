@@ -1,26 +1,135 @@
 import {
-  ArrowRight,
   BookOpenText,
   Broadcast,
-  CardsThree,
-  MagicWand,
-  MicrophoneStage,
-  MusicNotesPlus,
+  CubeFocus,
+  Headphones,
+  Heart,
+  HouseLine,
+  List,
+  MapPinArea,
+  MaskHappy,
+  MusicNote,
+  MusicNotes,
+  MusicNotesSimple,
+  Path,
+  PersonArmsSpread,
+  Play,
   ProjectorScreenChart,
   QrCode,
+  Scan,
 } from '@phosphor-icons/react';
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { EntryCard } from '../components/EntryCard';
 import { instrumentEncyclopedia } from '../data/instrumentEncyclopedia';
-import {
-  buildEntryPath,
-  buildExperiencePath,
-  getAllEntries,
-} from '../lib/entries';
+import { fixedComposition, musicians } from '../data/orchestraDemo';
+import { buildEntryPath, buildExperiencePath } from '../lib/entries';
 import { parseLaunchSearchParams } from '../lib/launch';
-import { buildTutorialPath, getTutorialModule } from '../lib/tutorials';
+
+interface ExhibitCard {
+  id: string;
+  title: string;
+  subtitle: string;
+  tone: string;
+  to?: string;
+  href?: string;
+  icon: ReactNode;
+  art: ReactNode;
+}
+
+const featureCards: ExhibitCard[] = [
+  {
+    id: 'instrument',
+    title: '乐器百科',
+    subtitle: '浏览12件乐器',
+    tone: 'sage',
+    to: '/learn/fundamentals#instrument-encyclopedia',
+    icon: <BookOpenText size={28} weight="regular" />,
+    art: <MusicNotes size={76} weight="duotone" />,
+  },
+  {
+    id: 'stage',
+    title: 'AR舞台',
+    subtitle: '观看虚拟演出',
+    tone: 'champagne',
+    to: '/demo/base',
+    icon: <CubeFocus size={28} weight="regular" />,
+    art: <MaskHappy size={78} weight="duotone" />,
+  },
+  {
+    id: 'stems',
+    title: '分轨试听',
+    subtitle: '单独聆听乐器声部',
+    tone: 'mist',
+    to: '/demo/base',
+    icon: <Headphones size={28} weight="regular" />,
+    art: <Broadcast size={78} weight="duotone" />,
+  },
+  {
+    id: 'nfc',
+    title: 'NFC导览',
+    subtitle: '扫描实体展品互动',
+    tone: 'stone',
+    href: '#route',
+    icon: <MapPinArea size={28} weight="regular" />,
+    art: <Scan size={78} weight="duotone" />,
+  },
+];
+
+const recommendationCards = [
+  {
+    id: 'composition',
+    eyebrow: '推荐曲目',
+    title: '睡美人圆舞曲',
+    subtitle: '当前展览主题',
+    to: '/demo/base',
+    imageSrc: '/assets/posters/ensemble.svg',
+    icon: <Play size={18} weight="fill" />,
+  },
+  {
+    id: 'violin',
+    eyebrow: '推荐乐器',
+    title: '小提琴',
+    subtitle: '乐团灵魂声部',
+    to: '/learn/fundamentals#instrument-encyclopedia',
+    imageSrc: '/assets/posters/violin.svg',
+    icon: <MusicNotesSimple size={18} weight="regular" />,
+  },
+  {
+    id: 'ar',
+    eyebrow: '推荐AR场景',
+    title: '宫廷舞会',
+    subtitle: '沉浸式体验',
+    to: '/demo/base',
+    imageSrc: '/assets/posters/flute.svg',
+    icon: <ProjectorScreenChart size={18} weight="regular" />,
+  },
+  {
+    id: 'score',
+    eyebrow: '推荐互动',
+    title: '乐谱解析',
+    subtitle: '知识探索集',
+    to: '/learn/fundamentals',
+    icon: <BookOpenText size={18} weight="regular" />,
+  },
+];
+
+const routeSteps = [
+  { label: '入口', hint: '开始参观', icon: <HouseLine size={20} weight="regular" /> },
+  { label: '扫码', hint: 'NFC / 二维码', icon: <QrCode size={20} weight="regular" /> },
+  { label: 'AR舞台', hint: '观看演出', icon: <CubeFocus size={20} weight="regular" /> },
+  { label: '乐器探索', hint: '认识乐器', icon: <MusicNotes size={20} weight="regular" /> },
+  { label: '分轨试听', hint: '聆听声部', icon: <Headphones size={20} weight="regular" /> },
+  { label: '完成参观', hint: '收藏知识', icon: <Heart size={20} weight="regular" /> },
+];
+
+const bottomNavItems = [
+  { label: '首页', href: '#overview', icon: <HouseLine size={22} weight="regular" /> },
+  { label: '舞台', href: '#stage', icon: <ProjectorScreenChart size={22} weight="regular" /> },
+  { label: '乐器', href: '#instruments', icon: <MusicNotesSimple size={22} weight="regular" /> },
+  { label: '导览', href: '#route', icon: <MapPinArea size={22} weight="regular" /> },
+  { label: '我的收藏', href: '#favorites', icon: <Heart size={22} weight="regular" /> },
+];
 
 export function HomePage() {
   const navigate = useNavigate();
@@ -29,16 +138,19 @@ export function HomePage() {
     () => parseLaunchSearchParams(searchParams),
     [searchParams],
   );
-  const entries = useMemo(() => getAllEntries(), []);
-  const learnModule = useMemo(() => getTutorialModule('fundamentals'), []);
-  const learnConceptCount = useMemo(
-    () =>
-      learnModule?.chapters.reduce(
-        (count, chapter) => count + chapter.concepts.length,
-        0,
-      ) ?? 0,
-    [learnModule],
-  );
+  const orchestraSeats = useMemo(() => {
+    const musicianMap = new Map(musicians.map((musician) => [musician.id, musician]));
+
+    return instrumentEncyclopedia.map((instrument) => {
+      const musician = musicianMap.get(instrument.id);
+
+      return {
+        ...instrument,
+        position: musician?.position ?? { x: 50, y: 50, depth: 1 },
+        roleSummary: musician?.roleSummary ?? instrument.orchestraRole,
+      };
+    });
+  }, []);
 
   useEffect(() => {
     if (launchContext.entryId) {
@@ -67,229 +179,226 @@ export function HomePage() {
   }, [launchContext, navigate, searchParams]);
 
   return (
-    <div className="page home-page">
-      <section className="home-hero" id="overview">
-        <div className="home-hero__content" data-reveal>
-          <p className="eyebrow">校园古典音乐美育展陈</p>
-          <h1>让演奏家、底座与 AR 舞台组成一条能被看见的音乐入口。</h1>
-          <p className="home-hero__summary">
-            这套前端不是单纯的 WebAR 原型，而是一层面向开放日与校内展陈的数字导览壳层。观众可以从海报、二维码或 NFC 进入，顺着“落子识别、舞台生成、分轨聆听、知识导览”的路径理解项目价值。
-          </p>
-          <div className="hero__actions">
-            <Link className="button" to="/demo/base">
-              <ProjectorScreenChart size={18} weight="regular" />
-              <span>进入底座演示</span>
-            </Link>
-            <a className="button--ghost" href="#entries">
-              <CardsThree size={18} weight="regular" />
-              <span>查看展陈条目</span>
-            </a>
-          </div>
+    <div className="page home-page mobile-exhibit">
+      <header className="mobile-exhibit-topbar" aria-label="展厅导航">
+        <Link className="mobile-exhibit-brand" to="/" aria-label="古典音乐数字展厅">
+          <span className="mobile-exhibit-brand__mark" aria-hidden="true">
+            <MusicNotesSimple size={21} weight="regular" />
+          </span>
+          <span>Music Exhibition</span>
+        </Link>
+        <strong>古典音乐数字展厅</strong>
+        <button className="mobile-exhibit-menu" type="button" aria-label="打开菜单">
+          <List size={22} weight="bold" />
+        </button>
+      </header>
+
+      <section className="mobile-exhibit-hero" id="overview">
+        <div className="mobile-exhibit-hero__space" aria-hidden="true">
+          <span className="mobile-exhibit-arch mobile-exhibit-arch--left" />
+          <span className="mobile-exhibit-arch mobile-exhibit-arch--right" />
+          <span className="mobile-exhibit-wave mobile-exhibit-wave--one" />
+          <span className="mobile-exhibit-wave mobile-exhibit-wave--two" />
+          <MusicNote className="mobile-exhibit-note mobile-exhibit-note--one" size={24} />
+          <MusicNote className="mobile-exhibit-note mobile-exhibit-note--two" size={18} />
+          <MusicNote className="mobile-exhibit-note mobile-exhibit-note--three" size={20} />
         </div>
 
-        <aside
-          className="home-ledger"
-          data-reveal
-          style={{ '--delay-index': '1' } as CSSProperties}
-        >
-          <p className="eyebrow">导览板</p>
-          <div className="home-ledger__list">
-            <div className="home-ledger__item">
-              <strong>当前展线由三个条目与一个底座 Demo 组成</strong>
-              <p>单乐器入口负责建立认识，全编制舞台负责展示“可听见的编配结构”。</p>
-            </div>
-            <div className="home-ledger__item">
-              <strong>统一入口支持 NFC、二维码与手动浏览</strong>
-              <p>保留查询参数与自动启动逻辑，便于接入实体底座、海报与开放日现场导览。</p>
-            </div>
-            <div className="home-ledger__item">
-              <strong>当前核心曲目为《睡美人圆舞曲》分轨演示</strong>
-              <p>页面已预留分轨、场景与知识卡替换位，后续可替换成正式素材。</p>
-            </div>
+        <div className="mobile-exhibit-hero__content" data-reveal>
+          <div className="mobile-exhibit-kicker">
+            <span>当前展览</span>
           </div>
-        </aside>
-      </section>
+          <div className="mobile-exhibit-stage" id="stage" aria-hidden="true">
+            <span className="mobile-exhibit-stage__ring mobile-exhibit-stage__ring--outer" />
+            <span className="mobile-exhibit-stage__ring mobile-exhibit-stage__ring--middle" />
+            <span className="mobile-exhibit-stage__ring mobile-exhibit-stage__ring--inner" />
+            <span className="mobile-exhibit-stage__conductor">
+              <PersonArmsSpread size={34} weight="regular" />
+            </span>
+          </div>
+          <div className="mobile-exhibit-title">
+            <small>{fixedComposition.subtitle}</small>
+            <h1>{fixedComposition.title}</h1>
+            <p>The Sleeping Beauty Waltz</p>
+          </div>
 
-      <section className="home-route home-route--compact" id="journey">
-        <div className="home-route__intro" data-reveal>
-          <p className="eyebrow">参观流程</p>
-          <h2>保留三步主线：进入条目、打开舞台、回到底座。</h2>
-          <p>
-            首页只负责帮观众建立方向感。更细的乐理说明和 12 件乐器百科会放到独立导学入口，避免和项目总览挤在一起。
-          </p>
-        </div>
+          <div className="mobile-exhibit-proof" aria-label="展览能力">
+            <span>
+              <MusicNotes size={17} weight="regular" />
+              {fixedComposition.stems.length}件乐器参与
+            </span>
+            <span>
+              <CubeFocus size={17} weight="regular" />
+              AR互动体验
+            </span>
+            <span>
+              <Broadcast size={17} weight="regular" />
+              NFC导览支持
+            </span>
+          </div>
 
-        <div
-          className="route-flow"
-          data-reveal
-          style={{ '--delay-index': '1' } as CSSProperties}
-        >
-          <article className="route-step">
-            <span className="route-step__icon" aria-hidden="true">
-              <QrCode size={20} weight="regular" />
-            </span>
-            <small>01</small>
-            <strong>扫码或 NFC 进入条目</strong>
-            <p>每个实体入口先讲清对应乐器、识别图和体验方式。</p>
-          </article>
-          <article className="route-step">
-            <span className="route-step__icon" aria-hidden="true">
-              <Broadcast size={20} weight="regular" />
-            </span>
-            <small>02</small>
-            <strong>进入 AR 或 2D 舞台</strong>
-            <p>设备支持时打开相机，不支持时保留可演示的降级体验。</p>
-          </article>
-          <article className="route-step">
-            <span className="route-step__icon" aria-hidden="true">
-              <ProjectorScreenChart size={20} weight="regular" />
-            </span>
-            <small>03</small>
-            <strong>到底座里听完整结构</strong>
-            <p>把分轨、场景切换和知识卡集中到最有说服力的演示页。</p>
-          </article>
+          <Link className="mobile-exhibit-primary" to="/demo/base">
+            <span>进入数字舞台</span>
+            <Play size={19} weight="fill" />
+          </Link>
         </div>
       </section>
 
-      {learnModule ? (
-        <section className="home-learn home-learn-gateway" id="learn" data-reveal>
-          <div className="home-learn-gateway__copy">
-            <div>
-              <p className="eyebrow">乐理与百科入口</p>
-              <h2>乐理入门与 12 件乐器百科单独进入。</h2>
-              <p>{learnModule.homeSummary}</p>
-            </div>
-            <div className="hero__actions">
-              <Link className="button" to={buildTutorialPath(learnModule.id)}>
-                <BookOpenText size={18} weight="regular" />
-                <span>进入乐理与乐器百科</span>
-              </Link>
-              <Link className="button--ghost" to="/demo/base">
-                <ProjectorScreenChart size={18} weight="regular" />
-                <span>先看底座 Demo</span>
-              </Link>
-            </div>
-          </div>
+      <main className="mobile-exhibit-main">
+        <section className="mobile-exhibit-section" id="instruments" aria-label="功能大厅">
+          <div className="mobile-exhibit-feature-grid">
+            {featureCards.map((card) => {
+              const className = `mobile-feature-card mobile-feature-card--${card.tone}`;
+              const body = (
+                <>
+                  <span className="mobile-feature-card__icon">{card.icon}</span>
+                  <span className="mobile-feature-card__copy">
+                    <strong>{card.title}</strong>
+                    <small>{card.subtitle}</small>
+                  </span>
+                  <span className="mobile-feature-card__art" aria-hidden="true">
+                    {card.art}
+                  </span>
+                  <span className="mobile-feature-card__arrow" aria-hidden="true">
+                    <Path size={16} weight="regular" />
+                  </span>
+                </>
+              );
 
-          <aside className="home-learn-gateway__panel">
-            <div className="home-learn-gateway__panel-head">
-              <BookOpenText size={24} weight="regular" />
-              <div>
-                <strong>乐理与乐器百科集中在独立页面</strong>
-                <p>从这里进入后再展开概念、分轨试听和模型预览。</p>
-              </div>
-            </div>
-            <div className="home-learn-gateway__stats" aria-label="导学内容概览">
-              <span>
-                <strong>{learnModule.chapters.length}</strong>
-                <small>组乐理</small>
-              </span>
-              <span>
-                <strong>{learnConceptCount}</strong>
-                <small>个概念</small>
-              </span>
-              <span>
-                <strong>{instrumentEncyclopedia.length}</strong>
-                <small>件乐器</small>
-              </span>
-            </div>
-          </aside>
+              return card.to ? (
+                <Link className={className} key={card.id} to={card.to}>
+                  {body}
+                </Link>
+              ) : (
+                <a className={className} href={card.href} key={card.id}>
+                  {body}
+                </a>
+              );
+            })}
+          </div>
         </section>
-      ) : null}
 
-      <section className="home-compose-gateway" id="compose" data-reveal>
-        <div className="home-compose-gateway__copy">
-          <p className="eyebrow">音乐编创</p>
-          <h2>把观众自己的哼唱动机，变成一次可听见的编曲实验。</h2>
-          <p>
-            这个入口负责连接“我听懂了什么”和“我能不能自己试着创作”。用户录入一段旋律，再用 prompt 约定风格、乐器与情绪，由 AI 生成可试听的编曲草图。
-          </p>
-          <div className="hero__actions">
-            <Link className="button" to="/compose">
-              <MagicWand size={18} weight="regular" />
-              <span>进入音乐编创</span>
-            </Link>
-            <Link className="button--ghost" to={buildTutorialPath('fundamentals')}>
-              <BookOpenText size={18} weight="regular" />
-              <span>先看乐理与百科</span>
-            </Link>
-          </div>
-        </div>
-
-        <aside className="home-compose-gateway__panel">
-          <div className="home-compose-gateway__panel-head">
-            <MicrophoneStage size={26} weight="regular" />
+        <section className="mobile-exhibit-section mobile-orchestra" aria-labelledby="orchestra-title">
+          <div className="mobile-section-head">
             <div>
-              <strong>哼唱动机 + Prompt + AI 编曲</strong>
-              <p>第一版聚焦即时生成，不做作品库和账号系统，适合开放日现场演示。</p>
+              <h2 id="orchestra-title">乐团总览</h2>
+              <p>点击乐器，探索更多</p>
             </div>
+            <Link to="/learn/fundamentals#instrument-encyclopedia">查看全部乐器</Link>
           </div>
-          <div className="home-compose-gateway__steps" aria-label="音乐编创流程">
-            <span>
-              <MicrophoneStage size={18} weight="regular" />
-              <strong>录入</strong>
-            </span>
-            <span>
-              <MusicNotesPlus size={18} weight="regular" />
-              <strong>描述</strong>
-            </span>
-            <span>
-              <MagicWand size={18} weight="regular" />
-              <strong>生成</strong>
-            </span>
-          </div>
-        </aside>
-      </section>
 
-      <section className="home-entries" id="entries">
-        <div className="home-entries__head" data-reveal>
-          <div>
-            <p className="eyebrow">展陈条目</p>
-            <h2>条目页负责把每一种入口都说清楚，再把观众交给舞台。</h2>
-            <p>
-              目前三组条目分别承担“单乐器导览、木管入口、全编制舞台”的不同角色，页面结构保持统一，便于后续继续扩展。
-            </p>
-          </div>
-        </div>
-
-        <div className="entry-grid">
-          {entries.map((entry, index) => (
-            <EntryCard entry={entry} key={entry.id} revealIndex={index} />
-          ))}
-        </div>
-      </section>
-
-      <section className="home-demo-band" id="demo-entry" data-reveal>
-        <div className="home-demo-band__content">
-          <p className="eyebrow">底座 Demo</p>
-          <h2>如果只看一个页面，应该先看底座演示页。</h2>
-          <p>
-            它集中展示了“12 位演奏家 + 智能底座 + 同步分轨播放 + 场景切换 + 数字名片”的完整联动，是开放日、汇报和试点沟通时最有说服力的一段。
-          </p>
-          <div className="hero__actions">
-            <Link className="button" to="/demo/base">
-              <ArrowRight size={18} weight="regular" />
-              <span>直接进入底座演示</span>
+          <div className="mobile-orchestra-map" aria-label="交响乐团座位图">
+            <span className="mobile-orchestra-map__halo" aria-hidden="true" />
+            <Link className="mobile-conductor" to="/demo/base">
+              <PersonArmsSpread size={28} weight="regular" />
+              <span>指挥</span>
             </Link>
+            {orchestraSeats.map((instrument) => (
+              <Link
+                className="mobile-orchestra-seat"
+                key={instrument.id}
+                style={
+                  {
+                    '--seat-x': `${instrument.position.x}%`,
+                    '--seat-y': `${instrument.position.y}%`,
+                    '--seat-color': instrument.color,
+                  } as CSSProperties
+                }
+                to="/learn/fundamentals#instrument-encyclopedia"
+                aria-label={`${instrument.name}百科`}
+              >
+                <span className="mobile-orchestra-seat__dot">
+                  {instrument.shortLabel}
+                </span>
+                <span className="mobile-orchestra-seat__label">{instrument.name}</span>
+              </Link>
+            ))}
           </div>
-        </div>
-        <aside className="home-demo-band__aside">
-          <div className="metric-grid">
-            <div className="metric-chip">
-              <small>落子结构</small>
-              <strong>12 位演奏家 + 1 个智能底座</strong>
+        </section>
+
+        <section
+          className="mobile-exhibit-section mobile-recommend"
+          id="favorites"
+          aria-labelledby="recommend-title"
+        >
+          <div className="mobile-section-head">
+            <div>
+              <h2 id="recommend-title">推荐体验</h2>
+              <p>从当前展览继续探索</p>
             </div>
-            <div className="metric-chip">
-              <small>演出内容</small>
-              <strong>《睡美人圆舞曲》12 条分轨</strong>
-            </div>
-            <div className="metric-chip">
-              <small>展示目标</small>
-              <strong>开放日、展厅、课堂演示</strong>
-            </div>
+            <Link to="/demo/base">更多推荐</Link>
           </div>
-        </aside>
-      </section>
+
+          <div className="mobile-recommend-rail" aria-label="推荐体验列表">
+            {recommendationCards.map((card) => (
+              <Link className="mobile-recommend-card" key={card.id} to={card.to}>
+                {card.imageSrc ? (
+                  <img
+                    className="mobile-recommend-card__poster"
+                    src={card.imageSrc}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                ) : null}
+                <span className="mobile-recommend-card__overlay" aria-hidden="true" />
+                <span className="mobile-recommend-card__badge">{card.eyebrow}</span>
+                <span className="mobile-recommend-card__copy">
+                  <strong>{card.title}</strong>
+                  <small>{card.subtitle}</small>
+                </span>
+                <span className="mobile-recommend-card__play" aria-hidden="true">
+                  {card.icon}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section
+          className="mobile-exhibit-section mobile-route"
+          id="route"
+          aria-labelledby="route-title"
+        >
+          <div className="mobile-section-head">
+            <div>
+              <h2 id="route-title">展览路线</h2>
+              <p>一眼理解完整流程</p>
+            </div>
+            <a href="#overview">了解完整流程</a>
+          </div>
+
+          <div className="mobile-route-map" aria-label="展览路线图">
+            {routeSteps.map((step, index) => (
+              <div
+                className="mobile-route-step"
+                key={step.label}
+                style={{ '--step-index': index } as CSSProperties}
+              >
+                <span className="mobile-route-step__icon">{step.icon}</span>
+                <strong>{step.label}</strong>
+                <small>{step.hint}</small>
+              </div>
+            ))}
+          </div>
+        </section>
+      </main>
+
+      <nav className="mobile-exhibit-bottom-nav" aria-label="底部导航">
+        {bottomNavItems.map((item, index) => (
+          <a
+            className={
+              index === 0
+                ? 'mobile-exhibit-bottom-nav__item mobile-exhibit-bottom-nav__item--active'
+                : 'mobile-exhibit-bottom-nav__item'
+            }
+            href={item.href}
+            key={item.label}
+          >
+            {item.icon}
+            <span>{item.label}</span>
+          </a>
+        ))}
+      </nav>
     </div>
   );
 }

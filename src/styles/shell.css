@@ -127,6 +127,17 @@
   padding: clamp(24px, 4vw, 48px) 0 clamp(42px, 5vw, 68px);
 }
 
+.app-shell--exhibit-home {
+  display: block;
+  min-height: 100dvh;
+}
+
+.page-shell--exhibit-home {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
 .footer {
   display: flex;
   align-items: center;

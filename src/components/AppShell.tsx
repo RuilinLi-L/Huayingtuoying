@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react';
 import {
   BookOpenText,
-  CardsThree,
   Compass,
   HouseLine,
   MagicWand,
@@ -42,52 +41,34 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isDemoRoute = location.pathname.startsWith('/demo/base');
   const shouldShowCurrentLabel =
     !isHomeRoute && !isLearnRoute && !isComposeRoute && !isDemoRoute;
+  const shellClassName = isHomeRoute
+    ? 'app-shell app-shell--exhibit-home'
+    : isDemoRoute
+      ? 'app-shell app-shell--demo'
+      : 'app-shell';
 
   return (
-    <div className={isDemoRoute ? 'app-shell app-shell--demo' : 'app-shell'}>
-      <div className="topbar-wrap">
-        <header className="topbar">
-          <div className="topbar__row">
-            <Link className="brand" to="/">
-              <span className="brand-mark" aria-hidden="true">
-                <MusicNotesSimple size={24} weight="regular" />
-              </span>
-              <span>
-                <strong>华音拓影</strong>
-                <small>NFC + WebAR 校园音乐美育交互系统</small>
-              </span>
-            </Link>
-            <div className="topbar__meta">
-              <Compass size={16} weight="regular" />
-              <span>校园展陈导览版</span>
+    <div className={shellClassName}>
+      {!isHomeRoute ? (
+        <div className="topbar-wrap">
+          <header className="topbar">
+            <div className="topbar__row">
+              <Link className="brand" to="/">
+                <span className="brand-mark" aria-hidden="true">
+                  <MusicNotesSimple size={24} weight="regular" />
+                </span>
+                <span>
+                  <strong>华音拓影</strong>
+                  <small>NFC + WebAR 校园音乐美育交互系统</small>
+                </span>
+              </Link>
+              <div className="topbar__meta">
+                <Compass size={16} weight="regular" />
+                <span>校园展陈导览版</span>
+              </div>
             </div>
-          </div>
 
-          <nav className="topnav" aria-label="主导航">
-            {isHomeRoute ? (
-              <>
-                <a className="topnav__link topnav__link--active" href="#overview">
-                  <HouseLine size={16} weight="regular" />
-                  <span>项目总览</span>
-                </a>
-                <Link className="topnav__link" to="/learn/fundamentals">
-                  <BookOpenText size={16} weight="regular" />
-                  <span>乐理与百科</span>
-                </Link>
-                <Link className="topnav__link" to="/compose">
-                  <MagicWand size={16} weight="regular" />
-                  <span>音乐编创</span>
-                </Link>
-                <a className="topnav__link" href="#entries">
-                  <CardsThree size={16} weight="regular" />
-                  <span>展陈条目</span>
-                </a>
-                <a className="topnav__link" href="#demo-entry">
-                  <ProjectorScreenChart size={16} weight="regular" />
-                  <span>底座演示</span>
-                </a>
-              </>
-            ) : (
+            <nav className="topnav" aria-label="主导航">
               <>
                 <Link className="topnav__link" to="/">
                   <HouseLine size={16} weight="regular" />
@@ -129,22 +110,30 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </span>
                 ) : null}
               </>
-            )}
-          </nav>
-        </header>
-      </div>
+            </nav>
+          </header>
+        </div>
+      ) : null}
 
-      <main className="page-shell">{children}</main>
+      <main
+        className={
+          isHomeRoute ? 'page-shell page-shell--exhibit-home' : 'page-shell'
+        }
+      >
+        {children}
+      </main>
 
-      <footer className="footer">
-        <p className="footer__note">
-          当前版本聚焦校内展陈与开放日演示，保留 NFC、二维码、AR 启动、舞台联动与知识卡结构，便于后续替换正式素材与真实硬件。
-        </p>
-        <span className="footer__stamp">
-          <MusicNotesSimple size={16} weight="regular" />
-          <span>一期前端展陈壳层</span>
-        </span>
-      </footer>
+      {!isHomeRoute ? (
+        <footer className="footer">
+          <p className="footer__note">
+            当前版本聚焦校内展陈与开放日演示，保留 NFC、二维码、AR 启动、舞台联动与知识卡结构，便于后续替换正式素材与真实硬件。
+          </p>
+          <span className="footer__stamp">
+            <MusicNotesSimple size={16} weight="regular" />
+            <span>一期前端展陈壳层</span>
+          </span>
+        </footer>
+      ) : null}
     </div>
   );
 }
