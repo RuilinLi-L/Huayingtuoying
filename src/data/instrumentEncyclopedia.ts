@@ -203,7 +203,7 @@ function buildInstrumentEntry(id: SleepingBeautyStemId): InstrumentEncyclopediaE
     structure: copy.structure,
     featuredWorks: musician.featuredWorks,
     audioSrc: stem.file,
-    modelUrl: `/assets/models/${id}/scene.glb`,
+    modelUrl: `/assets/models/${id}/scene.optimized.glb`,
     color: musician.color,
   };
 }

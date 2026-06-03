@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   AmbientLight,
   Box3,
@@ -16,6 +16,7 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
 interface InstrumentModelViewerProps {
   modelUrl?: string;
@@ -31,7 +32,120 @@ interface NormalizedModel {
   };
 }
 
+type ModelStatus = 'empty' | 'waiting' | 'loading' | 'ready' | 'timeout' | 'error';
+
+const MODEL_LOAD_TIMEOUT_MS = 25000;
+const MOBILE_PIXEL_RATIO_LIMIT = 1.35;
+const DESKTOP_PIXEL_RATIO_LIMIT = 1.75;
+
+function isMobileViewport() {
+  return window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+}
+
+function getModelBasePath(modelUrl: string) {
+  const baseUrl = new URL(modelUrl, window.location.href);
+  const lastSlashIndex = baseUrl.pathname.lastIndexOf('/');
+
+  baseUrl.pathname = baseUrl.pathname.slice(0, lastSlashIndex + 1);
+  baseUrl.search = '';
+  baseUrl.hash = '';
+
+  return baseUrl.href;
+}
+
+async function readResponseBuffer(
+  response: Response,
+  onProgress: (progress: number | null) => void,
+  signal: AbortSignal,
+) {
+  const contentLength = Number(response.headers.get('content-length') ?? 0);
+
+  if (!response.body) {
+    const buffer = await response.arrayBuffer();
+    onProgress(1);
+    return buffer;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let receivedLength = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+
+    if (done) {
+      break;
+    }
+
+    if (signal.aborted) {
+      await reader.cancel();
+      throw new DOMException('Model load aborted', 'AbortError');
+    }
+
+    chunks.push(value);
+    receivedLength += value.length;
+    onProgress(contentLength ? receivedLength / contentLength : null);
+  }
+
+  const bytes = new Uint8Array(receivedLength);
+  let offset = 0;
+
+  chunks.forEach((chunk) => {
+    bytes.set(chunk, offset);
+    offset += chunk.length;
+  });
+
+  onProgress(1);
+  return bytes.buffer;
+}
+
+async function fetchModelBuffer(
+  modelUrl: string,
+  signal: AbortSignal,
+  onProgress: (progress: number | null) => void,
+) {
+  const response = await fetch(modelUrl, { signal });
+
+  if (!response.ok) {
+    throw new Error(`请求模型失败（HTTP ${response.status}）`);
+  }
+
+  const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+
+  if (contentType.includes('text/html')) {
+    throw new Error('模型地址返回了 HTML，通常表示线上文件不存在或被路由回退。');
+  }
+
+  return readResponseBuffer(response, onProgress, signal);
+}
+
+function parseModel(loader: GLTFLoader, buffer: ArrayBuffer, modelUrl: string) {
+  return new Promise<Object3D>((resolve, reject) => {
+    loader.parse(
+      buffer,
+      getModelBasePath(modelUrl),
+      (gltf) => resolve(gltf.scene),
+      (error) => reject(error),
+    );
+  });
+}
+
 function disposeObject(root: Object3D) {
+  const disposeMaterial = (material: Material) => {
+    Object.values(material as unknown as Record<string, unknown>).forEach((value) => {
+      if (
+        value &&
+        typeof value === 'object' &&
+        'dispose' in value &&
+        typeof value.dispose === 'function'
+      ) {
+        value.dispose();
+      }
+    });
+
+    material.dispose();
+  };
+
   root.traverse((object) => {
     const mesh = object as Mesh;
 
@@ -40,11 +154,13 @@ function disposeObject(root: Object3D) {
     const material = mesh.material as Material | Material[] | undefined;
 
     if (Array.isArray(material)) {
-      material.forEach((item) => item.dispose());
+      material.forEach(disposeMaterial);
       return;
     }
 
-    material?.dispose();
+    if (material) {
+      disposeMaterial(material);
+    }
   });
 }
 
@@ -83,9 +199,36 @@ export function InstrumentModelViewer({
   accentColor,
 }: InstrumentModelViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [status, setStatus] = useState<'empty' | 'loading' | 'ready' | 'error'>(
-    modelUrl ? 'loading' : 'empty',
-  );
+  const [isVisible, setIsVisible] = useState(false);
+  const [loadProgress, setLoadProgress] = useState<number | null>(null);
+  const [status, setStatus] = useState<ModelStatus>(modelUrl ? 'waiting' : 'empty');
+
+  useEffect(() => {
+    const container = containerRef.current;
+
+    if (!modelUrl) {
+      setIsVisible(false);
+      return undefined;
+    }
+
+    if (!container || isVisible) {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '160px 0px' },
+    );
+
+    observer.observe(container);
+
+    return () => observer.disconnect();
+  }, [isVisible, modelUrl]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -96,12 +239,22 @@ export function InstrumentModelViewer({
 
     if (!modelUrl) {
       setStatus('empty');
+      setLoadProgress(null);
+      return undefined;
+    }
+
+    if (!isVisible) {
+      setStatus('waiting');
+      setLoadProgress(null);
+      container.replaceChildren();
       return undefined;
     }
 
     setStatus('loading');
+    setLoadProgress(0);
     container.replaceChildren();
 
+    const abortController = new AbortController();
     const scene = new Scene();
     const cameraFov = 36;
     const camera = new PerspectiveCamera(cameraFov, 1, 0.1, 100);
@@ -125,7 +278,12 @@ export function InstrumentModelViewer({
 
     camera.position.set(0, 0, 4.2);
     renderer.outputColorSpace = SRGBColorSpace;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(
+      Math.min(
+        window.devicePixelRatio || 1,
+        isMobileViewport() ? MOBILE_PIXEL_RATIO_LIMIT : DESKTOP_PIXEL_RATIO_LIMIT,
+      ),
+    );
     container.appendChild(renderer.domElement);
 
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -183,30 +341,53 @@ export function InstrumentModelViewer({
     resize();
 
     const loader = new GLTFLoader();
+    loader.setMeshoptDecoder(MeshoptDecoder);
 
-    loader.load(
-      modelUrl,
-      (gltf) => {
+    const timeoutId = window.setTimeout(() => {
+      abortController.abort();
+
+      if (!disposed) {
+        setStatus('timeout');
+      }
+    }, MODEL_LOAD_TIMEOUT_MS);
+
+    void fetchModelBuffer(modelUrl, abortController.signal, (progress) => {
+      if (!disposed) {
+        setLoadProgress(progress);
+      }
+    })
+      .then((buffer) => parseModel(loader, buffer, modelUrl))
+      .then((model) => {
         if (disposed) {
-          disposeObject(gltf.scene);
+          disposeObject(model);
           return;
         }
 
-        const normalizedModel = normalizeModel(gltf.scene);
+        window.clearTimeout(timeoutId);
+
+        const normalizedModel = normalizeModel(model);
 
         modelFitSize = normalizedModel.fitSize;
         resize();
         fitInitialView();
         root.add(normalizedModel.object);
+        setLoadProgress(1);
         setStatus('ready');
-      },
-      undefined,
-      () => {
-        if (!disposed) {
-          setStatus('error');
+      })
+      .catch((error: unknown) => {
+        if (disposed) {
+          return;
         }
-      },
-    );
+
+        window.clearTimeout(timeoutId);
+
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          setStatus('timeout');
+          return;
+        }
+
+        setStatus('error');
+      });
 
     const render = () => {
       controls.update();
@@ -218,6 +399,8 @@ export function InstrumentModelViewer({
 
     return () => {
       disposed = true;
+      abortController.abort();
+      window.clearTimeout(timeoutId);
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
       renderer.domElement.removeEventListener('contextmenu', handleContextMenu);
@@ -226,13 +409,20 @@ export function InstrumentModelViewer({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [accentColor, modelUrl]);
+  }, [accentColor, isVisible, modelUrl]);
+
+  const progressLabel =
+    typeof loadProgress === 'number'
+      ? `${Math.max(0, Math.min(100, Math.round(loadProgress * 100)))}%`
+      : '处理中';
 
   const message = {
     empty: '暂未配置百科模型。',
-    loading: '正在加载百科占位模型…',
+    waiting: '模型将在滚动到这里时加载。',
+    loading: `正在加载轻量百科模型 ${progressLabel}`,
     ready: '',
-    error: '百科模型加载失败，当前仍保留文字与音频内容。',
+    timeout: '模型加载超时，当前仍保留文字与音频内容。',
+    error: '百科模型加载失败，可能是文件路径、缓存或浏览器解码失败。',
   }[status];
 
   return (
@@ -242,6 +432,17 @@ export function InstrumentModelViewer({
         <div className="instrument-model__status">
           <strong>{title}</strong>
           <span>{message}</span>
+          {status === 'loading' ? (
+            <span
+              className="instrument-model__progress"
+              style={
+                {
+                  '--progress': loadProgress === null ? '35%' : `${loadProgress * 100}%`,
+                } as CSSProperties
+              }
+              aria-hidden="true"
+            />
+          ) : null}
         </div>
       ) : null}
       {status === 'ready' ? (

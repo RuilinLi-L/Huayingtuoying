@@ -2,6 +2,7 @@ generated/
 .runtime/
 .npm-cache/
 dist/
+public/assets/models/**/scene.glb
 *.tsbuildinfo
 .env.local
 .env.*.local

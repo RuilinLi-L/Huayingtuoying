@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node ./scripts/prune-dist-assets.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "serve:dist": "node ./scripts/serve-dist.mjs",
     "generate:demo-audio": "node ./scripts/generate-demo-audio.mjs",

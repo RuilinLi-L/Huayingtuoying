@@ -77,6 +77,13 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
   import type { Object3D } from 'three';
 
   export class GLTFLoader {
+    parse(
+      data: ArrayBuffer | string,
+      path: string,
+      onLoad: (gltf: { scene: Object3D }) => void,
+      onError?: (event: unknown) => void,
+    ): void;
+    setMeshoptDecoder(decoder: unknown): this;
     load(
       url: string,
       onLoad: (gltf: { scene: Object3D }) => void,
@@ -84,6 +91,10 @@ declare module 'three/examples/jsm/loaders/GLTFLoader.js' {
       onError?: (event: unknown) => void,
     ): void;
   }
+}
+
+declare module 'three/examples/jsm/libs/meshopt_decoder.module.js' {
+  export const MeshoptDecoder: unknown;
 }
 
 declare module 'three/examples/jsm/controls/OrbitControls.js' {
