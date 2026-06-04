@@ -151,7 +151,6 @@ export function HomePage() {
       };
     });
   }, []);
-
   useEffect(() => {
     if (launchContext.entryId) {
       navigate(
