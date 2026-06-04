@@ -29,6 +29,25 @@ const contentTypes = {
   '.bin': 'application/octet-stream',
 };
 
+const cacheableAssetExtensions = new Set([
+  '.js',
+  '.css',
+  '.json',
+  '.svg',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.ico',
+  '.wav',
+  '.mp3',
+  '.m4a',
+  '.glb',
+  '.gltf',
+  '.bin',
+]);
+
 function getFilePath(urlPath) {
   const safePath = normalize(decodeURIComponent(urlPath)).replace(/^(\.\.[/\\])+/, '');
   const maybeFile = join(distDir, safePath);
@@ -94,6 +113,12 @@ const server = createServer(async (req, res) => {
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Accept-Ranges', 'bytes');
+
+      if (cacheableAssetExtensions.has(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      } else {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
 
       if (req.headers.range && !range) {
         res.statusCode = 416;

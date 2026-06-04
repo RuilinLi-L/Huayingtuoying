@@ -26,6 +26,7 @@ import type { NfcSessionSnapshot, OrchestraSceneId } from '../types/demo';
 import type { AudioStem } from '../types/manifest';
 
 const allScenes = getOrchestraScenes();
+const PLAYBACK_STATE_SYNC_INTERVAL_MS = 200;
 
 function getAudioErrorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
@@ -51,7 +52,6 @@ export function OrchestraDemoPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioEngineRef = useRef<AudioEngine | null>(null);
-  const audioPreloadStartedRef = useRef(false);
   const mockAdapterRef = useRef(createMockNfcSessionAdapter(initialLineup));
   const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
   const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>({
@@ -110,7 +110,7 @@ export function OrchestraDemoPage() {
   }, [deepLinkSource, initialLineup]);
 
   useEffect(() => {
-    let frameId = 0;
+    let timerId = 0;
 
     const syncPlaybackState = () => {
       const engine = audioEngineRef.current;
@@ -125,14 +125,13 @@ export function OrchestraDemoPage() {
         );
         setIsPlaying((current) => (current === nextPlaying ? current : nextPlaying));
       }
-
-      frameId = window.requestAnimationFrame(syncPlaybackState);
     };
 
-    frameId = window.requestAnimationFrame(syncPlaybackState);
+    syncPlaybackState();
+    timerId = window.setInterval(syncPlaybackState, PLAYBACK_STATE_SYNC_INTERVAL_MS);
 
     return () => {
-      window.cancelAnimationFrame(frameId);
+      window.clearInterval(timerId);
     };
   }, []);
 
@@ -180,15 +179,17 @@ export function OrchestraDemoPage() {
   useEffect(() => {
     const engine = audioEngineRef.current;
 
-    if (!engine || audioPreloadStartedRef.current || !snapshot.placedMusicianIds.length) {
+    if (!engine || !snapshot.placedMusicianIds.length) {
       return;
     }
 
-    audioPreloadStartedRef.current = true;
-    void engine.preload(compositionStems).catch(() => {
-      audioPreloadStartedRef.current = false;
+    const placedMusicianIds = new Set(snapshot.placedMusicianIds);
+    const selectedStems = compositionStems.filter((stem) => placedMusicianIds.has(stem.id));
+
+    void engine.preload(selectedStems).catch(() => {
+      // Playback will retry loading selected stems on the next user gesture.
     });
-  }, [compositionStems, snapshot.placedMusicianIds.length]);
+  }, [compositionStems, snapshot.placedMusicianIds]);
 
   const mode = useMemo(
     () => resolveOrchestraMode(snapshot.placedMusicianIds),

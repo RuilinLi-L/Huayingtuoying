@@ -29,7 +29,7 @@ export interface SleepingBeautyStemDefinition {
   gain: number;
 }
 
-const sleepingBeautyAudioBasePath = '/assets/audio/The Sleeping Beauty Waltz';
+const sleepingBeautyAudioBasePath = '/assets/audio/The Sleeping Beauty Waltz/mobile';
 
 export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
