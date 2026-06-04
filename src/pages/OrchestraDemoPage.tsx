@@ -51,6 +51,7 @@ export function OrchestraDemoPage() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioEngineRef = useRef<AudioEngine | null>(null);
+  const audioPreloadStartedRef = useRef(false);
   const mockAdapterRef = useRef(createMockNfcSessionAdapter(initialLineup));
   const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
   const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>({
@@ -176,6 +177,19 @@ export function OrchestraDemoPage() {
     };
   }, [compositionStems, snapshot.placedMusicianIds]);
 
+  useEffect(() => {
+    const engine = audioEngineRef.current;
+
+    if (!engine || audioPreloadStartedRef.current || !snapshot.placedMusicianIds.length) {
+      return;
+    }
+
+    audioPreloadStartedRef.current = true;
+    void engine.preload(compositionStems).catch(() => {
+      audioPreloadStartedRef.current = false;
+    });
+  }, [compositionStems, snapshot.placedMusicianIds.length]);
+
   const mode = useMemo(
     () => resolveOrchestraMode(snapshot.placedMusicianIds),
     [snapshot.placedMusicianIds],
@@ -276,12 +290,15 @@ export function OrchestraDemoPage() {
         const nextAudioError = await engine.setActiveStems(
           compositionStems,
           snapshot.placedMusicianIds,
+          { playWhenReady: true },
         );
         setAudioError(nextAudioError ?? '');
         if (nextAudioError && !engine.hasPlayableActiveStems()) {
           return;
         }
-        await engine.resume();
+        if (!engine.isPlaying()) {
+          await engine.resume();
+        }
       }
     } catch (error) {
       setAudioError(getAudioErrorMessage(error));

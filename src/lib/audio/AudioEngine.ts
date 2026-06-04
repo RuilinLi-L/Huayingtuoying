@@ -1,9 +1,11 @@
 import type { AudioStem } from '../../types/manifest';
 
-interface ActiveStemNodes {
-  source: AudioBufferSourceNode;
+interface StemPlaybackNodes {
+  media: HTMLAudioElement;
+  source: MediaElementAudioSourceNode;
   gainNode: GainNode;
   pannerNode?: StereoPannerNode;
+  objectUrl?: string;
 }
 
 interface StemLoadFailure {
@@ -12,14 +14,16 @@ interface StemLoadFailure {
   message: string;
 }
 
-const STEM_LOAD_CONCURRENCY = 2;
+const STEM_LOAD_CONCURRENCY = 6;
+const DESYNC_TOLERANCE_SECONDS = 0.08;
+const STEM_METADATA_WAIT_MS = 1800;
+const STEM_FADE_IN_SECONDS = 0.035;
 
 export class AudioEngine {
   private context: AudioContext | null = null;
   private masterGain: GainNode | null = null;
-  private buffers = new Map<string, AudioBuffer>();
-  private loadingPromises = new Map<string, Promise<AudioBuffer>>();
-  private activeNodes = new Map<string, ActiveStemNodes>();
+  private stemNodes = new Map<string, StemPlaybackNodes>();
+  private loadingPromises = new Map<string, Promise<StemPlaybackNodes>>();
   private stemMap = new Map<string, AudioStem>();
   private enabledState = new Map<string, boolean>();
   private activeStemIds = new Set<string>();
@@ -28,6 +32,8 @@ export class AudioEngine {
   private playbackStartedAt: number | null = null;
   private pausedProgress = 0;
   private compositionDuration = 0;
+  private operationId = 0;
+  private pendingAudibleStemIds = new Set<string>();
 
   async init() {
     await this.ensureContext(true);
@@ -47,16 +53,41 @@ export class AudioEngine {
   }
 
   async play(stems: AudioStem[]) {
+    const operationId = ++this.operationId;
+
     await this.ensureContext(false);
     this.registerStems(stems);
     this.activeStemIds = new Set(stems.map((stem) => stem.id));
+    this.pendingAudibleStemIds = new Set(this.activeStemIds);
     this.pausedProgress = 0;
-    this.stopActiveNodes();
+    this.pauseAllLoadedStems(true);
+    this.playing = false;
+    this.playbackStartedAt = null;
 
-    const failures = await this.loadStemIds(Array.from(this.activeStemIds));
+    const failures = await this.loadStemIds(
+      Array.from(this.activeStemIds),
+      async (stemId) => {
+        this.refreshCompositionDuration();
+
+        if (!this.isOperationRelevant(operationId) || !this.activeStemIds.has(stemId)) {
+          return;
+        }
+
+        await this.beginPlaybackIfNeeded(operationId);
+
+        if (this.playing) {
+          this.applyMix();
+          await this.prepareActiveStemForAudible(stemId);
+        }
+      },
+    );
     this.refreshCompositionDuration();
 
-    if (this.hasLoadedBuffers(this.activeStemIds)) {
+    if (!this.isOperationRelevant(operationId)) {
+      return this.formatLoadFailures(failures);
+    }
+
+    if (this.hasPlayableActiveStems()) {
       await this.resume();
     } else {
       this.playing = false;
@@ -67,14 +98,18 @@ export class AudioEngine {
   }
 
   stop() {
-    this.stopActiveNodes();
+    this.operationId += 1;
+    this.pauseAllLoadedStems(true);
     this.activeStemIds.clear();
+    this.pendingAudibleStemIds.clear();
     this.playing = false;
     this.playbackStartedAt = null;
     this.pausedProgress = 0;
+    this.applyMix();
   }
 
   pause() {
+    this.operationId += 1;
     this.pauseClock(false);
   }
 
@@ -83,9 +118,11 @@ export class AudioEngine {
       return;
     }
 
+    const operationId = this.operationId;
+
     await this.ensureContext(true);
 
-    if (!this.context || this.playing) {
+    if (!this.context || this.playing || this.operationId !== operationId) {
       return;
     }
 
@@ -93,33 +130,62 @@ export class AudioEngine {
     this.playbackStartedAt = this.context.currentTime - startAt;
     this.playing = true;
 
-    this.activeStemIds.forEach((stemId) => {
-      this.startStem(stemId, startAt);
-    });
-
     this.applyMix();
+
+    try {
+      await this.startLoadedStemsAt(startAt, {
+        forceSync: true,
+        onlyPaused: false,
+      });
+    } catch (error) {
+      this.pauseClock(false);
+      throw error;
+    }
   }
 
   async setActiveStems(
     stems: AudioStem[],
     activeStemIds: string[],
-    options: { load?: boolean } = {},
+    options: { load?: boolean; playWhenReady?: boolean } = {},
   ) {
+    const operationId = ++this.operationId;
+
     await this.ensureContext(false);
     this.registerStems(stems);
 
     const nextActiveStemIds = new Set(
       activeStemIds.filter((stemId) => this.stemMap.has(stemId)),
     );
-    const currentProgress = this.getCurrentTime();
+    const addedStemIds = new Set(
+      Array.from(nextActiveStemIds).filter((stemId) => !this.activeStemIds.has(stemId)),
+    );
+    const progressBeforeLoad = this.getCurrentTime();
+    const shouldPlayWhenReady = options.playWhenReady === true;
 
-    this.activeNodes.forEach((_, stemId) => {
+    if (!this.playing && shouldPlayWhenReady) {
+      nextActiveStemIds.forEach((stemId) => {
+        this.pendingAudibleStemIds.add(stemId);
+      });
+    }
+
+    this.activeStemIds.forEach((stemId) => {
       if (!nextActiveStemIds.has(stemId)) {
-        this.stopStem(stemId);
+        this.pendingAudibleStemIds.delete(stemId);
+        if (!this.playing) {
+          this.pauseStem(stemId, false);
+        }
       }
     });
 
     this.activeStemIds = nextActiveStemIds;
+
+    if (this.playing) {
+      addedStemIds.forEach((stemId) => {
+        this.pendingAudibleStemIds.add(stemId);
+      });
+    }
+
+    this.applyMix();
 
     if (!nextActiveStemIds.size) {
       this.pauseClock(true);
@@ -127,32 +193,74 @@ export class AudioEngine {
     }
 
     if (options.load === false) {
-      this.pausedProgress = currentProgress;
+      this.pausedProgress = progressBeforeLoad;
       return null;
     }
 
-    const failures = await this.loadStemIds(Array.from(nextActiveStemIds));
+    const failures = await this.loadStemIds(
+      Array.from(nextActiveStemIds),
+      async (stemId) => {
+        this.refreshCompositionDuration();
+
+        if (!this.isOperationRelevant(operationId) || !this.activeStemIds.has(stemId)) {
+          return;
+        }
+
+        if (!this.playing && !shouldPlayWhenReady) {
+          return;
+        }
+
+        await this.beginPlaybackIfNeeded(operationId);
+
+        if (this.playing && (addedStemIds.has(stemId) || this.pendingAudibleStemIds.has(stemId))) {
+          this.applyMix();
+          await this.prepareActiveStemForAudible(stemId);
+        }
+      },
+    );
     this.refreshCompositionDuration();
 
-    if (!this.hasLoadedBuffers(nextActiveStemIds)) {
+    if (!this.isOperationRelevant(operationId)) {
+      return this.formatLoadFailures(failures);
+    }
+
+    if (!this.hasLoadedStems(nextActiveStemIds)) {
       this.pauseClock(false);
       return this.formatLoadFailures(failures);
     }
 
     if (!this.playing) {
-      this.pausedProgress = currentProgress;
+      if (shouldPlayWhenReady) {
+        await this.beginPlaybackIfNeeded(operationId);
+
+        if (this.playing) {
+          this.applyMix();
+          await this.startLoadedStemsAt(this.getCurrentTime(), {
+            forceSync: true,
+            onlyPaused: true,
+          });
+          nextActiveStemIds.forEach((stemId) => {
+            this.pendingAudibleStemIds.delete(stemId);
+          });
+          this.applyMix();
+          return this.formatLoadFailures(failures);
+        }
+      }
+
+      this.pausedProgress = progressBeforeLoad;
       return this.formatLoadFailures(failures);
     }
 
     await this.ensureContext(true);
 
-    nextActiveStemIds.forEach((stemId) => {
-      if (!this.activeNodes.has(stemId) && this.buffers.has(stemId)) {
-        this.startStem(stemId, currentProgress);
-      }
-    });
+    if (!this.isOperationRelevant(operationId)) {
+      return this.formatLoadFailures(failures);
+    }
 
+    const startProgress = this.getCurrentTime();
     this.applyMix();
+    await this.preparePendingActiveStems(startProgress);
+
     return this.formatLoadFailures(failures);
   }
 
@@ -173,7 +281,7 @@ export class AudioEngine {
   }
 
   hasPlayableActiveStems() {
-    return this.hasLoadedBuffers(this.activeStemIds);
+    return this.hasLoadedStems(this.activeStemIds);
   }
 
   seek(timeInSeconds: number) {
@@ -181,10 +289,11 @@ export class AudioEngine {
     this.pausedProgress = nextProgress;
 
     if (!this.playing) {
+      this.stemNodes.forEach((_, stemId) => {
+        this.syncStemToTime(stemId, nextProgress, true);
+      });
       return;
     }
-
-    this.stopActiveNodes();
 
     if (!this.context) {
       this.playing = false;
@@ -193,10 +302,9 @@ export class AudioEngine {
     }
 
     this.playbackStartedAt = this.context.currentTime - nextProgress;
-    this.activeStemIds.forEach((stemId) => {
-      this.startStem(stemId, nextProgress);
+    this.stemNodes.forEach((_, stemId) => {
+      this.syncStemToTime(stemId, nextProgress, true);
     });
-    this.applyMix();
   }
 
   setStemEnabled(stemId: string, enabled: boolean) {
@@ -218,18 +326,33 @@ export class AudioEngine {
   }
 
   dispose() {
+    this.operationId += 1;
     this.stop();
+    this.stemNodes.forEach((nodes) => {
+      nodes.media.pause();
+      nodes.media.removeAttribute('src');
+      nodes.media.load();
+      if (nodes.objectUrl) {
+        URL.revokeObjectURL(nodes.objectUrl);
+      }
+      nodes.source.disconnect();
+      nodes.gainNode.disconnect();
+      nodes.pannerNode?.disconnect();
+    });
+
     if (this.context) {
       void this.context.close();
     }
+
     this.context = null;
     this.masterGain = null;
-    this.buffers.clear();
+    this.stemNodes.clear();
     this.loadingPromises.clear();
     this.stemMap.clear();
     this.enabledState.clear();
     this.soloStemId = null;
     this.compositionDuration = 0;
+    this.pendingAudibleStemIds.clear();
   }
 
   private async ensureContext(resumeIfSuspended: boolean) {
@@ -248,7 +371,9 @@ export class AudioEngine {
   private refreshCompositionDuration() {
     this.compositionDuration = Math.max(
       0,
-      ...Array.from(this.buffers.values(), (buffer) => buffer.duration || 0),
+      ...Array.from(this.stemNodes.values(), ({ media }) =>
+        Number.isFinite(media.duration) ? media.duration : 0,
+      ),
     );
   }
 
@@ -261,9 +386,9 @@ export class AudioEngine {
     });
   }
 
-  private hasLoadedBuffers(stemIds: Iterable<string>) {
+  private hasLoadedStems(stemIds: Iterable<string>) {
     for (const stemId of stemIds) {
-      if (this.buffers.has(stemId)) {
+      if (this.stemNodes.has(stemId)) {
         return true;
       }
     }
@@ -271,32 +396,42 @@ export class AudioEngine {
     return false;
   }
 
-  private async loadStemIds(stemIds: string[]) {
+  private async loadStemIds(
+    stemIds: string[],
+    onStemLoaded?: (stemId: string) => Promise<void>,
+  ) {
     const uniqueStemIds = [...new Set(stemIds.filter((stemId) => this.stemMap.has(stemId)))];
     const failures: StemLoadFailure[] = [];
 
     for (let index = 0; index < uniqueStemIds.length; index += STEM_LOAD_CONCURRENCY) {
       const chunk = uniqueStemIds.slice(index, index + STEM_LOAD_CONCURRENCY);
       const results = await Promise.allSettled(
-        chunk.map((stemId) => this.loadStemBuffer(stemId)),
+        chunk.map((stemId) => this.loadStemMedia(stemId)),
       );
 
       results.forEach((result, resultIndex) => {
+        const stemId = chunk[resultIndex];
+
         if (result.status === 'fulfilled') {
+          if (onStemLoaded) {
+            void onStemLoaded(stemId).catch(() => {
+              // The caller re-checks playable state after loading completes.
+            });
+          }
           return;
         }
 
-        failures.push(this.createLoadFailure(chunk[resultIndex], result.reason));
+        failures.push(this.createLoadFailure(stemId, result.reason));
       });
     }
 
     return failures;
   }
 
-  private async loadStemBuffer(stemId: string) {
-    const cachedBuffer = this.buffers.get(stemId);
-    if (cachedBuffer) {
-      return cachedBuffer;
+  private async loadStemMedia(stemId: string) {
+    const cachedNodes = this.stemNodes.get(stemId);
+    if (cachedNodes) {
+      return cachedNodes;
     }
 
     const existingPromise = this.loadingPromises.get(stemId);
@@ -306,40 +441,159 @@ export class AudioEngine {
 
     const stem = this.stemMap.get(stemId);
     if (!stem) {
-      throw new Error(`找不到音轨 ${stemId}`);
+      throw new Error(`Missing audio stem: ${stemId}`);
     }
 
-    if (!this.context) {
-      throw new Error('音频上下文尚未初始化');
+    if (!this.context || !this.masterGain) {
+      throw new Error('Audio context is not initialized');
     }
+
+    const loadingContext = this.context;
+    const loadingMasterGain = this.masterGain;
+    const media = new Audio();
+    media.preload = 'auto';
+    media.loop = true;
+
+    const source = loadingContext.createMediaElementSource(media);
+    const gainNode = loadingContext.createGain();
+    gainNode.gain.value = 0;
+
+    const supportsStereoPanner = 'createStereoPanner' in loadingContext;
+    const pannerNode = supportsStereoPanner
+      ? loadingContext.createStereoPanner()
+      : undefined;
+
+    if (pannerNode) {
+      pannerNode.pan.value = stem.stereoPan ?? 0;
+      source.connect(gainNode);
+      gainNode.connect(pannerNode);
+      pannerNode.connect(loadingMasterGain);
+    } else {
+      source.connect(gainNode);
+      gainNode.connect(loadingMasterGain);
+    }
+
+    const nodes: StemPlaybackNodes = {
+      media,
+      source,
+      gainNode,
+      pannerNode,
+    };
+
+    const teardown = () => {
+      media.pause();
+      media.removeAttribute('src');
+      media.load();
+      if (nodes.objectUrl) {
+        URL.revokeObjectURL(nodes.objectUrl);
+        nodes.objectUrl = undefined;
+      }
+      source.disconnect();
+      gainNode.disconnect();
+      pannerNode?.disconnect();
+    };
+
+    const syncWhenReady = () => {
+      this.refreshCompositionDuration();
+
+      if (!this.playing || !this.activeStemIds.has(stemId)) {
+        return;
+      }
+
+      if (!media.paused && !this.pendingAudibleStemIds.has(stemId)) {
+        return;
+      }
+
+      this.pendingAudibleStemIds.add(stemId);
+      this.applyMix();
+
+      void this.prepareActiveStemForAudible(stemId).catch(() => {
+        // A later user gesture or play attempt will retry the stem.
+      });
+    };
+
+    media.addEventListener('loadedmetadata', syncWhenReady);
+    media.addEventListener('canplay', syncWhenReady);
+
+    const waitForMediaMetadata = () =>
+      new Promise<'ready' | 'timeout'>((resolve, reject) => {
+        if (media.readyState >= HTMLMediaElement.HAVE_METADATA) {
+          resolve('ready');
+          return;
+        }
+
+        const cleanup = () => {
+          media.removeEventListener('loadedmetadata', handleReady);
+          media.removeEventListener('canplay', handleReady);
+          media.removeEventListener('error', handleError);
+          window.clearTimeout(metadataTimer);
+        };
+
+        const handleReady = () => {
+          cleanup();
+          resolve('ready');
+        };
+
+        const handleError = () => {
+          cleanup();
+          reject(new Error(this.getMediaErrorMessage(media, stem.file)));
+        };
+
+        const handleTimeout = () => {
+          cleanup();
+          resolve('timeout');
+        };
+
+        media.addEventListener('loadedmetadata', handleReady);
+        media.addEventListener('canplay', handleReady);
+        media.addEventListener('error', handleError);
+        const metadataTimer = window.setTimeout(handleTimeout, STEM_METADATA_WAIT_MS);
+      });
 
     const loadPromise = (async () => {
-      const response = await fetch(stem.file);
-      if (!response.ok) {
-        throw new Error(`请求 ${stem.file} 失败（HTTP ${response.status}）`);
-      }
-
-      const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
-      if (contentType.includes('text/html')) {
-        throw new Error(
-          `请求 ${stem.file} 返回了 HTML 页面，通常表示线上文件不存在或被路由回退到了 index.html`,
-        );
-      }
-
-      const arrayBuffer = await response.arrayBuffer();
-      if (!arrayBuffer.byteLength) {
-        throw new Error(`请求 ${stem.file} 返回了空文件`);
-      }
-
       try {
-        const audioBuffer = await this.context!.decodeAudioData(arrayBuffer.slice(0));
-        this.buffers.set(stemId, audioBuffer);
-        return audioBuffer;
+        media.src = stem.file;
+        media.load();
+
+        const directStatus = await waitForMediaMetadata();
+
+        if (
+          directStatus === 'timeout'
+          && this.context === loadingContext
+          && this.masterGain === loadingMasterGain
+        ) {
+          media.pause();
+          media.removeAttribute('src');
+          media.load();
+
+          const objectUrl = await this.fetchStemObjectUrl(stem.file);
+          nodes.objectUrl = objectUrl;
+          media.src = objectUrl;
+          media.load();
+          await waitForMediaMetadata();
+        }
+
+        if (this.context !== loadingContext || this.masterGain !== loadingMasterGain) {
+          media.removeEventListener('loadedmetadata', syncWhenReady);
+          media.removeEventListener('canplay', syncWhenReady);
+          teardown();
+          throw new Error('Audio context is no longer active');
+        }
+
+        this.stemNodes.set(stemId, nodes);
+
+        if (this.playing) {
+          void this.prepareLoadedStemForPlayback(stemId).catch(() => {
+            // Playback state can change while media readiness events settle.
+          });
+        }
+
+        return nodes;
       } catch (error) {
-        const reason = error instanceof Error ? error.message : String(error);
-        throw new Error(
-          `解码 ${stem.file} 失败${contentType ? `（${contentType}）` : ''}：${reason}`,
-        );
+        media.removeEventListener('loadedmetadata', syncWhenReady);
+        media.removeEventListener('canplay', syncWhenReady);
+        teardown();
+        throw error;
       }
     })().finally(() => {
       this.loadingPromises.delete(stemId);
@@ -347,6 +601,28 @@ export class AudioEngine {
 
     this.loadingPromises.set(stemId, loadPromise);
     return loadPromise;
+  }
+
+  private async fetchStemObjectUrl(file: string) {
+    const response = await fetch(file);
+
+    if (!response.ok) {
+      throw new Error(`Request failed for ${file} (HTTP ${response.status})`);
+    }
+
+    const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
+    if (contentType.includes('text/html')) {
+      throw new Error(
+        `Request for ${file} returned HTML, which usually means the audio file is missing`,
+      );
+    }
+
+    const blob = await response.blob();
+    if (!blob.size) {
+      throw new Error(`Request for ${file} returned an empty audio file`);
+    }
+
+    return URL.createObjectURL(blob);
   }
 
   private createLoadFailure(stemId: string, error: unknown): StemLoadFailure {
@@ -364,10 +640,10 @@ export class AudioEngine {
     }
 
     const detail = failures
-      .map((failure) => `${failure.stemName}：${failure.message}`)
-      .join('；');
+      .map((failure) => `${failure.stemName}: ${failure.message}`)
+      .join('; ');
 
-    return `音频加载异常。${detail}`;
+    return `Audio loading failed. ${detail}`;
   }
 
   private normalizeCompositionTime(timeInSeconds: number) {
@@ -380,91 +656,219 @@ export class AudioEngine {
   }
 
   private getStemOffset(stemId: string, compositionTime: number) {
-    const buffer = this.buffers.get(stemId);
-    if (!buffer || !buffer.duration) {
-      return 0;
+    const nodes = this.stemNodes.get(stemId);
+    const duration = nodes?.media.duration ?? 0;
+
+    if (!Number.isFinite(duration) || duration <= 0) {
+      return Math.max(0, compositionTime);
     }
 
-    if (!this.compositionDuration) {
-      return this.normalizeCompositionTime(compositionTime) % buffer.duration;
-    }
-
-    const progressRatio =
-      this.normalizeCompositionTime(compositionTime) / this.compositionDuration;
-
-    return progressRatio * buffer.duration;
+    return this.normalizeCompositionTime(compositionTime) % duration;
   }
 
-  private startStem(stemId: string, compositionTime: number) {
-    if (!this.context || !this.masterGain) {
-      return;
-    }
+  private async startLoadedStemsAt(
+    compositionTime: number,
+    options: { forceSync: boolean; onlyPaused: boolean },
+  ) {
+    const playRequests: Promise<void>[] = [];
+    const startedStemIds: string[] = [];
 
-    const stem = this.stemMap.get(stemId);
-    const buffer = this.buffers.get(stemId);
-    if (!stem || !buffer) {
-      return;
-    }
+    this.stemNodes.forEach((nodes, stemId) => {
+      const wasPaused = nodes.media.paused;
 
-    const source = this.context.createBufferSource();
-    source.buffer = buffer;
-    source.loop = true;
-    source.loopStart = 0;
-    source.loopEnd = buffer.duration;
+      if (options.onlyPaused && !wasPaused) {
+        return;
+      }
 
-    const gainNode = this.context.createGain();
-    const supportsStereoPanner = 'createStereoPanner' in this.context;
-    const pannerNode = supportsStereoPanner
-      ? this.context.createStereoPanner()
-      : undefined;
+      if (!options.onlyPaused || wasPaused) {
+        this.syncStemToTime(stemId, compositionTime, true);
+      } else {
+        this.syncStemToTime(stemId, compositionTime, options.forceSync);
+      }
 
-    if (pannerNode) {
-      pannerNode.pan.value = stem.stereoPan ?? 0;
-      source.connect(gainNode);
-      gainNode.connect(pannerNode);
-      pannerNode.connect(this.masterGain);
+      if (nodes.media.paused) {
+        playRequests.push(
+          nodes.media.play().then(() => {
+            startedStemIds.push(stemId);
+          }),
+        );
+      }
+    });
+
+    await Promise.all(playRequests);
+
+    const syncTime = this.getCurrentTime();
+
+    if (options.onlyPaused) {
+      startedStemIds.forEach((stemId) => {
+        this.syncStemToTime(stemId, syncTime, true);
+      });
     } else {
-      source.connect(gainNode);
-      gainNode.connect(this.masterGain);
+      this.stemNodes.forEach((nodes, stemId) => {
+        if (!nodes.media.paused) {
+          this.syncStemToTime(stemId, syncTime, true);
+        }
+      });
     }
 
-    source.start(0, this.getStemOffset(stemId, compositionTime));
-    this.activeNodes.set(stemId, { source, gainNode, pannerNode });
+    this.activeStemIds.forEach((stemId) => {
+      const nodes = this.stemNodes.get(stemId);
+
+      if (nodes && !nodes.media.paused) {
+        this.pendingAudibleStemIds.delete(stemId);
+      }
+    });
+
+    this.applyMix();
+  }
+
+  private async beginPlaybackIfNeeded(operationId: number) {
+    if (this.playing || !this.context) {
+      return;
+    }
+
+    await this.ensureContext(true);
+
+    if (!this.isOperationRelevant(operationId) || !this.hasPlayableActiveStems()) {
+      return;
+    }
+
+    const startAt = this.normalizeCompositionTime(this.pausedProgress);
+    this.playbackStartedAt = this.context.currentTime - startAt;
+    this.playing = true;
+  }
+
+  private async preparePendingActiveStems(compositionTime: number) {
+    const stemIds = Array.from(this.pendingAudibleStemIds).filter((stemId) =>
+      this.activeStemIds.has(stemId),
+    );
+
+    await Promise.all(stemIds.map((stemId) => this.prepareActiveStemForAudible(stemId, compositionTime)));
+  }
+
+  private async prepareLoadedStemForPlayback(stemId: string, compositionTime = this.getCurrentTime()) {
+    if (!this.playing) {
+      return;
+    }
+
+    if (this.activeStemIds.has(stemId) && this.pendingAudibleStemIds.has(stemId)) {
+      await this.prepareActiveStemForAudible(stemId, compositionTime);
+      return;
+    }
+
+    await this.prepareStemSilently(stemId, compositionTime);
+  }
+
+  private async prepareActiveStemForAudible(stemId: string, compositionTime = this.getCurrentTime()) {
+    if (!this.activeStemIds.has(stemId)) {
+      this.pendingAudibleStemIds.delete(stemId);
+      this.applyMix();
+      return;
+    }
+
+    const nodes = this.stemNodes.get(stemId);
+    if (!nodes) {
+      return;
+    }
+
+    this.pendingAudibleStemIds.add(stemId);
+    this.applyMix();
+
+    if (nodes.media.paused) {
+      this.syncStemToTime(stemId, compositionTime, true);
+      await nodes.media.play();
+      this.syncStemToTime(stemId, this.getCurrentTime(), true);
+    } else {
+      this.syncStemToTime(stemId, compositionTime, false);
+    }
+
+    this.pendingAudibleStemIds.delete(stemId);
+    this.applyMix();
+    this.warmLoadedStemsForPlayback();
+  }
+
+  private async prepareStemSilently(stemId: string, compositionTime = this.getCurrentTime()) {
+    const nodes = this.stemNodes.get(stemId);
+
+    if (!nodes || !this.playing || !nodes.media.paused) {
+      return;
+    }
+
+    this.syncStemToTime(stemId, compositionTime, true);
+    await nodes.media.play();
+    this.syncStemToTime(stemId, this.getCurrentTime(), true);
+  }
+
+  private warmLoadedStemsForPlayback(compositionTime = this.getCurrentTime()) {
+    if (!this.playing) {
+      return;
+    }
+
+    void this.startLoadedStemsAt(compositionTime, {
+      forceSync: false,
+      onlyPaused: true,
+    }).catch(() => {
+      // A later media readiness event or user action will retry silent warm-up.
+    });
+  }
+
+  private syncStemToTime(stemId: string, compositionTime: number, force: boolean) {
+    const nodes = this.stemNodes.get(stemId);
+    if (!nodes) {
+      return;
+    }
+
+    const duration = nodes.media.duration;
+    const nextOffset = this.getStemOffset(stemId, compositionTime);
+    const hasKnownDuration = Number.isFinite(duration) && duration > 0;
+    const currentOffset = hasKnownDuration ? nodes.media.currentTime % duration : nodes.media.currentTime;
+    const directDelta = Math.abs(currentOffset - nextOffset);
+    const loopDelta = hasKnownDuration ? duration - directDelta : directDelta;
+    const delta = Math.min(directDelta, loopDelta);
+
+    if (force || delta > DESYNC_TOLERANCE_SECONDS) {
+      try {
+        nodes.media.currentTime = nextOffset;
+      } catch {
+        // Some browsers temporarily reject seeks while media metadata settles.
+      }
+    }
   }
 
   private pauseClock(clearActiveStemIds: boolean) {
     this.pausedProgress = this.getCurrentTime();
-    this.stopActiveNodes();
+    this.pauseAllLoadedStems(false);
     this.playing = false;
     this.playbackStartedAt = null;
 
     if (clearActiveStemIds) {
       this.activeStemIds.clear();
     }
+
+    this.applyMix();
   }
 
-  private stopActiveNodes() {
-    this.activeNodes.forEach((_, stemId) => {
-      this.stopStem(stemId);
+  private pauseAllLoadedStems(resetTime: boolean) {
+    this.stemNodes.forEach((_, stemId) => {
+      this.pauseStem(stemId, resetTime);
     });
   }
 
-  private stopStem(stemId: string) {
-    const nodes = this.activeNodes.get(stemId);
+  private pauseStem(stemId: string, resetTime: boolean) {
+    const nodes = this.stemNodes.get(stemId);
     if (!nodes) {
       return;
     }
 
-    try {
-      nodes.source.stop();
-    } catch {
-      // AudioBufferSourceNode can only be stopped once.
-    }
+    nodes.media.pause();
 
-    nodes.source.disconnect();
-    nodes.gainNode.disconnect();
-    nodes.pannerNode?.disconnect();
-    this.activeNodes.delete(stemId);
+    if (resetTime) {
+      try {
+        nodes.media.currentTime = 0;
+      } catch {
+        // Reset is best-effort for media that is not seekable yet.
+      }
+    }
   }
 
   private applyMix() {
@@ -472,12 +876,37 @@ export class AudioEngine {
       return;
     }
 
-    this.activeNodes.forEach(({ gainNode }, stemId) => {
+    this.stemNodes.forEach(({ gainNode }, stemId) => {
       const stem = this.stemMap.get(stemId);
+      const isActive = this.activeStemIds.has(stemId);
       const enabled = this.enabledState.get(stemId) ?? true;
-      const shouldPlay = this.soloStemId ? this.soloStemId === stemId : enabled;
+      const isPendingAudible = this.pendingAudibleStemIds.has(stemId);
+      const shouldPlay = isActive
+        && !isPendingAudible
+        && (this.soloStemId ? this.soloStemId === stemId : enabled);
       const targetGain = shouldPlay ? stem?.gain ?? 1 : 0;
-      gainNode.gain.setTargetAtTime(targetGain, this.context!.currentTime, 0.02);
+      gainNode.gain.setTargetAtTime(targetGain, this.context!.currentTime, STEM_FADE_IN_SECONDS);
     });
+  }
+
+  private isOperationRelevant(operationId: number) {
+    return this.operationId === operationId;
+  }
+
+  private getMediaErrorMessage(media: HTMLMediaElement, file: string) {
+    const code = media.error?.code;
+
+    switch (code) {
+      case 1:
+        return `Loading was aborted: ${file}`;
+      case 2:
+        return `Network error while loading: ${file}`;
+      case 3:
+        return `Audio decode failed: ${file}`;
+      case 4:
+        return `Audio format is not supported: ${file}`;
+      default:
+        return `Could not load audio: ${file}`;
+    }
   }
 }

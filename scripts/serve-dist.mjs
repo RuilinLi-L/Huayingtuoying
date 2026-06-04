@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
-import { createReadStream, existsSync } from 'node:fs';
+import { createReadStream, existsSync, statSync } from 'node:fs';
 import { extname, join, normalize, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -35,6 +35,48 @@ function getFilePath(urlPath) {
   return maybeFile;
 }
 
+function parseRangeHeader(rangeHeader, fileSize) {
+  const match = /^bytes=(\d*)-(\d*)$/.exec(rangeHeader ?? '');
+
+  if (!match) {
+    return null;
+  }
+
+  const [, startText, endText] = match;
+
+  if (!startText && !endText) {
+    return null;
+  }
+
+  if (!startText) {
+    const suffixLength = Number(endText);
+    if (!Number.isInteger(suffixLength) || suffixLength <= 0) {
+      return null;
+    }
+
+    const start = Math.max(fileSize - suffixLength, 0);
+    return { start, end: fileSize - 1 };
+  }
+
+  const start = Number(startText);
+  const end = endText ? Number(endText) : fileSize - 1;
+
+  if (
+    !Number.isInteger(start)
+    || !Number.isInteger(end)
+    || start < 0
+    || end < start
+    || start >= fileSize
+  ) {
+    return null;
+  }
+
+  return {
+    start,
+    end: Math.min(end, fileSize - 1),
+  };
+}
+
 const server = createServer(async (req, res) => {
   try {
     const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
@@ -46,7 +88,29 @@ const server = createServer(async (req, res) => {
 
     if (existsSync(filePath) && !filePath.endsWith('\\') && !filePath.endsWith('/')) {
       const ext = extname(filePath).toLowerCase();
-      res.setHeader('Content-Type', contentTypes[ext] || 'application/octet-stream');
+      const contentType = contentTypes[ext] || 'application/octet-stream';
+      const fileSize = statSync(filePath).size;
+      const range = parseRangeHeader(req.headers.range, fileSize);
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Accept-Ranges', 'bytes');
+
+      if (req.headers.range && !range) {
+        res.statusCode = 416;
+        res.setHeader('Content-Range', `bytes */${fileSize}`);
+        res.end();
+        return;
+      }
+
+      if (range) {
+        res.statusCode = 206;
+        res.setHeader('Content-Range', `bytes ${range.start}-${range.end}/${fileSize}`);
+        res.setHeader('Content-Length', range.end - range.start + 1);
+        createReadStream(filePath, range).pipe(res);
+        return;
+      }
+
+      res.setHeader('Content-Length', fileSize);
       createReadStream(filePath).pipe(res);
       return;
     }
