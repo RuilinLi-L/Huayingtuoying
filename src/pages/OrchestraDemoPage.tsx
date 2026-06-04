@@ -271,6 +271,15 @@ export function OrchestraDemoPage() {
         engine.pause();
       } else {
         setAudioError('');
+        await engine.init();
+        const nextAudioError = await engine.setActiveStems(
+          compositionStems,
+          snapshot.placedMusicianIds,
+        );
+        setAudioError(nextAudioError ?? '');
+        if (nextAudioError && !engine.hasPlayableActiveStems()) {
+          return;
+        }
         await engine.resume();
       }
     } catch (error) {

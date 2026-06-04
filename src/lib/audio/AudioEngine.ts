@@ -79,7 +79,7 @@ export class AudioEngine {
   }
 
   async resume() {
-    if (!this.activeStemIds.size) {
+    if (!this.hasPlayableActiveStems()) {
       return;
     }
 
@@ -132,7 +132,6 @@ export class AudioEngine {
 
     if (!this.playing) {
       this.pausedProgress = currentProgress;
-      await this.resume();
       return this.formatLoadFailures(failures);
     }
 
@@ -162,6 +161,10 @@ export class AudioEngine {
 
   getDuration() {
     return this.compositionDuration;
+  }
+
+  hasPlayableActiveStems() {
+    return this.hasLoadedBuffers(this.activeStemIds);
   }
 
   seek(timeInSeconds: number) {
