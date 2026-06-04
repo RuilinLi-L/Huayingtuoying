@@ -167,11 +167,11 @@ export function EntryPage() {
             <div className="section-heading">
               <div>
                 <p className="eyebrow">扫码入口</p>
-                <h3>面向 iPhone 或轻量触达</h3>
+                <h3>安卓 NFC、iPhone 扫码与通用二维码均可进入</h3>
               </div>
             </div>
             <div className="artifact-utility__stack">
-              <p>同一条目既可以写入 NFC，也可以直接生成二维码入口，方便在不同展陈介质中共用。</p>
+              <p>同一条目既可以写入安卓 NFC 标签，也可以生成二维码入口；安卓 Chrome / Edge 与 iPhone Safari 都能按同一套深链进入体验。</p>
               <QrPreview label={`${entry.title} 二维码入口`} value={qrDeepLink} />
             </div>
           </article>

@@ -15,7 +15,7 @@ interface MindArSceneProps {
 type MindArSceneElement = HTMLElement & {
   hasLoaded?: boolean;
   renderer?: unknown;
-  systems?: Record<string, { start?: () => void }>;
+  systems?: Record<string, { pause?: () => void; start?: () => void; stop?: () => void }>;
 };
 
 const hotspotPositions = ['-0.36 0.18 0.08', '0 0.36 0.08', '0.36 0.18 0.08'];
@@ -39,6 +39,7 @@ export function MindArScene({
 }: MindArSceneProps) {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState('');
+  const [restartKey, setRestartKey] = useState(0);
   const sceneRef = useRef<MindArSceneElement | null>(null);
   const targetRef = useRef<HTMLElement | null>(null);
   const modelRef = useRef<HTMLElement | null>(null);
@@ -85,7 +86,7 @@ export function MindArScene({
   }, [onDebug, onError, onStatusChange]);
 
   useEffect(() => {
-    if (!ready || !targetRef.current || !sceneRef.current || !trackingTarget) {
+    if (error || !ready || !targetRef.current || !sceneRef.current || !trackingTarget) {
       return;
     }
 
@@ -110,10 +111,11 @@ export function MindArScene({
         return;
       }
 
+      const retryHint = `${message} 可点击“重新启动相机”再次初始化。`;
       setError(message);
-      onError(message);
+      onError(retryHint);
       onStatusChange('error');
-      emitDebug(`失败：${message}`);
+      emitDebug(`失败：${retryHint}`);
     };
 
     const captureVideoState = () => {
@@ -301,10 +303,34 @@ export function MindArScene({
       clickableElements.forEach((element) =>
         element.removeEventListener('click', handleCardClick),
       );
+
+      const mindArSystem = sceneElement.systems?.['mindar-image-system'];
+
+      try {
+        mindArSystem?.stop?.();
+        mindArSystem?.pause?.();
+        emitDebug('MindAR 已在卸载时停止');
+      } catch (stopError) {
+        emitDebug(`MindAR 停止异常：${formatUnknownError(stopError)}`);
+      }
+
+      sceneElement.parentElement
+        ?.querySelectorAll<HTMLVideoElement>('video')
+        .forEach((video) => {
+          video.pause();
+          const stream = video.srcObject;
+
+          if (stream instanceof MediaStream) {
+            stream.getTracks().forEach((track) => track.stop());
+          }
+
+          video.srcObject = null;
+        });
     };
   }, [
     entry.knowledgeCards,
     entry.modelUrl,
+    error,
     onDebug,
     onError,
     onSelectCard,
@@ -312,14 +338,31 @@ export function MindArScene({
     ready,
     scene.placementPrompt,
     trackingTarget,
+    restartKey,
   ]);
+
+  const restartScene = () => {
+    setError('');
+    lastVideoSnapshotRef.current = '';
+    onError('');
+    onStatusChange('loading');
+    onDebug('用户触发重新启动相机');
+    setRestartKey((current) => current + 1);
+  };
 
   if (!trackingTarget) {
     return <div className="fallback-box">当前 MindAR 场景缺少识别图资源。</div>;
   }
 
   if (error) {
-    return <div className="fallback-box">{error}</div>;
+    return (
+      <div className="fallback-box fallback-box--action">
+        <p>{error}</p>
+        <button className="button" onClick={restartScene} type="button">
+          重新启动相机
+        </button>
+      </div>
+    );
   }
 
   if (!ready) {
@@ -327,7 +370,7 @@ export function MindArScene({
   }
 
   return (
-    <div className="ar-container">
+    <div className="ar-container" key={restartKey}>
       <a-scene
         ref={sceneRef}
         className="mindar-scene"
@@ -335,7 +378,7 @@ export function MindArScene({
         embedded
         background="color: transparent"
         color-space="sRGB"
-        renderer="alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: true"
+        renderer="alpha: true; antialias: false; colorManagement: true; maxCanvasWidth: 1280; maxCanvasHeight: 720; physicallyCorrectLights: true"
         vr-mode-ui="enabled: false"
         device-orientation-permission-ui="enabled: false"
       >

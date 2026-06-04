@@ -12,6 +12,7 @@ import { KnowledgePanel } from '../components/KnowledgePanel';
 import { WebArScene } from '../components/ar/WebArScene';
 import { AudioEngine } from '../lib/audio/AudioEngine';
 import {
+  getCameraAccessProfile,
   getCameraErrorMessage,
   getDeviceCapabilities,
   requestCameraAccess,
@@ -69,6 +70,50 @@ function getLaunchDescription(
   }
 
   return `${sourceLabel}已选中当前条目。启动后请将镜头对准识别图，让舞台内容在画面中稳定出现。`;
+}
+
+function getEnvironmentNotice(capabilities: ReturnType<typeof getDeviceCapabilities>) {
+  if (!capabilities.secureContext) {
+    return {
+      title: '需要 HTTPS 或 localhost 环境',
+      body: '浏览器只会在安全上下文中开放相机权限。正式展示请使用 HTTPS 域名，或在本地 localhost 调试。',
+      kind: 'error',
+    } as const;
+  }
+
+  if (!capabilities.canUseCamera) {
+    return {
+      title: '当前浏览器没有开放相机能力',
+      body: '请改用最新版 Chrome、Edge 或 Safari，并在站点设置中允许访问相机。',
+      kind: 'error',
+    } as const;
+  }
+
+  if (capabilities.isEmbeddedBrowser) {
+    return {
+      title: '建议用 Chrome 或 Edge 打开',
+      body: '微信、QQ 等内置浏览器对 WebAR 相机预览支持不稳定。安卓 NFC 或二维码入口建议选择“在浏览器打开”。',
+      kind: 'info',
+    } as const;
+  }
+
+  if (capabilities.isAndroid && !capabilities.isRecommendedArBrowser) {
+    return {
+      title: '安卓推荐使用 Chrome 或 Edge',
+      body: `当前识别到 ${capabilities.browserName}。为避免相机黑屏或权限失败，正式体验建议切换到 Chrome / Edge。`,
+      kind: 'info',
+    } as const;
+  }
+
+  if (capabilities.isAndroid) {
+    return {
+      title: '安卓相机模式已优化',
+      body: `${capabilities.browserName} 将使用后置摄像头优先、较轻分辨率和延迟启动策略，减少首次进入时的黑屏概率。`,
+      kind: 'info',
+    } as const;
+  }
+
+  return null;
 }
 
 export function ExperiencePage() {
@@ -130,6 +175,14 @@ export function ExperiencePage() {
 
   const scene = resolveWebArScene(entry, launchContext.source);
   const canUseAr = capabilities.canUseAr;
+  const cameraProfile = useMemo(
+    () => getCameraAccessProfile(capabilities),
+    [capabilities],
+  );
+  const environmentNotice = useMemo(
+    () => getEnvironmentNotice(capabilities),
+    [capabilities],
+  );
   const sourceLabel = getSourceLabel(launchContext.source);
   const trackingModeLabel = getTrackingModeLabel(scene);
 
@@ -184,10 +237,10 @@ export function ExperiencePage() {
 
     try {
       setStatus('loading');
-      pushDebugMessage('开始请求相机权限');
-      await requestCameraAccess({
-        releaseDelayMs: capabilities.isIPhone ? 420 : 160,
-      });
+      pushDebugMessage(
+        `开始请求相机权限：${capabilities.browserName}，releaseDelay=${cameraProfile.releaseDelayMs}ms`,
+      );
+      await requestCameraAccess(cameraProfile);
       pushDebugMessage('相机权限通过，准备进入场景');
       setSceneStarted(true);
       void startAudio().catch((error) => {
@@ -201,7 +254,14 @@ export function ExperiencePage() {
       setStartupError(getCameraErrorMessage(error));
       pushDebugMessage(`相机预检失败：${getCameraErrorMessage(error)}`);
     }
-  }, [canUseAr, capabilities.isIPhone, pushDebugMessage, scene.provider, startAudio]);
+  }, [
+    cameraProfile,
+    canUseAr,
+    capabilities.browserName,
+    pushDebugMessage,
+    scene.provider,
+    startAudio,
+  ]);
 
   useEffect(() => {
     if (!launchContext.autostart || sceneStarted) {
@@ -361,6 +421,19 @@ export function ExperiencePage() {
             </div>
           ) : null}
 
+          {environmentNotice ? (
+            <div
+              className={
+                environmentNotice.kind === 'error'
+                  ? 'status-message status-message--error'
+                  : 'status-message status-message--info'
+              }
+            >
+              <strong>{environmentNotice.title}</strong>
+              <p>{environmentNotice.body}</p>
+            </div>
+          ) : null}
+
           {debugMessages.length ? (
             <div className="status-message status-message--debug">
               <strong>调试信息</strong>
@@ -421,6 +494,9 @@ export function ExperiencePage() {
                     <ProjectorScreenChart size={18} weight="regular" />
                     <span>{status === 'loading' ? '正在准备中' : '启动体验'}</span>
                   </button>
+                  <p className="launch-panel__microcopy">
+                    安卓 Chrome / Edge 会优先调用后置摄像头；如果首次启动失败，请允许相机权限后点击重试。
+                  </p>
                 </div>
               </div>
             </div>
