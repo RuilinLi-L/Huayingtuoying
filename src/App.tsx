@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { useState } from 'react';
 import { AppShell } from './components/AppShell';
 import { SplashScreen } from './components/SplashScreen';
 import { EntryPage } from './pages/EntryPage';
@@ -25,10 +26,17 @@ function shouldBypassSplash(pathname: string, search: string) {
 
 export default function App() {
   const location = useLocation();
+  const [isSplashDismissed, setIsSplashDismissed] = useState(false);
+  const shouldShowSplash =
+    !isSplashDismissed &&
+    !shouldBypassSplash(location.pathname, location.search);
 
   return (
     <>
-      <SplashScreen enabled={!shouldBypassSplash(location.pathname, location.search)} />
+      <SplashScreen
+        enabled={shouldShowSplash}
+        onEnter={() => setIsSplashDismissed(true)}
+      />
       <AppShell>
         <Routes>
           <Route path="/" element={<HomePage />} />

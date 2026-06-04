@@ -4,15 +4,33 @@ import {
   PianoKeys,
   SpeakerHifi,
 } from '@phosphor-icons/react';
+import { useEffect, useState } from 'react';
 
 interface SplashScreenProps {
   enabled?: boolean;
+  onEnter?: () => void;
 }
 
-export function SplashScreen({ enabled = true }: SplashScreenProps) {
+export function SplashScreen({ enabled = true, onEnter }: SplashScreenProps) {
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (enabled) {
+      setIsReady(false);
+    }
+  }, [enabled]);
+
   if (!enabled) {
     return null;
   }
+
+  const handleEnter = () => {
+    if (!isReady) {
+      return;
+    }
+
+    onEnter?.();
+  };
 
   return (
     <section
@@ -66,10 +84,21 @@ export function SplashScreen({ enabled = true }: SplashScreenProps) {
         <h1>交响视界</h1>
       </div>
 
-      <div className="splash-screen__action" aria-hidden="true">
+      <button
+        className="splash-screen__action"
+        type="button"
+        aria-disabled={!isReady}
+        tabIndex={isReady ? 0 : -1}
+        onAnimationEnd={(event) => {
+          if (event.currentTarget === event.target) {
+            setIsReady(true);
+          }
+        }}
+        onClick={handleEnter}
+      >
         <span>进入展厅</span>
         <span className="splash-screen__play" />
-      </div>
+      </button>
     </section>
   );
 }

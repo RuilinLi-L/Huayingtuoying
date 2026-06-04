@@ -2282,8 +2282,7 @@
     radial-gradient(circle at 96% 18%, rgba(181, 150, 99, 0.18), transparent 32%),
     radial-gradient(ellipse at 50% 68%, rgba(255, 253, 248, 0.92), transparent 42%),
     linear-gradient(145deg, #708375 0%, #eceae0 52%, #f8f5ee 100%);
-  pointer-events: none;
-  animation: splash-shell 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
   isolation: isolate;
 }
 
@@ -2694,6 +2693,7 @@
   gap: 12px;
   width: min(214px, 68vw);
   min-height: 56px;
+  border: 0;
   border-radius: 999px;
   background:
     linear-gradient(180deg, rgba(40, 70, 58, 0.98), rgba(30, 55, 45, 0.98)),
@@ -2702,10 +2702,24 @@
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.16),
     0 20px 42px rgba(36, 63, 53, 0.22);
+  cursor: pointer;
+  font: inherit;
   font-weight: 700;
   opacity: 0;
+  pointer-events: auto;
+  touch-action: manipulation;
   transform: translateX(-50%) scale(0.94);
   animation: splash-action 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.splash-screen__action[aria-disabled='true'] {
+  cursor: default;
+  pointer-events: none;
+}
+
+.splash-screen__action:focus-visible {
+  outline: 3px solid rgba(255, 253, 248, 0.92);
+  outline-offset: 4px;
 }
 
 .splash-screen__play {
@@ -3949,7 +3963,7 @@
   }
 
   .splash-screen {
-    animation: splash-shell 900ms linear forwards;
+    animation: none;
   }
 
   .splash-screen *,
