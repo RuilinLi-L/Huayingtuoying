@@ -58,8 +58,8 @@ const featureCards: ExhibitCard[] = [
   },
   {
     id: 'stems',
-    title: '分轨试听',
-    subtitle: '单独聆听乐器声部',
+    title: '声部导赏',
+    subtitle: '听见乐器层次',
     tone: 'mist',
     to: '/demo/base',
     icon: <Headphones size={28} weight="regular" />,
@@ -79,9 +79,9 @@ const featureCards: ExhibitCard[] = [
 const recommendationCards = [
   {
     id: 'composition',
-    eyebrow: '推荐曲目',
-    title: '睡美人圆舞曲',
-    subtitle: '当前展览主题',
+    eyebrow: '推荐展厅',
+    title: '交响视界',
+    subtitle: '当前展厅入口',
     to: '/demo/base',
     imageSrc: '/assets/posters/ensemble.svg',
     icon: <Play size={18} weight="fill" />,
@@ -119,7 +119,7 @@ const routeSteps = [
   { label: '扫码', hint: 'NFC / 二维码', icon: <QrCode size={20} weight="regular" /> },
   { label: 'AR舞台', hint: '观看演出', icon: <CubeFocus size={20} weight="regular" /> },
   { label: '乐器探索', hint: '认识乐器', icon: <MusicNotes size={20} weight="regular" /> },
-  { label: '分轨试听', hint: '聆听声部', icon: <Headphones size={20} weight="regular" /> },
+  { label: '声部导赏', hint: '听见声部', icon: <Headphones size={20} weight="regular" /> },
   { label: '完成参观', hint: '收藏知识', icon: <Heart size={20} weight="regular" /> },
 ];
 
@@ -216,9 +216,8 @@ export function HomePage() {
             </span>
           </div>
           <div className="mobile-exhibit-title">
-            <small>{fixedComposition.subtitle}</small>
-            <h1>{fixedComposition.title}</h1>
-            <p>The Sleeping Beauty Waltz</p>
+            <small>校园古典音乐数字展厅</small>
+            <h1>交响视界</h1>
           </div>
 
           <div className="mobile-exhibit-proof" aria-label="展览能力">

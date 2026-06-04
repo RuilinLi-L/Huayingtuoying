@@ -22,7 +22,7 @@ type InstrumentSectionFilter = MusicianSection | 'all';
 const allSectionFilter = {
   id: 'all' as const,
   label: '全部',
-  description: '一次浏览本项目《睡美人圆舞曲》用到的 12 件管弦乐器。',
+  description: '一次浏览本项目用到的 12 件管弦乐器。',
 };
 
 export function LearnPage() {
@@ -110,7 +110,7 @@ export function LearnPage() {
             </a>
             <Link className="button--ghost" to="/demo/base">
               <ProjectorScreenChart size={18} weight="regular" />
-              <span>回到底座试听</span>
+              <span>回到底座聆听</span>
             </Link>
           </div>
         </div>
@@ -231,9 +231,9 @@ export function LearnPage() {
         <div className="section-heading">
           <div>
             <p className="eyebrow">12 乐器百科</p>
-            <h2>按声部选择一件乐器，再看介绍、试听分轨和 3D 占位模型。</h2>
+            <h2>按声部选择一件乐器，再看介绍、音色导赏和 3D 乐器模型。</h2>
             <p>
-              当前模型使用独立百科占位资源，不复用 AR 场景里的小人模型。后续正式乐器模型可以逐件替换到相同字段。
+              可旋转查看乐器外形，并结合项目声部理解它在乐队里的音色角色。
             </p>
           </div>
         </div>
@@ -340,8 +340,8 @@ export function LearnPage() {
 
               <div className="instrument-audio">
                 <div>
-                  <small className="catalog-label">项目分轨试听</small>
-                  <strong>{selectedInstrument.name} · 睡美人圆舞曲</strong>
+                  <small className="catalog-label">项目声部导赏</small>
+                  <strong>{selectedInstrument.name} · 项目声部</strong>
                 </div>
                 <audio controls src={selectedInstrument.audioSrc} />
               </div>
@@ -349,7 +349,7 @@ export function LearnPage() {
               <div className="hero__actions">
                 <Link className="button" to="/demo/base">
                   <ArrowRight size={18} weight="regular" />
-                  <span>到底座里组合试听</span>
+                  <span>到底座里组合聆听</span>
                 </Link>
                 <Link className="button--ghost" to="/entry/ensemble-stage">
                   <span>查看全编制展签</span>

@@ -11,14 +11,14 @@ export const tutorials: TutorialModule[] = [
     id: 'fundamentals',
     label: '乐理与乐器百科',
     title: '乐理知识卡片。',
-    subtitle: '7 张基础乐理卡片，加上 12 件管弦乐器百科与试听入口。',
+    subtitle: '7 张基础乐理卡片，加上 12 件管弦乐器百科与声部入口。',
     description:
-      '页面上半部分把节奏、音程、和弦、调式、升降号等基础知识整理成可直接阅读的卡片，下半部分保留 12 件管弦乐器的介绍、分轨试听和 3D 模型预览。',
+      '页面上半部分把节奏、音程、和弦、调式、升降号等基础知识整理成可直接阅读的卡片，下半部分保留 12 件管弦乐器的介绍、声部导赏和 3D 模型预览。',
     preface:
       '卡片内容按基础乐理知识点组织，适合快速查阅：先看定义和规律，再把这些概念带到展签、AR 和底座体验中使用。',
     homeTitle: '从乐理入门到 12 件乐器百科。',
     homeSummary:
-      '这套导学页把基础乐理整理成 7 张知识卡片，并集中展示 12 件管弦乐器的介绍、分轨试听和百科模型预览。',
+      '这套导学页把基础乐理整理成 7 张知识卡片，并集中展示 12 件管弦乐器的介绍、声部导赏和百科模型预览。',
     heroNotes: ['7 张乐理知识卡', '12 件管弦乐器', '1 个百科模型预览区'],
     knowledgeCards: [
       {
@@ -622,7 +622,7 @@ export const tutorials: TutorialModule[] = [
               '把旋律想成一条会升降的线，听它何时抬起、何时落下，再回头听其他声部如何托住它。',
             relatedEntryIds: ['violin-dialogue'],
             audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Violin_睡美人圆舞曲.mp3',
-            audioLabel: '小提琴分轨试听',
+            audioLabel: '小提琴声部导赏',
             links: [
               {
                 label: '打开小提琴展签',
@@ -712,7 +712,7 @@ export const tutorials: TutorialModule[] = [
               '读节奏时先数总拍数，再看重音位置。遇到附点、切分或休止时，不要急着唱旋律，先把“停多久、从哪里进”数清楚。',
             relatedEntryIds: ['flute-color'],
             audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Flute_睡美人圆舞曲.mp3',
-            audioLabel: '长笛分轨试听',
+            audioLabel: '长笛声部导赏',
             links: [
               {
                 label: '打开长笛展签',
@@ -735,7 +735,7 @@ export const tutorials: TutorialModule[] = [
               '先听完整合奏，再分别独奏低音、弦乐和木管。少掉支撑层时，重心会变轻；只听装饰层时，节奏会更碎、更灵动。',
             relatedEntryIds: ['ensemble-stage'],
             audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Bass_睡美人圆舞曲.mp3',
-            audioLabel: '低音提琴分轨试听',
+            audioLabel: '低音提琴声部导赏',
             links: [
               {
                 label: '打开合奏展签',
@@ -817,7 +817,7 @@ export const tutorials: TutorialModule[] = [
               '先找主线，再关心低音支撑和色彩层；少听一层之后，哪里变薄，哪里就是那件乐器的功能。',
             relatedEntryIds: ['ensemble-stage'],
             audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Cello_睡美人圆舞曲.mp3',
-            audioLabel: '大提琴分轨试听',
+            audioLabel: '大提琴声部导赏',
             links: [
               {
                 label: '打开合奏展签',
@@ -835,7 +835,7 @@ export const tutorials: TutorialModule[] = [
           '当乐理概念和 12 件乐器百科连在一起，用户回到 AR 与底座时，就不只是看见模型，而是能理解它们各自承担的音乐角色。',
         continueTitle: '进入 12 件乐器百科',
         continueDescription:
-          '接下来可以按木管、铜管和弦乐三组浏览每件乐器，并试听它在项目曲目中的分轨。',
+          '接下来可以按木管、铜管和弦乐三组浏览每件乐器，并聆听它在项目曲目中的声部。',
         continueLinks: [
           {
             label: '进入乐器百科',
