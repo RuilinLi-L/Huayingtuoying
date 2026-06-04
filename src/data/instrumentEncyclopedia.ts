@@ -77,6 +77,7 @@ const instrumentCopy: Record<
     orchestraRole: string;
     listeningGuide: string;
     structure: string[];
+    featuredWorks?: string[];
   }
 > = {
   flute: {
@@ -105,11 +106,18 @@ const instrumentCopy: Record<
   },
   bassoon: {
     englishName: 'Bassoon',
-    summary: '巴松是木管组的低音支点，声音低沉但不笨重，带有温和的叙事感。',
-    timbre: '长管身和双簧哨片让它同时有木质、鼻音和低频弹性。',
-    orchestraRole: '常支撑木管低声部，也能用独特音色扮演幽默、庄重或神秘的角色。',
-    listeningGuide: '听巴松分轨时，先找它怎样托住下面的重心，再听它偶尔露出的表情。',
-    structure: ['双簧哨片', '弯管', '长管身', '低音共鸣'],
+    summary: '巴松管/大管，是木管乐器家族里的“大块头”，属于双簧管族。',
+    timbre:
+      '通过吹奏双簧片震动发声；低音区阴沉、庄严，中音区柔和饱满，高音区充满戏剧感、略带忧伤。快速断奏时，能发出“咔嗒”声。',
+    orchestraRole:
+      '因为音色表情夸张又灵活，巴松常被塑造成幽默丑角的形象，是乐队里的“小丑”和搞笑担当。',
+    listeningGuide: '档案：出生地意大利，fagotto 意为“一捆柴”；身高 2.5 米以上，重约 3 公斤。',
+    structure: ['双簧片', '低音区', '中音区', '高音区', '快速断奏'],
+    featuredWorks: [
+      '莫扎特《降B大调巴松协奏曲 K.191》',
+      '韦伯《F大调巴松协奏曲 Op.75》',
+      '维瓦尔第《e小调巴松协奏曲 RV 484》',
+    ],
   },
   horn: {
     englishName: 'French Horn',
@@ -201,7 +209,7 @@ function buildInstrumentEntry(id: SleepingBeautyStemId): InstrumentEncyclopediaE
     orchestraRole: copy.orchestraRole,
     listeningGuide: copy.listeningGuide,
     structure: copy.structure,
-    featuredWorks: musician.featuredWorks,
+    featuredWorks: copy.featuredWorks ?? musician.featuredWorks,
     audioSrc: stem.file,
     modelUrl: `/assets/models/${id}/scene.optimized.glb`,
     color: musician.color,
