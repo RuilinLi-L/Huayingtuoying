@@ -100,7 +100,11 @@ export class AudioEngine {
     this.applyMix();
   }
 
-  async setActiveStems(stems: AudioStem[], activeStemIds: string[]) {
+  async setActiveStems(
+    stems: AudioStem[],
+    activeStemIds: string[],
+    options: { load?: boolean } = {},
+  ) {
     await this.ensureContext(false);
     this.registerStems(stems);
 
@@ -119,6 +123,11 @@ export class AudioEngine {
 
     if (!nextActiveStemIds.size) {
       this.pauseClock(true);
+      return null;
+    }
+
+    if (options.load === false) {
+      this.pausedProgress = currentProgress;
       return null;
     }
 

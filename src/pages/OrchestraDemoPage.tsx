@@ -147,6 +147,7 @@ export function OrchestraDemoPage() {
       const nextAudioError = await engine.setActiveStems(
         compositionStems,
         snapshot.placedMusicianIds,
+        { load: engine.isPlaying() },
       );
 
       if (cancelled) {
