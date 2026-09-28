@@ -12,6 +12,8 @@ import './styles/base.css';
 import './styles/shell.css';
 import './styles/pages.css';
 import './styles/stage.css';
+import './styles/mobile-shell.css';
+import './styles/home.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

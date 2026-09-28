@@ -1,7 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { AppShell } from './components/AppShell';
-import { SplashScreen } from './components/SplashScreen';
+import { MobileShell } from './components/layout/MobileShell';
 
 const EntryPage = lazy(() =>
   import('./pages/EntryPage').then((module) => ({ default: module.EntryPage })),
@@ -28,53 +28,48 @@ const OrchestraDemoPage = lazy(() =>
     default: module.OrchestraDemoPage,
   })),
 );
+const StagePage = lazy(() =>
+  import('./pages/StagePage').then((module) => ({ default: module.StagePage })),
+);
+const KnowledgePage = lazy(() =>
+  import('./pages/KnowledgePage').then((module) => ({ default: module.KnowledgePage })),
+);
 
 function RouteFallback() {
   return <div className="route-fallback" aria-label="页面加载中" />;
 }
 
-function shouldBypassSplash(pathname: string, search: string) {
-  const searchParams = new URLSearchParams(search);
-
-  return (
-    pathname.startsWith('/entry/') ||
-    pathname.startsWith('/experience/') ||
-    Boolean(searchParams.get('entry')) ||
-    searchParams.has('lineup') ||
-    searchParams.get('source') === 'nfc' ||
-    searchParams.get('autostart') === '1' ||
-    searchParams.get('autostart') === 'true'
-  );
-}
-
 export default function App() {
   const location = useLocation();
-  const [isSplashDismissed, setIsSplashDismissed] = useState(false);
-  const shouldShowSplash =
-    !isSplashDismissed &&
-    !shouldBypassSplash(location.pathname, location.search);
+  const isMobileRoute =
+    location.pathname === '/' ||
+    location.pathname === '/home' ||
+    location.pathname === '/compose' ||
+    location.pathname === '/stage' ||
+    location.pathname.startsWith('/knowledge/');
+  const routes = (
+    <Suspense fallback={<RouteFallback />}>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/stage" element={<StagePage />} />
+        <Route path="/knowledge/instruments" element={<KnowledgePage />} />
+        <Route path="/knowledge/instruments/:instrumentId" element={<KnowledgePage />} />
+        <Route path="/knowledge/theory/:topicId" element={<Navigate to="/learn/fundamentals" replace />} />
+        <Route path="/compose" element={<MusicComposePage />} />
+        <Route path="/demo/base" element={<OrchestraDemoPage />} />
+        <Route path="/entry/:entryId" element={<EntryPage />} />
+        <Route path="/experience/:entryId" element={<ExperiencePage />} />
+        <Route path="/learn/:moduleId" element={<LearnPage />} />
+        <Route path="/home" element={<Navigate to="/" replace />} />
+        <Route path="/not-found" element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Suspense>
+  );
 
-  return (
-    <>
-      <SplashScreen
-        enabled={shouldShowSplash}
-        onEnter={() => setIsSplashDismissed(true)}
-      />
-      <AppShell>
-        <Suspense fallback={<RouteFallback />}>
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/compose" element={<MusicComposePage />} />
-            <Route path="/demo/base" element={<OrchestraDemoPage />} />
-            <Route path="/entry/:entryId" element={<EntryPage />} />
-            <Route path="/experience/:entryId" element={<ExperiencePage />} />
-            <Route path="/learn/:moduleId" element={<LearnPage />} />
-            <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/not-found" element={<NotFoundPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </AppShell>
-    </>
+  return isMobileRoute ? (
+    <MobileShell>{routes}</MobileShell>
+  ) : (
+    <AppShell>{routes}</AppShell>
   );
 }
