@@ -1,5 +1,4 @@
 import { ArrowRight, BookOpenText } from '@phosphor-icons/react';
-import { useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom';
 import { instrumentEncyclopedia, instrumentSections } from '../data/instrumentEncyclopedia';
 import type { MusicianSection } from '../types/demo';
@@ -23,13 +22,12 @@ type Section = MusicianSection | 'all';
 
 export function KnowledgePage() {
   const { instrumentId } = useParams();
-  const [searchParams] = useSearchParams();
-  const initialSection = searchParams.get('section');
-  const [section, setSection] = useState<Section>(
-    initialSection === 'strings' || initialSection === 'woodwind' || initialSection === 'brass'
-      ? initialSection
-      : 'all',
-  );
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sectionParam = searchParams.get('section');
+  const section: Section = sectionParam === 'strings' || sectionParam === 'woodwind' || sectionParam === 'brass'
+    ? sectionParam
+    : 'all';
+  const sectionQuery = section === 'all' ? '' : `?section=${section}`;
   const selected = instrumentId
     ? instrumentEncyclopedia.find((item) => item.id === instrumentId)
     : null;
@@ -39,7 +37,7 @@ export function KnowledgePage() {
   if (selected) {
     return (
       <article className="mobile-feature-page knowledge-detail">
-        <Link className="knowledge-detail__back" to="/knowledge/instruments">← 全部乐器</Link>
+        <Link className="knowledge-detail__back" to={`/knowledge/instruments${sectionQuery}`}>← 全部乐器</Link>
         <img src={instrumentImages[selected.id]} alt={selected.name} width="1254" height="1254" />
         <p className="mobile-feature-page__eyebrow">{selected.sectionLabel} · {selected.englishName}</p>
         <h1>{selected.name}</h1>
@@ -65,12 +63,17 @@ export function KnowledgePage() {
       </div>
       <div className="knowledge-library__filters" role="group" aria-label="乐器声部筛选">
         {[{ id: 'all' as const, label: '全部' }, ...instrumentSections].map((item) => (
-          <button key={item.id} className={section === item.id ? 'is-active' : ''} type="button" aria-pressed={section === item.id} onClick={() => setSection(item.id)}>{item.label}</button>
+          <button key={item.id} className={section === item.id ? 'is-active' : ''} type="button" aria-pressed={section === item.id} onClick={() => setSearchParams((current) => {
+            const next = new URLSearchParams(current);
+            if (item.id === 'all') next.delete('section');
+            else next.set('section', item.id);
+            return next;
+          })}>{item.label}</button>
         ))}
       </div>
       <div className="knowledge-library__grid">
         {visible.map((instrument) => (
-          <Link to={`/knowledge/instruments/${instrument.id}`} key={instrument.id}>
+          <Link to={`/knowledge/instruments/${instrument.id}${sectionQuery}`} key={instrument.id}>
             <img src={instrumentImages[instrument.id]} alt="" width="1254" height="1254" loading="lazy" />
             <strong>{instrument.name}</strong>
             <small>{instrument.englishName}</small>

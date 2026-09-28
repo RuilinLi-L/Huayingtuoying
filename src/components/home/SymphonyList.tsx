@@ -1,14 +1,21 @@
 import { Pause, Play } from '@phosphor-icons/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { SymphonyPreview } from '../../data/symphonies';
 import { AudioEngine } from '../../lib/audio/AudioEngine';
+
+type Playback = { id: string; status: 'loading' | 'playing' | 'paused' } | null;
 
 export function SymphonyList({ previews }: { previews: SymphonyPreview[] }) {
   const engineRef = useRef<AudioEngine | null>(null);
   const operationRef = useRef(0);
-  const [activeId, setActiveId] = useState<string | null>(null);
-  const [loadingId, setLoadingId] = useState<string | null>(null);
+  const playbackRef = useRef<Playback>(null);
+  const [playback, setPlayback] = useState<Playback>(null);
   const [error, setError] = useState('');
+
+  function updatePlayback(next: Playback) {
+    playbackRef.current = next;
+    setPlayback(next);
+  }
 
   useEffect(() => {
     const engine = new AudioEngine();
@@ -20,42 +27,46 @@ export function SymphonyList({ previews }: { previews: SymphonyPreview[] }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (activeId && !previews.some((preview) => preview.id === activeId)) {
+  useLayoutEffect(() => {
+    const current = playbackRef.current;
+    if (current && !previews.some((preview) => preview.id === current.id)) {
+      operationRef.current += 1;
       engineRef.current?.stop();
-      setActiveId(null);
+      updatePlayback(null);
     }
-  }, [activeId, previews]);
+  }, [previews]);
 
   async function togglePreview(preview: SymphonyPreview) {
     const engine = engineRef.current;
     if (!engine) return;
 
     setError('');
-    if (activeId === preview.id) {
+    const current = playbackRef.current;
+    if (current?.id === preview.id && current.status === 'playing') {
+      operationRef.current += 1;
       engine.pause();
-      setActiveId(null);
+      updatePlayback({ id: preview.id, status: 'paused' });
       return;
     }
 
     const operation = ++operationRef.current;
-    setLoadingId(preview.id);
+    updatePlayback({ id: preview.id, status: 'loading' });
     try {
-      const failure = await engine.play([preview.stem]);
+      const failure = current?.id === preview.id && current.status === 'paused'
+        ? (await engine.resume(), null)
+        : await engine.play([preview.stem]);
       if (operation !== operationRef.current) return;
       if (failure || !engine.isPlaying()) {
         setError(failure || '音频暂时无法播放，请稍后重试。');
-        setActiveId(null);
+        updatePlayback(null);
       } else {
-        setActiveId(preview.id);
+        updatePlayback({ id: preview.id, status: 'playing' });
       }
     } catch {
       if (operation === operationRef.current) {
         setError('音频暂时无法播放，请稍后重试。');
-        setActiveId(null);
+        updatePlayback(null);
       }
-    } finally {
-      if (operation === operationRef.current) setLoadingId(null);
     }
   }
 
@@ -64,8 +75,8 @@ export function SymphonyList({ previews }: { previews: SymphonyPreview[] }) {
       {error ? <p className="home-audio-error" role="alert">{error}</p> : null}
       <ul className="home-symphony-list">
         {previews.map((preview) => {
-          const playing = activeId === preview.id;
-          const loading = loadingId === preview.id;
+          const playing = playback?.id === preview.id && playback.status === 'playing';
+          const loading = playback?.id === preview.id && playback.status === 'loading';
           return (
             <li className={playing ? 'home-symphony home-symphony--playing' : 'home-symphony'} key={preview.id}>
               <div className="home-symphony__composer">

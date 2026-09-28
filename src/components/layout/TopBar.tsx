@@ -16,9 +16,6 @@ export function TopBar() {
   const date = new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric', month: 'numeric', day: 'numeric',
   }).format(now);
-  const time = new Intl.DateTimeFormat('zh-CN', {
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  }).format(now);
   const title = pathname.startsWith('/knowledge/instruments/')
     ? '乐器知识'
     : pageNames[pathname] ?? '华音拓影';
@@ -32,10 +29,6 @@ export function TopBar() {
 
   return (
     <header className={isHome ? 'mobile-topbar mobile-topbar--home' : 'mobile-topbar'}>
-      <div className="mobile-topbar__status" aria-hidden="true">
-        <span>{time}</span>
-        <span className="mobile-topbar__signal">▮▮▮ <span>◕</span> ▰</span>
-      </div>
       <div className="mobile-topbar__row">
         {isHome ? (
           <span className="mobile-topbar__avatar" aria-hidden="true"><MusicNotes size={29} weight="duotone" /></span>

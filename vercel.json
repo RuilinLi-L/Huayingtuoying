@@ -46,6 +46,14 @@
       "destination": "/index.html"
     },
     {
+      "source": "/stage",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/knowledge/:path*",
+      "destination": "/index.html"
+    },
+    {
       "source": "/not-found",
       "destination": "/index.html"
     }
