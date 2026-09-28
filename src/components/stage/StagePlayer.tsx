@@ -74,7 +74,8 @@ export function StagePlayer({
         type="button"
         onClick={() => onSeek(0)}
         disabled={!safeDuration}
-        aria-label="从头播放"
+        aria-label="回到乐曲开头"
+        title="回到开头"
       >
         <ArrowCounterClockwise size={22} weight="bold" aria-hidden="true" />
       </button>

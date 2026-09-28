@@ -1,10 +1,20 @@
 import { ArrowsIn, ArrowsOut } from '@phosphor-icons/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import type { OrchestraSceneDefinition } from '../../types/demo';
 
-export function StageHero() {
+interface StageHeroProps {
+  currentScene: OrchestraSceneDefinition;
+}
+
+export function StageHero({ currentScene }: StageHeroProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const sceneStyle = {
+    '--scene-base': currentScene.palette.base,
+    '--scene-glow': currentScene.palette.glow,
+    '--scene-haze': currentScene.palette.haze,
+  } as CSSProperties;
 
   useEffect(() => {
     setCanFullscreen(typeof frameRef.current?.requestFullscreen === 'function');
@@ -27,7 +37,7 @@ export function StageHero() {
   }
 
   return (
-    <div className="stage-mobile__hero" ref={frameRef}>
+    <div className="stage-mobile__hero" ref={frameRef} style={sceneStyle}>
       <div className="stage-mobile__hero-scene">
         <img
           className="stage-mobile__hero-art"
@@ -37,6 +47,7 @@ export function StageHero() {
           height="345"
           fetchPriority="high"
         />
+        <span className="stage-mobile__scene-label" aria-live="polite">当前舞台 · {currentScene.shortLabel}</span>
         {canFullscreen ? (
           <button
             className="stage-mobile__fullscreen"

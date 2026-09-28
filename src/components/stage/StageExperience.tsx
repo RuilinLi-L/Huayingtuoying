@@ -63,7 +63,7 @@ export function StageExperience({
 
   return (
     <div className="stage-mobile">
-      <StageHero />
+      <StageHero currentScene={currentScene} />
       <StagePlayer
         currentTime={currentTime}
         duration={duration}

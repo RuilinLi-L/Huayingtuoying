@@ -1,13 +1,21 @@
+import { useSearchParams } from 'react-router-dom';
 import { StageExperience } from '../components/stage/StageExperience';
 import { musicians } from '../data/orchestraDemo';
 import { useOrchestraSession } from '../features/orchestra/useOrchestraSession';
 
 const fullOrchestraLineup = musicians.map((musician) => musician.id);
+const emptyNfcLineup: string[] = [];
 
 export function StagePage() {
+  const [searchParams] = useSearchParams();
+  const defaultLineupIds = searchParams.get('source') === 'nfc'
+    ? emptyNfcLineup
+    : fullOrchestraLineup;
   const session = useOrchestraSession({
-    defaultLineupIds: fullOrchestraLineup,
+    defaultLineupIds,
     preloadSelectedStems: false,
+    audioVariant: 'stage-mobile',
+    showAllScenes: true,
   });
 
   return (

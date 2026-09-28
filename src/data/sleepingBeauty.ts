@@ -18,6 +18,8 @@ export type SleepingBeautyStemId =
   | 'cello'
   | 'bass';
 
+export type SleepingBeautyAudioVariant = 'mobile' | 'stage-mobile';
+
 export interface SleepingBeautyStemDefinition {
   id: SleepingBeautyStemId;
   name: string;
@@ -29,7 +31,8 @@ export interface SleepingBeautyStemDefinition {
   gain: number;
 }
 
-const sleepingBeautyAudioBasePath = '/assets/audio/The Sleeping Beauty Waltz/mobile';
+const sleepingBeautyAudioRootPath = '/assets/audio/The Sleeping Beauty Waltz';
+const sleepingBeautyAudioBasePath = `${sleepingBeautyAudioRootPath}/mobile`;
 
 export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
@@ -199,6 +202,24 @@ export function getSleepingBeautyStem(stemId: string) {
   }
 
   return sleepingBeautyStemMap.get(normalizedStemId) ?? null;
+}
+
+export function getSleepingBeautyStemFile(
+  stemId: string,
+  variant: SleepingBeautyAudioVariant = 'mobile',
+): string {
+  const stem = getSleepingBeautyStem(stemId);
+
+  if (!stem) {
+    throw new Error(`Unknown Sleeping Beauty stem: ${stemId}`);
+  }
+
+  if (variant === 'mobile') {
+    return stem.file;
+  }
+
+  const filename = stem.file.slice(sleepingBeautyAudioBasePath.length + 1);
+  return `${sleepingBeautyAudioRootPath}/${variant}/${filename}`;
 }
 
 export function createSleepingBeautyAudioStem(

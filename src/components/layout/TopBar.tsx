@@ -11,20 +11,14 @@ const pageNames: Record<string, string> = {
 export function TopBar() {
   const { pathname } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [now, setNow] = useState(() => new Date());
   const isHome = pathname === '/';
   const isStage = pathname === '/stage';
   const date = new Intl.DateTimeFormat('zh-CN', {
     year: 'numeric', month: 'numeric', day: 'numeric',
-  }).format(now);
+  }).format(new Date());
   const title = pathname.startsWith('/knowledge/instruments/')
     ? '乐器知识'
     : pageNames[pathname] ?? '华音拓影';
-
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(new Date()), 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   useEffect(() => setMenuOpen(false), [pathname]);
 

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { baseAnchorId, fixedComposition } from '../../data/orchestraDemo';
-import { normalizeMusicianIds } from '../../data/sleepingBeauty';
+import {
+  getSleepingBeautyStemFile,
+  normalizeMusicianIds,
+  type SleepingBeautyAudioVariant,
+} from '../../data/sleepingBeauty';
 import { AudioEngine } from '../../lib/audio/AudioEngine';
 import { getCameraErrorMessage, getDeviceCapabilities } from '../../lib/device';
 import {
@@ -24,21 +28,15 @@ const allScenes = getOrchestraScenes();
 const EMPTY_LINEUP: string[] = [];
 const PLAYBACK_STATE_SYNC_INTERVAL_MS = 200;
 
-const compositionStems: AudioStem[] = fixedComposition.stems.map((stem) => ({
-  id: stem.id,
-  name: stem.name,
-  file: stem.file,
-  defaultEnabled: true,
-  group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
-  stereoPan: stem.stereoPan,
-  gain: stem.gain,
-}));
-
 interface UseOrchestraSessionOptions {
   /** Used only when the URL has no lineup parameter. The legacy demo defaults to none. */
   defaultLineupIds?: string[];
   /** The mobile stage can defer large stem downloads until Play is pressed. */
   preloadSelectedStems?: boolean;
+  /** The stage uses lighter files while the legacy demo keeps the original stems. */
+  audioVariant?: SleepingBeautyAudioVariant;
+  /** Expose every scene when the stage lets visitors switch freely. */
+  showAllScenes?: boolean;
 }
 
 function parseLineup(value: string | null, defaultLineupIds: string[]) {
@@ -58,7 +56,21 @@ function parseSceneId(value: string | null): OrchestraSceneId {
 export function useOrchestraSession({
   defaultLineupIds = EMPTY_LINEUP,
   preloadSelectedStems = true,
+  audioVariant = 'mobile',
+  showAllScenes = false,
 }: UseOrchestraSessionOptions = {}) {
+  const compositionStems = useMemo<AudioStem[]>(
+    () => fixedComposition.stems.map((stem) => ({
+      id: stem.id,
+      name: stem.name,
+      file: getSleepingBeautyStemFile(stem.id, audioVariant),
+      defaultEnabled: true,
+      group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
+      stereoPan: stem.stereoPan,
+      gain: stem.gain,
+    })),
+    [audioVariant],
+  );
   const [searchParams] = useSearchParams();
   const lineupParam = searchParams.get('lineup');
   const sceneParam = searchParams.get('scene');
@@ -223,8 +235,7 @@ export function useOrchestraSession({
       active = false;
     };
     // The primitive key tracks lineup changes without restarting for snapshot timestamps.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineupKey]);
+  }, [lineupKey, compositionStems]);
 
   useEffect(() => {
     if (!preloadSelectedStems || !snapshot.placedMusicianIds.length) {
@@ -240,8 +251,7 @@ export function useOrchestraSession({
     void engine.preload(selectedStems).catch(() => {
       // Playback retries the selected stems on the next user gesture.
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lineupKey, preloadSelectedStems]);
+  }, [lineupKey, preloadSelectedStems, compositionStems]);
 
   const mode = useMemo(
     () => resolveOrchestraMode(snapshot.placedMusicianIds),
@@ -261,8 +271,9 @@ export function useOrchestraSession({
     : null;
   const recommendedSceneIds = useMemo(() => getRecommendedSceneIds(mode.id), [mode.id]);
   const recommendedScenes = allScenes.filter((scene) => recommendedSceneIds.includes(scene.id));
-  const sceneOptions =
-    hasValidSceneQuery && !recommendedScenes.some((scene) => scene.id === currentSceneId)
+  const sceneOptions = showAllScenes
+    ? allScenes
+    : hasValidSceneQuery && !recommendedScenes.some((scene) => scene.id === currentSceneId)
       ? [currentScene, ...recommendedScenes]
       : recommendedScenes.length
         ? recommendedScenes
@@ -274,10 +285,10 @@ export function useOrchestraSession({
   );
 
   useEffect(() => {
-    if (!hasValidSceneQuery && !recommendedSceneIds.includes(currentSceneId)) {
+    if (!showAllScenes && !hasValidSceneQuery && !recommendedSceneIds.includes(currentSceneId)) {
       setCurrentSceneId(recommendedSceneIds[0] ?? 'qintai');
     }
-  }, [currentSceneId, hasValidSceneQuery, recommendedSceneIds]);
+  }, [currentSceneId, hasValidSceneQuery, recommendedSceneIds, showAllScenes]);
 
   const stopStage = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -397,7 +408,7 @@ export function useOrchestraSession({
         setIsLoading(false);
       }
     }
-  }, [snapshot.placedMusicianIds]);
+  }, [snapshot.placedMusicianIds, compositionStems]);
 
   const seek = useCallback((timeInSeconds: number) => {
     const engine = audioEngineRef.current;
