@@ -1,4 +1,4 @@
-import type { RefObject } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import type {
   MusicianProfile,
   OrchestraSceneDefinition,
@@ -60,10 +60,21 @@ export function StageExperience({
   onCloseStage,
 }: StageExperienceProps) {
   const focusedMusician = musicians.find((item) => item.id === focusedMusicianId) ?? null;
+  const previousIds = useRef(selectedIds);
+  const [pulseIds, setPulseIds] = useState<string[]>([]);
+  const lineupKey = selectedIds.join(',');
+  useEffect(() => {
+    const next = lineupKey ? lineupKey.split(',') : [];
+    setPulseIds(next.filter((id) => !previousIds.current.includes(id)));
+    previousIds.current = next;
+    const timeout = window.setTimeout(() => setPulseIds([]), 560);
+    return () => window.clearTimeout(timeout);
+  }, [lineupKey]);
+  const heroHighlights = focusedMusicianId && highlightIds.includes(focusedMusicianId) ? [focusedMusicianId] : [];
 
   return (
     <div className="stage-mobile">
-      <StageHero currentScene={currentScene} />
+      <StageHero currentScene={currentScene} selectedIds={selectedIds} highlightIds={heroHighlights} pulseIds={pulseIds} />
       <StagePlayer
         currentTime={currentTime}
         duration={duration}
@@ -95,7 +106,7 @@ export function StageExperience({
 
       <header className="stage-mobile__intro">
         <h1>Orchestra</h1>
-        <p>选取下面的乐团角色，听取乐曲不同的乐器演奏，享受不一样的乐曲体验。</p>
+        <p>点选乐器，加入或移出演奏。让不同声部交织，听见你的交响乐团。</p>
       </header>
 
       <div className="stage-mobile__sections" aria-label="乐团声部">
@@ -103,25 +114,28 @@ export function StageExperience({
           section="strings"
           musicians={musicians}
           selectedIds={selectedIds}
-          highlightIds={highlightIds}
+          pulseIds={pulseIds}
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
+          onToggleMusician={onToggleMusicianInLineup}
         />
         <OrchestraSection
           section="woodwind"
           musicians={musicians}
           selectedIds={selectedIds}
-          highlightIds={highlightIds}
+          pulseIds={pulseIds}
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
+          onToggleMusician={onToggleMusicianInLineup}
         />
         <OrchestraSection
           section="brass"
           musicians={musicians}
           selectedIds={selectedIds}
-          highlightIds={highlightIds}
+          pulseIds={pulseIds}
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
+          onToggleMusician={onToggleMusicianInLineup}
         />
       </div>
 

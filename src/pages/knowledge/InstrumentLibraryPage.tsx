@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { InstrumentCard } from '../../components/knowledge/InstrumentCard';
 import { InstrumentPreviewPlayer } from '../../components/knowledge/InstrumentPreviewPlayer';
@@ -28,6 +28,11 @@ export function InstrumentLibraryPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const section = resolveSection(searchParams.get('section'));
   const previousSection = useRef(section);
+  const [transition, setTransition] = useState({ section, direction: 'none' });
+  if (transition.section !== section) {
+    const index = (value: MusicianSection) => instrumentSections.findIndex((item) => item.id === value);
+    setTransition({ section, direction: index(section) < index(transition.section) ? 'backward' : 'forward' });
+  }
   const { instrumentId, stop } = useKnowledgeAudio();
   const sectionDefinition = instrumentSections.find((item) => item.id === section)!;
   const instruments = instrumentEncyclopedia.filter((instrument) => instrument.section === section);
@@ -51,7 +56,7 @@ export function InstrumentLibraryPage() {
   };
 
   return (
-    <div className="knowledge-page instrument-library-page">
+    <div className="knowledge-page instrument-library-page" data-section-motion={transition.direction}>
       <header className="instrument-library-page__intro">
         <div className="instrument-library-page__topline">
           <p className="knowledge-eyebrow">INSTRUMENT LIBRARY <span>·</span> {sectionDefinition.label}</p>

@@ -1,3 +1,7 @@
+@property --scene-base { syntax: '<color>'; inherits: true; initial-value: #355a51; }
+@property --scene-glow { syntax: '<color>'; inherits: true; initial-value: #d7c690; }
+@property --scene-haze { syntax: '<color>'; inherits: true; initial-value: #eee6d1; }
+
 .stage-mobile {
   position: relative;
   width: 100%;
@@ -277,14 +281,6 @@
   transition: transform 240ms ease, border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
 }
 
-.stage-mobile__musician--out-of-lineup {
-  background: color-mix(in srgb, var(--stage-bg) 20%, transparent);
-}
-
-.stage-mobile__musician--dimmed:not(.stage-mobile__musician--focused) {
-  background: color-mix(in srgb, var(--stage-bg) 28%, transparent);
-}
-
 .stage-mobile__musician:hover,
 .stage-mobile__musician--focused {
   transform: translateY(-2px) scale(1.025);
@@ -385,4 +381,41 @@
   .stage-mobile__sheet { animation: none; }
   .stage-mobile__player-button,
   .stage-mobile__musician { transition: none; }
+}
+
+/* Masks use the original art coordinates, so every layer scales with the stage. */
+.stage-mobile__character-layers {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 393 / 345;
+  pointer-events: none;
+}
+.stage-mobile__character-dim { filter: grayscale(1) brightness(0.48); opacity: 0; transition: opacity 240ms ease; }
+.stage-mobile__character-dim.is-muted { opacity: 0.82; }
+.stage-mobile__character-focus { fill: none; stroke: #fff7d5; stroke-width: 2; opacity: 0.65; }
+.stage-mobile__character-pulse { fill: #fff4be; animation: stage-character-light 560ms ease-out both; }
+.stage-mobile__hero { transition: --scene-base 280ms ease, --scene-glow 280ms ease, --scene-haze 280ms ease; }
+.stage-mobile__hero-scene::after { transition: background 280ms ease, box-shadow 280ms ease; }
+.stage-mobile__scene-label { transition: background-color 280ms ease, border-color 280ms ease, box-shadow 280ms ease; }
+.stage-mobile__musician-slot { position: relative; min-width: 0; }
+.stage-mobile__musician { position: absolute; inset: 0; width: 100%; height: 100%; transition: backdrop-filter 240ms ease, transform 240ms ease, border-color 240ms ease, background-color 240ms ease, box-shadow 240ms ease; }
+.stage-mobile__musician--out-of-lineup { backdrop-filter: grayscale(1) brightness(0.65); background: rgba(92, 116, 112, 0.2); }
+.stage-mobile__musician--in-lineup { backdrop-filter: grayscale(0) brightness(1); }
+.stage-mobile__musician--pulse { animation: stage-card-light 560ms ease-out; }
+.stage-mobile__musician:active { transform: scale(0.96); }
+.stage-mobile__musician-info { position: absolute; z-index: 1; top: 0; right: 0; display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 50%; background: rgba(250, 253, 245, 0.88); color: var(--stage-primary); cursor: pointer; transition: transform 160ms ease; }
+.stage-mobile__musician-info:active,
+.stage-mobile__player-button:active:not(:disabled),
+.stage-mobile__scene:active { transform: scale(0.94); }
+.stage-mobile__scene { transition: background-color 240ms ease, color 240ms ease, transform 160ms ease; }
+@keyframes stage-character-light { from { opacity: 0.65; } to { opacity: 0; } }
+@keyframes stage-card-light { from { box-shadow: 0 0 0 3px #fff7d5, 0 0 20px #fff7d5; } to { box-shadow: 0 0 0 0 transparent; } }
+@media (prefers-reduced-motion: reduce) {
+  .stage-mobile__character-pulse, .stage-mobile__musician--pulse { animation: none; }
+  .stage-mobile__character-pulse { display: none; }
+  .stage-mobile__character-dim, .stage-mobile__hero, .stage-mobile__hero-scene::after,
+  .stage-mobile__scene-label, .stage-mobile__musician, .stage-mobile__musician-info,
+  .stage-mobile__scene { transition: none; }
 }

@@ -129,6 +129,7 @@ export class AudioEngine {
     const shouldPlayWhenReady = options.playWhenReady === true;
 
     await this.ensureContext(shouldPlayWhenReady);
+    if (!this.isOperationRelevant(operationId) || !this.context) return null;
     this.registerStems(stems);
 
     const nextActiveStemIds = new Set(

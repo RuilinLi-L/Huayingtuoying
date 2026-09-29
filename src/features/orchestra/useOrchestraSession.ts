@@ -103,6 +103,8 @@ export function useOrchestraSession({
     updatedAt: new Date().toISOString(),
   }));
   const [nfcConnectionError, setNfcConnectionError] = useState('');
+  // The adapter notifies synchronously, including multiple toggles before React renders.
+  const snapshotRef = useRef(snapshot);
   const [nfcSnapshotError, setNfcSnapshotError] = useState('');
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState('');
@@ -137,6 +139,7 @@ export function useOrchestraSession({
     try {
       unsubscribe = mockAdapter.subscribe((nextSnapshot) => {
         if (active) {
+          snapshotRef.current = nextSnapshot;
           setSnapshot(nextSnapshot);
         }
       });
@@ -210,7 +213,8 @@ export function useOrchestraSession({
 
     void engine
       .setActiveStems(compositionStems, snapshot.placedMusicianIds, {
-        load: engine.isPlaying(),
+        load: engine.isPlaying() || playbackRequestRef.current,
+        playWhenReady: playbackRequestRef.current,
       })
       .then((nextAudioError) => {
         if (!active) {
@@ -351,9 +355,10 @@ export function useOrchestraSession({
 
   const toggleMusician = useCallback(
     (musicianId: string) => {
-      const nextIds = snapshot.placedMusicianIds.includes(musicianId)
-        ? snapshot.placedMusicianIds.filter((id) => id !== musicianId)
-        : [...snapshot.placedMusicianIds, musicianId];
+      const currentIds = snapshotRef.current.placedMusicianIds;
+      const nextIds = currentIds.includes(musicianId)
+        ? currentIds.filter((id) => id !== musicianId)
+        : [...currentIds, musicianId];
       try {
         mockAdapter.pushSnapshot(nextIds, deepLinkSource);
         setNfcSnapshotError('');
@@ -361,12 +366,12 @@ export function useOrchestraSession({
         setNfcSnapshotError(getAudioErrorMessage(error));
       }
     },
-    [deepLinkSource, mockAdapter, snapshot.placedMusicianIds],
+    [deepLinkSource, mockAdapter],
   );
 
   const togglePlayback = useCallback(async () => {
     const engine = audioEngineRef.current;
-    if (!engine || !snapshot.placedMusicianIds.length || playbackRequestRef.current) {
+    if (!engine || !snapshotRef.current.placedMusicianIds.length || playbackRequestRef.current) {
       return;
     }
 
@@ -384,20 +389,18 @@ export function useOrchestraSession({
       await engine.init();
       // Resuming an AudioContext can finish after navigation disposed this session.
       if (!mountedRef.current || audioEngineRef.current !== engine) return;
+      const requestedIds = snapshotRef.current.placedMusicianIds;
       const nextAudioError = await engine.setActiveStems(
         compositionStems,
-        snapshot.placedMusicianIds,
+        requestedIds,
         { playWhenReady: true },
       );
       if (!mountedRef.current || audioEngineRef.current !== engine) return;
-      if (mountedRef.current) {
+      if (requestedIds.join(',') === snapshotRef.current.placedMusicianIds.join(',')) {
         setAudioError(nextAudioError ?? '');
       }
-      if (!nextAudioError || engine.hasPlayableActiveStems()) {
-        if (!engine.isPlaying()) {
-          await engine.resume();
-        }
-      }
+      // setActiveStems starts the latest request. A superseded request must never
+      // resume playback after the visitor has removed every voice or navigated.
     } catch (error) {
       if (mountedRef.current) {
         setAudioError(getAudioErrorMessage(error));

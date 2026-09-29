@@ -99,7 +99,7 @@
   font-size: clamp(31px, 9.1vw, 39px);
   font-weight: 600;
   line-height: 1;
-  animation: knowledge-title-in 260ms ease both;
+
 }
 
 .instrument-library-page__intro > p:last-child {
@@ -134,13 +134,7 @@
 
 .instrument-section-tabs__tab:active { transform: scale(0.96); }
 
-.instrument-library-page__body {
-  animation: knowledge-fade-in 280ms ease both;
-}
 
-.instrument-timeline {
-  animation: knowledge-section-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
 
 .instrument-timeline {
   position: relative;
@@ -398,9 +392,6 @@
   font-size: 11px;
 }
 
-.instrument-detail-page {
-  animation: knowledge-detail-enter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
 
 .instrument-detail-page .knowledge-mode-tabs { margin-bottom: 10px; }
 
@@ -561,23 +552,6 @@
 .instrument-detail-page__model .instrument-model,
 .instrument-detail-page__model .instrument-model__stage { min-height: 330px; }
 
-@keyframes knowledge-title-in {
-  from { opacity: 0; transform: translateX(12px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes knowledge-section-in {
-  from { opacity: 0; transform: translateX(22px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes knowledge-detail-enter {
-  from { opacity: 0; transform: translateX(22px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-@keyframes knowledge-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 @media (max-width: 360px) {
   .knowledge-page { padding-right: 12px; padding-left: 12px; }
   .instrument-card { grid-template-columns: 70px minmax(0, 1fr); min-height: 90px; }
@@ -597,4 +571,20 @@
   .instrument-library-page__body,
   .instrument-timeline,
   .instrument-detail-page { animation: none; }
+}
+
+/* One sliding selection and one content animation, including the listening art. */
+.instrument-section-tabs { position: relative; isolation: isolate; }
+.instrument-section-tabs::before { content: ''; position: absolute; z-index: -1; top: 0; bottom: 0; left: 0; width: calc((100% - 18px) / 3); border-radius: 999px; background: var(--paper); box-shadow: 0 3px 8px rgba(42, 85, 77, 0.08); transform: translateX(calc(var(--section-index) * (100% + 9px))); transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1); }
+.instrument-section-tabs__tab.is-active { background: transparent; box-shadow: none; }
+.instrument-library-page[data-section-motion="forward"] .instrument-library-page__body,
+.instrument-library-page[data-section-motion="forward"] .instrument-library-page__intro h1 { animation: knowledge-section-forward 280ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+.instrument-library-page[data-section-motion="backward"] .instrument-library-page__body,
+.instrument-library-page[data-section-motion="backward"] .instrument-library-page__intro h1 { animation: knowledge-section-backward 280ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+@keyframes knowledge-section-forward { from { opacity: 0; transform: translateX(22px); } to { opacity: 1; transform: none; } }
+@keyframes knowledge-section-backward { from { opacity: 0; transform: translateX(-22px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .instrument-section-tabs::before { transition: none; }
+  .instrument-library-page[data-section-motion] .instrument-library-page__body,
+  .instrument-library-page[data-section-motion] .instrument-library-page__intro h1 { animation: none; }
 }

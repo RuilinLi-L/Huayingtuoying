@@ -1,12 +1,17 @@
 import { ArrowsIn, ArrowsOut } from '@phosphor-icons/react';
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import type { OrchestraSceneDefinition } from '../../types/demo';
+import { stageSilhouettes } from './stageArtwork';
 
 interface StageHeroProps {
   currentScene: OrchestraSceneDefinition;
+  selectedIds: string[];
+  highlightIds: string[];
+  pulseIds: string[];
 }
 
-export function StageHero({ currentScene }: StageHeroProps) {
+export function StageHero({ currentScene, selectedIds, highlightIds, pulseIds }: StageHeroProps) {
+  const maskPrefix = useId().replace(/:/g, '');
   const frameRef = useRef<HTMLDivElement>(null);
   const [canFullscreen, setCanFullscreen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -47,6 +52,31 @@ export function StageHero({ currentScene }: StageHeroProps) {
           height="345"
           fetchPriority="high"
         />
+        <svg className="stage-mobile__character-layers" viewBox="0 0 393 345" aria-hidden="true">
+          <defs>
+            {/* The transparent character export matches the hero exactly at (13, 80).
+                Intersect it with the per-person masks to leave the scenery untouched. */}
+            <mask id={`${maskPrefix}-art-alpha`} maskUnits="userSpaceOnUse" x="0" y="0" width="393" height="345" style={{ maskType: 'alpha' }}>
+              <image href="/assets/ui/stage/orchestra-characters.png" x="13" y="80" width="365" height="205" />
+            </mask>
+            {stageSilhouettes.map((silhouette, index) => (
+              <mask id={`${maskPrefix}-${silhouette.id}`} key={silhouette.id} maskUnits="userSpaceOnUse" x="0" y="0" width="393" height="345" style={{ maskType: 'luminance' }}>
+                <path d={silhouette.path} fill="white" />
+                {stageSilhouettes.slice(index + 1).map((front) => <path d={front.path} fill="black" key={front.id} />)}
+              </mask>
+            ))}
+          </defs>
+          <g mask={`url(#${maskPrefix}-art-alpha)`}>
+          {stageSilhouettes.map(({ id, path }) => (
+            <g key={id} mask={`url(#${maskPrefix}-${id})`} data-stage-character={id} data-active={selectedIds.includes(id)}>
+              <image href="/assets/ui/stage/orchestra-hero.png" width="393" height="345"
+                className={`stage-mobile__character-dim${selectedIds.includes(id) ? '' : ' is-muted'}`} />
+              {highlightIds.includes(id) && selectedIds.includes(id) ? <path d={path} className="stage-mobile__character-focus" /> : null}
+              {pulseIds.includes(id) && selectedIds.includes(id) ? <path d={path} className="stage-mobile__character-pulse" /> : null}
+            </g>
+          ))}
+          </g>
+        </svg>
         <span className="stage-mobile__scene-label" aria-live="polite">当前舞台 · {currentScene.shortLabel}</span>
         {canFullscreen ? (
           <button

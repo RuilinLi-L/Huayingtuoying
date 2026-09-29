@@ -250,9 +250,10 @@ try {
     });
     await check('Stage dynamic lineup preserves clock and joins at current offset; dialog Escape', async () => {
       await go('/stage?lineup=violin,cello'); await stagePlay(); await voices(2); await page.locator('#stage-playback-progress').fill('24');
-      await page.getByRole('button', { name: /^小提琴，/ }).click(); await page.getByRole('button', { name: '移出当前演奏' }).click(); await voices(1); await page.keyboard.press('Escape'); await page.getByRole('dialog').waitFor({ state: 'detached' });
-      await page.getByRole('button', { name: /^长笛，/ }).click(); await page.getByRole('button', { name: '加入当前演奏' }).click(); await voices(2);
+      await page.getByRole('button', { name: /^小提琴，/ }).click(); await voices(1); assert.equal(await page.getByRole('dialog').count(), 0);
+      await page.getByRole('button', { name: /^长笛，/ }).click(); await voices(2);
       assert.ok(await progress() >= 24); const offsets = await page.evaluate(() => __release.sources.filter(s => s.active).map(s => s.offset)); assert.ok(offsets.every(x => x >= 24)); assert.equal(await page.locator('.stage-mobile__musician--in-lineup').count(), 2);
+      await page.getByRole('button', { name: '查看长笛详情', exact: true }).click();
       await page.keyboard.press('Tab'); assert.ok(await page.getByRole('dialog').evaluate(e => e.contains(document.activeElement))); await page.keyboard.press('Escape'); assert.equal(await page.evaluate(() => document.body.style.overflow), ''); await nav('首页'); await silent();
     });
     for (const [route, count] of [['/stage', 12], ['/stage?source=nfc', 0], ['/stage?source=nfc&lineup=violin,cello', 2]]) await check(`NFC lineup ${route} = ${count}; camera → Home cleanup`, async () => {

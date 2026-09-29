@@ -7,8 +7,6 @@ import { getTheoryTopic, theoryTopics } from '../../data/theoryTopics';
 import type { TutorialKnowledgeCardSection } from '../../types/tutorial';
 import '../../styles/theory-mobile.css';
 
-let previousTheoryTopicIndex: number | null = null;
-
 interface TheorySectionProps {
   section: TutorialKnowledgeCardSection;
   sectionIndex: number;
@@ -58,13 +56,14 @@ function TheorySection({ section, sectionIndex, topicId }: TheorySectionProps) {
 export function TheoryPage() {
   const { topicId } = useParams();
   const topic = getTheoryTopic(topicId);
-  const direction = topic && previousTheoryTopicIndex !== null && topic.index < previousTheoryTopicIndex
-    ? 'backward'
-    : 'forward';
+  const [transition, setTransition] = useState({ index: topic?.index ?? 0, direction: 'forward' });
+  if (topic && transition.index !== topic.index) {
+    setTransition({ index: topic.index, direction: topic.index < transition.index ? 'backward' : 'forward' });
+  }
+  const direction = transition.direction;
 
   useEffect(() => {
     if (topic) {
-      previousTheoryTopicIndex = topic.index;
       window.scrollTo(0, 0);
     }
   }, [topic?.id, topic?.index]);
@@ -109,7 +108,6 @@ export function TheoryPage() {
           {topic.card.sections.map((section, index) => (
             <div key={`${topic.id}-${section.title}`}>
               <TheorySection section={section} sectionIndex={index} topicId={topic.id} />
-              {index === 0 ? <TheoryDial activeId={topic.id} /> : null}
             </div>
           ))}
         </div>
@@ -126,6 +124,7 @@ export function TheoryPage() {
         </nav>
         <Link className="theory-mobile__legacy" to={`/learn/fundamentals#${topic.card.id}`}>在完整导学页阅读这张卡片</Link>
       </article>
+      <TheoryDial activeId={topic.id} />
     </div>
   );
 }

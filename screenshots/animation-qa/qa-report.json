@@ -1,0 +1,60 @@
+{
+  "baseURL": "http://127.0.0.1:4173",
+  "passed": 13,
+  "failed": 0,
+  "results": [
+    {
+      "label": "All twelve artwork masks and independent detail controls",
+      "status": "passed"
+    },
+    {
+      "label": "240ms mask fade, addition pulse, rapid clicks use latest lineup",
+      "status": "passed"
+    },
+    {
+      "label": "Native stems join at current offset, preserve other sources, empty lineup pauses",
+      "status": "passed"
+    },
+    {
+      "label": "Selection during pending initial audio load cannot revive removed voice",
+      "status": "passed"
+    },
+    {
+      "label": "Partial audio failure reports error while remaining stem plays",
+      "status": "passed"
+    },
+    {
+      "label": "Dial survives chapter changes and rotates through intermediate angles",
+      "status": "passed"
+    },
+    {
+      "label": "Phone 320: masks align, dial links reachable, bottom content unobscured",
+      "status": "passed"
+    },
+    {
+      "label": "Phone 393: masks align, dial links reachable, bottom content unobscured",
+      "status": "passed"
+    },
+    {
+      "label": "Phone 430: masks align, dial links reachable, bottom content unobscured",
+      "status": "passed"
+    },
+    {
+      "label": "Direction-aware route and classification motion; no stale dial after leaving",
+      "status": "passed"
+    },
+    {
+      "label": "Reduced motion preserves final state and keyboard-accessible controls",
+      "status": "passed"
+    },
+    {
+      "label": "No uncaught page errors",
+      "status": "passed"
+    },
+    {
+      "label": "Record stage, classification and dial walkthrough",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}
