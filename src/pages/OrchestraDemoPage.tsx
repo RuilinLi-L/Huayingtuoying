@@ -1,332 +1,40 @@
 import { ProjectorScreenChart } from '@phosphor-icons/react';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { MusicianInsightPanel } from '../components/demo/MusicianInsightPanel';
 import { NfcDeckPanel } from '../components/demo/NfcDeckPanel';
 import { OrchestraStage } from '../components/demo/OrchestraStage';
 import { fixedComposition, musicians } from '../data/orchestraDemo';
-import { normalizeMusicianIds } from '../data/sleepingBeauty';
-import { AudioEngine } from '../lib/audio/AudioEngine';
-import { getCameraErrorMessage, getDeviceCapabilities } from '../lib/device';
-import {
-  buildNfcPreviewPayload,
-  createMockNfcSessionAdapter,
-  createReservedNfcSessionAdapter,
-} from '../lib/nfcSession';
-import {
-  describeLineup,
-  getMusicianById,
-  getOrchestraScenes,
-  getRecommendedSceneIds,
-  getSceneById,
-  resolveHighlightIds,
-  resolveOrchestraMode,
-} from '../lib/orchestraSession';
-import type { NfcSessionSnapshot, OrchestraSceneId } from '../types/demo';
-import type { AudioStem } from '../types/manifest';
-
-const allScenes = getOrchestraScenes();
-const PLAYBACK_STATE_SYNC_INTERVAL_MS = 200;
-
-function getAudioErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : String(error);
-}
-
-function parseLineup(value: string | null) {
-  if (!value) {
-    return [];
-  }
-
-  return normalizeMusicianIds(value.split(',').map((item) => item.trim()));
-}
+import { useOrchestraSession } from '../features/orchestra/useOrchestraSession';
+import { describeLineup } from '../lib/orchestraSession';
 
 export function OrchestraDemoPage() {
-  const [searchParams] = useSearchParams();
-  const initialLineup = useMemo(
-    () => parseLineup(searchParams.get('lineup')),
-    [searchParams],
-  );
-  const initialSceneId = (searchParams.get('scene') as OrchestraSceneId | null) ?? 'qintai';
-  const deepLinkSource = searchParams.get('source') === 'nfc' ? 'deep-link' : 'mock';
-  const capabilities = useMemo(() => getDeviceCapabilities(), []);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const audioEngineRef = useRef<AudioEngine | null>(null);
-  const mockAdapterRef = useRef(createMockNfcSessionAdapter(initialLineup));
-  const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
-  const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>({
-    baseAnchorId: 'hust-art-badge',
-    placedMusicianIds: initialLineup,
-    detectedCount: initialLineup.length,
-    source: deepLinkSource,
-    updatedAt: new Date().toISOString(),
-  });
-  const [cameraReady, setCameraReady] = useState(false);
-  const [cameraError, setCameraError] = useState('');
-  const [currentSceneId, setCurrentSceneId] = useState<OrchestraSceneId>(initialSceneId);
-  const [focusedMusicianId, setFocusedMusicianId] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackTime, setPlaybackTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [audioError, setAudioError] = useState('');
-
-  const compositionStems = useMemo<AudioStem[]>(
-    () =>
-      fixedComposition.stems.map((stem) => ({
-        id: stem.id,
-        name: stem.name,
-        file: stem.file,
-        defaultEnabled: true,
-        group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
-        stereoPan: stem.stereoPan,
-        gain: stem.gain,
-      })),
-    [],
-  );
-
-  useEffect(() => {
-    const engine = new AudioEngine();
-    audioEngineRef.current = engine;
-
-    return () => {
-      engine.dispose();
-      audioEngineRef.current = null;
-    };
-  }, []);
-
-  useEffect(() => {
-    const adapter = mockAdapterRef.current;
-    void adapter.connect();
-
-    const unsubscribe = adapter.subscribe(setSnapshot);
-    if (initialLineup.length) {
-      adapter.pushSnapshot(initialLineup, deepLinkSource);
-    }
-
-    return () => {
-      unsubscribe();
-      adapter.disconnect();
-    };
-  }, [deepLinkSource, initialLineup]);
-
-  useEffect(() => {
-    let timerId = 0;
-
-    const syncPlaybackState = () => {
-      const engine = audioEngineRef.current;
-      if (engine) {
-        const nextDuration = engine.getDuration();
-        const nextTime = engine.getCurrentTime();
-        const nextPlaying = engine.isPlaying();
-
-        setDuration((current) => (current === nextDuration ? current : nextDuration));
-        setPlaybackTime((current) =>
-          Math.abs(current - nextTime) < 0.01 ? current : nextTime,
-        );
-        setIsPlaying((current) => (current === nextPlaying ? current : nextPlaying));
-      }
-    };
-
-    syncPlaybackState();
-    timerId = window.setInterval(syncPlaybackState, PLAYBACK_STATE_SYNC_INTERVAL_MS);
-
-    return () => {
-      window.clearInterval(timerId);
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const syncSelectedStems = async () => {
-      const engine = audioEngineRef.current;
-      if (!engine) {
-        return;
-      }
-
-      const nextAudioError = await engine.setActiveStems(
-        compositionStems,
-        snapshot.placedMusicianIds,
-        { load: engine.isPlaying() },
-      );
-
-      if (cancelled) {
-        return;
-      }
-
-      setAudioError(nextAudioError ?? '');
-      setDuration(engine.getDuration());
-      setPlaybackTime(engine.getCurrentTime());
-      setIsPlaying(engine.isPlaying());
-    };
-
-    void syncSelectedStems().catch((error) => {
-      if (cancelled) {
-        return;
-      }
-
-      setAudioError(getAudioErrorMessage(error));
-      setDuration(audioEngineRef.current?.getDuration() ?? 0);
-      setPlaybackTime(audioEngineRef.current?.getCurrentTime() ?? 0);
-      setIsPlaying(audioEngineRef.current?.isPlaying() ?? false);
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [compositionStems, snapshot.placedMusicianIds]);
-
-  useEffect(() => {
-    const engine = audioEngineRef.current;
-
-    if (!engine || !snapshot.placedMusicianIds.length) {
-      return;
-    }
-
-    const placedMusicianIds = new Set(snapshot.placedMusicianIds);
-    const selectedStems = compositionStems.filter((stem) => placedMusicianIds.has(stem.id));
-
-    void engine.preload(selectedStems).catch(() => {
-      // Playback will retry loading selected stems on the next user gesture.
-    });
-  }, [compositionStems, snapshot.placedMusicianIds]);
-
-  const mode = useMemo(
-    () => resolveOrchestraMode(snapshot.placedMusicianIds),
-    [snapshot.placedMusicianIds],
-  );
-  const highlightIds = useMemo(
-    () => resolveHighlightIds(snapshot.placedMusicianIds, mode),
-    [mode, snapshot.placedMusicianIds],
-  );
-  const currentScene = useMemo(
-    () => getSceneById(currentSceneId) ?? allScenes[0],
-    [currentSceneId],
-  );
-  const focusedMusician = focusedMusicianId ? getMusicianById(focusedMusicianId) ?? null : null;
-  const recommendedSceneIds = getRecommendedSceneIds(mode.id);
-  const recommendedScenes = allScenes.filter((scene) => recommendedSceneIds.includes(scene.id));
-  const nfcPreviewPayload = buildNfcPreviewPayload(snapshot.placedMusicianIds);
-
-  useEffect(() => {
-    if (!recommendedSceneIds.includes(currentSceneId)) {
-      setCurrentSceneId(recommendedSceneIds[0] ?? 'qintai');
-    }
-  }, [currentSceneId, recommendedSceneIds]);
-
-  useEffect(() => {
-    if (searchParams.get('autostart') === '1' || searchParams.get('source') === 'nfc') {
-      void openStage();
-    }
-
-    return () => {
-      stopStage();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  async function openStage() {
-    if (cameraReady || !capabilities.canUseCamera) {
-      if (!capabilities.canUseCamera) {
-        setCameraError('当前浏览器不能稳定访问相机，页面会继续保留静态舞台与控制台说明。');
-      }
-      return;
-    }
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: false,
-        video: {
-          facingMode: {
-            ideal: 'environment',
-          },
-        },
-      });
-
-      streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-      }
-
-      setCameraError('');
-      setCameraReady(true);
-    } catch (error) {
-      setCameraReady(false);
-      setCameraError(getCameraErrorMessage(error));
-    }
-  }
-
-  function stopStage() {
-    streamRef.current?.getTracks().forEach((track) => track.stop());
-    streamRef.current = null;
-
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-
-    setCameraReady(false);
-  }
-
-  function toggleMusician(musicianId: string) {
-    const nextIds = snapshot.placedMusicianIds.includes(musicianId)
-      ? snapshot.placedMusicianIds.filter((id) => id !== musicianId)
-      : [...snapshot.placedMusicianIds, musicianId];
-
-    mockAdapterRef.current.pushSnapshot(nextIds, deepLinkSource);
-  }
-
-  async function togglePlayback() {
-    const engine = audioEngineRef.current;
-    if (!engine || !snapshot.placedMusicianIds.length) {
-      return;
-    }
-
-    try {
-      if (engine.isPlaying()) {
-        engine.pause();
-      } else {
-        setAudioError('');
-        await engine.init();
-        const nextAudioError = await engine.setActiveStems(
-          compositionStems,
-          snapshot.placedMusicianIds,
-          { playWhenReady: true },
-        );
-        setAudioError(nextAudioError ?? '');
-        if (nextAudioError && !engine.hasPlayableActiveStems()) {
-          return;
-        }
-        if (!engine.isPlaying()) {
-          await engine.resume();
-        }
-      }
-    } catch (error) {
-      setAudioError(getAudioErrorMessage(error));
-    }
-
-    setPlaybackTime(engine.getCurrentTime());
-    setIsPlaying(engine.isPlaying());
-  }
-
-  function handleSeek(timeInSeconds: number) {
-    const engine = audioEngineRef.current;
-    if (!engine) {
-      return;
-    }
-
-    engine.seek(timeInSeconds);
-    setPlaybackTime(engine.getCurrentTime());
-    setDuration(engine.getDuration());
-  }
-
-  function handleSceneChange(sceneId: OrchestraSceneId) {
-    setCurrentSceneId(sceneId);
-  }
-
-  function handleSelectMusician(musicianId: string) {
-    setFocusedMusicianId((current) => (current === musicianId ? null : musicianId));
-  }
+  const {
+    snapshot,
+    nfcError,
+    mockAdapter,
+    reservedAdapter,
+    nfcPreviewPayload,
+    videoRef,
+    cameraReady,
+    cameraError,
+    openStage,
+    stopStage,
+    mode,
+    highlightIds,
+    currentScene,
+    sceneOptions,
+    focusedMusician,
+    focusedMusicianId,
+    isPlaying,
+    playbackTime,
+    duration,
+    audioError,
+    toggleMusician,
+    togglePlayback,
+    seek,
+    changeScene,
+    selectMusician,
+  } = useOrchestraSession();
 
   return (
     <div className="page orchestra-page">
@@ -375,6 +83,12 @@ export function OrchestraDemoPage() {
               <p>{audioError}</p>
             </div>
           ) : null}
+          {nfcError ? (
+            <div className="status-message status-message--error">
+              <strong>NFC 会话异常</strong>
+              <p>{nfcError}</p>
+            </div>
+          ) : null}
 
           <OrchestraStage
             cameraError={cameraError}
@@ -390,11 +104,11 @@ export function OrchestraDemoPage() {
             musicians={musicians}
             onCloseStage={stopStage}
             onOpenStage={() => void openStage()}
-            onSceneChange={handleSceneChange}
-            onSeek={handleSeek}
-            onSelectMusician={handleSelectMusician}
+            onSceneChange={changeScene}
+            onSeek={seek}
+            onSelectMusician={selectMusician}
             onTogglePlayback={() => void togglePlayback()}
-            sceneOptions={recommendedScenes.length ? recommendedScenes : allScenes}
+            sceneOptions={sceneOptions}
             selectedIds={snapshot.placedMusicianIds}
             videoRef={videoRef}
           />
@@ -402,7 +116,7 @@ export function OrchestraDemoPage() {
 
         <div className="orchestra-layout__side">
           <NfcDeckPanel
-            mockAdapter={mockAdapterRef.current}
+            mockAdapter={mockAdapter}
             onToggleMusician={toggleMusician}
             reservedAdapter={reservedAdapter}
             selectedIds={snapshot.placedMusicianIds}
@@ -439,7 +153,7 @@ export function OrchestraDemoPage() {
             <article className="mode-overview__card">
               <small>推荐场景</small>
               <strong>
-                {(recommendedScenes.length ? recommendedScenes : allScenes)
+                {sceneOptions
                   .map((scene) => scene.shortLabel)
                   .join(' / ')}
               </strong>

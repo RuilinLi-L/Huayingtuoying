@@ -1,0 +1,133 @@
+{
+  "baseUrl": "http://127.0.0.1:4181",
+  "screenshotDir": "screenshots/compose-phase-4",
+  "fixturePath": "public/assets/audio/violin-harmony.wav",
+  "apiMode": "Playwright route mocks only; no real generation requests",
+  "widths": [
+    320,
+    360,
+    393,
+    430
+  ],
+  "passed": 29,
+  "failed": 0,
+  "results": [
+    {
+      "label": "320px responsive layout",
+      "status": "passed"
+    },
+    {
+      "label": "360px responsive layout",
+      "status": "passed"
+    },
+    {
+      "label": "393px responsive layout",
+      "status": "passed"
+    },
+    {
+      "label": "430px responsive layout",
+      "status": "passed"
+    },
+    {
+      "label": "Microphone permission error and upload fallback",
+      "status": "passed"
+    },
+    {
+      "label": "Mocked recorder lifecycle and busy controls",
+      "status": "passed"
+    },
+    {
+      "label": "Preview pauses and locks while recorder is busy",
+      "status": "passed"
+    },
+    {
+      "label": "Preview does not auto-resume after microphone permission failure",
+      "status": "passed"
+    },
+    {
+      "label": "Uploading during permission request ignores late rejection",
+      "status": "passed"
+    },
+    {
+      "label": "Late microphone permission after unmount stops the stream",
+      "status": "passed"
+    },
+    {
+      "label": "Audio upload, preview, and playback",
+      "status": "passed"
+    },
+    {
+      "label": "30 MB upload limit",
+      "status": "passed"
+    },
+    {
+      "label": "Empty Prompt blocks submission",
+      "status": "passed"
+    },
+    {
+      "label": "Style presets change the editable style input",
+      "status": "passed"
+    },
+    {
+      "label": "Advanced controls retain values in the submitted request",
+      "status": "passed"
+    },
+    {
+      "label": "Generation locks all parameters while keeping preview playback available",
+      "status": "passed"
+    },
+    {
+      "label": "Queued, processing, first, complete, and two result tracks",
+      "status": "passed"
+    },
+    {
+      "label": "Compose request failure stops before polling",
+      "status": "passed"
+    },
+    {
+      "label": "Failed status shows the returned message",
+      "status": "passed"
+    },
+    {
+      "label": "Complete status without tracks presents an unusable result",
+      "status": "passed"
+    },
+    {
+      "label": "Stop waiting aborts polling",
+      "status": "passed"
+    },
+    {
+      "label": "BottomNav navigation releases preview URL and polling",
+      "status": "passed"
+    },
+    {
+      "label": "Focused fields can clear the fixed BottomNav",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot compose-empty-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot compose-audio-ready-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot compose-advanced-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot compose-generating-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot compose-result-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "No uncaught page errors",
+      "status": "passed"
+    }
+  ],
+  "pageErrors": []
+}

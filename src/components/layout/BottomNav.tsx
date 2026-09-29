@@ -1,5 +1,5 @@
 import { BookOpenText, House, MagicWand, ProjectorScreenChart } from '@phosphor-icons/react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const items = [
   { to: '/', label: '首页', icon: House },
@@ -14,9 +14,13 @@ export function BottomNav() {
   return (
     <nav className="mobile-bottom-nav" aria-label="主导航">
       {items.map(({ to, label, icon: Icon }) => {
-        const active = to === '/' ? pathname === '/' : pathname === to || pathname.startsWith(`${to}/`);
+        const active = to === '/'
+          ? pathname === '/'
+          : to === '/knowledge/instruments'
+            ? pathname.startsWith('/knowledge/')
+            : pathname === to || pathname.startsWith(`${to}/`);
         return (
-          <NavLink
+          <Link
             className={active ? 'mobile-bottom-nav__item mobile-bottom-nav__item--active' : 'mobile-bottom-nav__item'}
             to={to}
             key={to}
@@ -24,7 +28,7 @@ export function BottomNav() {
           >
             <Icon size={25} weight={active ? 'fill' : 'regular'} />
             <span>{label}</span>
-          </NavLink>
+          </Link>
         );
       })}
     </nav>
