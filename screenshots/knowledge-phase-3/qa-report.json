@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://127.0.0.1:4173",
+  "baseUrl": "http://127.0.0.1:5173",
   "screenshotDir": "/Users/liruilin/Documents/ChatGPT/jiaoxiangshijie/Huayingtuoying/screenshots/knowledge-phase-3",
   "routes": [
     "/knowledge/instruments",
@@ -18,7 +18,7 @@
     393,
     430
   ],
-  "passed": 52,
+  "passed": 58,
   "failed": 0,
   "results": [
     {
@@ -190,6 +190,26 @@
       "status": "passed"
     },
     {
+      "label": "Library flute stops and resets on Theory 01",
+      "status": "passed"
+    },
+    {
+      "label": "Library flute stops before clarinet detail",
+      "status": "passed"
+    },
+    {
+      "label": "Library violin continues on its own detail page",
+      "status": "passed"
+    },
+    {
+      "label": "Violin detail stops before cello detail",
+      "status": "passed"
+    },
+    {
+      "label": "393px woodwind scene clears fixed player at page bottom",
+      "status": "passed"
+    },
+    {
       "label": "Violin detail audio playback, progress, and seek",
       "status": "passed"
     },
@@ -199,6 +219,10 @@
     },
     {
       "label": "Screenshot knowledge-woodwind-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-woodwind-bottom-393.png",
       "status": "passed"
     },
     {

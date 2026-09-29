@@ -37,6 +37,7 @@ const requiredRoutes = [
 
 const screenshots = [
   { route: '/knowledge/instruments?section=woodwind', file: 'knowledge-woodwind-393.png', fullPage: false },
+  { route: '/knowledge/instruments?section=woodwind', file: 'knowledge-woodwind-bottom-393.png', fullPage: false, bottom: true },
   { route: '/knowledge/instruments?section=brass', file: 'knowledge-brass-393.png', fullPage: false },
   { route: '/knowledge/instruments?section=strings', file: 'knowledge-strings-393.png', fullPage: false },
   { route: '/knowledge/instruments/violin?section=strings', file: 'knowledge-violin-detail-393.png', fullPage: true },
@@ -148,9 +149,11 @@ async function clickTheoryTopic(page, topicId) {
 async function mediaState(page) {
   return page.evaluate(() => (window.__knowledgeQaMedia ?? []).map((media) => ({
     src: decodeURIComponent(media.currentSrc || media.src || ''),
+    sourceAttribute: media.getAttribute('src'),
     paused: media.paused,
     currentTime: media.currentTime,
     duration: media.duration,
+    networkState: media.networkState,
     readyState: media.readyState,
     error: media.error?.message ?? null,
   })));
@@ -164,6 +167,52 @@ async function waitForMedia(page, instrument, paused) {
     });
     return media.some((item) => item.paused === paused && (paused || item.readyState >= 2));
   }, { instrument, paused }, { timeout: 12000 });
+}
+
+async function assertKnowledgeAudioStopped(page, instrument) {
+  await page.waitForFunction(() => {
+    const media = window.__knowledgeQaMedia ?? [];
+    return media.length > 0 && media.every((item) =>
+      item.paused && !item.getAttribute('src') && item.networkState === HTMLMediaElement.NETWORK_EMPTY);
+  }, null, { timeout: 12000 });
+  const states = await mediaState(page);
+  assert.ok(states.length > 0, `${instrument} audio was never registered`);
+  assert.ok(states.every((media) => media.paused), 'Knowledge audio kept playing in the background');
+  // Chromium can retain currentSrc as the last played URL after load() clears the resource.
+  assert.ok(states.every((media) => !media.sourceAttribute && media.networkState === 0),
+    `Knowledge audio resource was retained: ${JSON.stringify(states)}`);
+}
+
+async function assertIdlePlayer(page, selector, instrumentName) {
+  const player = page.locator(selector);
+  assert.equal(await player.count(), 1, `${instrumentName} player is missing`);
+  assert.equal(
+    await player.getByRole('button', { name: `播放${instrumentName}` }).count(),
+    1,
+    `${instrumentName} player does not show its idle play control`,
+  );
+  const progress = player.getByRole('slider', { name: `${instrumentName}播放进度` });
+  assert.ok(await progress.isDisabled(), `${instrumentName} retained a seekable audio snapshot`);
+  assert.equal(await progress.inputValue(), '0', `${instrumentName} retained audio progress`);
+  assert.equal(
+    (await player.locator('.instrument-preview-player__time').textContent())?.trim(),
+    '0:00',
+    `${instrumentName} retained audio duration`,
+  );
+}
+
+async function pushKnowledgeRoute(page, route) {
+  // Exercise BrowserRouter's route listener without replacing the document or Provider.
+  await page.evaluate((nextRoute) => {
+    window.history.pushState({}, '', nextRoute);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, route);
+  await waitForKnowledgePage(page, route);
+}
+
+async function scrollToBottom(page) {
+  await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+  await page.waitForTimeout(200);
 }
 
 async function previewButton(page, instrument, chineseName) {
@@ -339,6 +388,91 @@ async function main() {
       assert.ok(states.filter((media) => media.src.toLowerCase().includes('flute')).every((media) => media.paused), 'flute kept playing after switch');
     });
 
+    await check('Library flute stops and resets on Theory 01', async () => {
+      await navigate(page, '/knowledge/instruments?section=woodwind');
+      await (await previewButton(page, 'flute', '长笛')).click();
+      await waitForMedia(page, 'flute', false);
+      await page.locator('.knowledge-mode-tabs a[href="/knowledge/theory/01"]').click();
+      await waitForKnowledgePage(page, '/knowledge/theory/01');
+      await assertKnowledgeAudioStopped(page, 'flute');
+      assert.equal(await page.locator('.instrument-preview-player').count(), 0, 'Theory unexpectedly has an audio controller');
+      await page.locator('.knowledge-mode-tabs a[href="/knowledge/instruments"]').click();
+      await waitForKnowledgePage(page, '/knowledge/instruments');
+      await assertIdlePlayer(page, '.instrument-library-page .instrument-preview-player', '长笛');
+      assert.equal(await page.locator('.instrument-preview-button[aria-pressed="true"]').count(), 0, 'a card still shows playing');
+    });
+
+    await check('Library flute stops before clarinet detail', async () => {
+      await navigate(page, '/knowledge/instruments?section=woodwind');
+      await (await previewButton(page, 'flute', '长笛')).click();
+      await waitForMedia(page, 'flute', false);
+      await page.locator('a.instrument-card__link[href="/knowledge/instruments/clarinet?section=woodwind"]').click();
+      await waitForKnowledgePage(page, '/knowledge/instruments/clarinet?section=woodwind');
+      await assertKnowledgeAudioStopped(page, 'flute');
+      await assertIdlePlayer(page, '.instrument-detail-page > .instrument-preview-player', '单簧管');
+    });
+
+    await check('Library violin continues on its own detail page', async () => {
+      await navigate(page, '/knowledge/instruments?section=strings');
+      await (await previewButton(page, 'violin', '小提琴')).click();
+      await waitForMedia(page, 'violin', false);
+      await page.locator('a.instrument-card__link[href="/knowledge/instruments/violin?section=strings"]').click();
+      await waitForKnowledgePage(page, '/knowledge/instruments/violin?section=strings');
+      const states = await mediaState(page);
+      assert.ok(states.some((media) => media.src.toLowerCase().includes('violin') && !media.paused),
+        `violin stopped on its own detail page: ${JSON.stringify(states)}`);
+      assert.equal(states.filter((media) => !media.paused).length, 1, 'unexpected audio is playing');
+      assert.equal(
+        await page.locator('.instrument-detail-page > .instrument-preview-player')
+          .getByRole('button', { name: '暂停小提琴' }).count(),
+        1,
+        'violin detail control disagrees with the playing audio',
+      );
+    });
+
+    await check('Violin detail stops before cello detail', async () => {
+      await navigate(page, '/knowledge/instruments/violin?section=strings');
+      await page.locator('.instrument-detail-page > .instrument-preview-player')
+        .getByRole('button', { name: '播放小提琴' }).click();
+      await waitForMedia(page, 'violin', false);
+      await pushKnowledgeRoute(page, '/knowledge/instruments/cello?section=strings');
+      await assertKnowledgeAudioStopped(page, 'violin');
+      await assertIdlePlayer(page, '.instrument-detail-page > .instrument-preview-player', '大提琴');
+    });
+
+    await check('393px woodwind scene clears fixed player at page bottom', async () => {
+      await navigate(page, '/knowledge/instruments?section=woodwind');
+      await scrollToBottom(page);
+      const layout = await page.evaluate(() => {
+        const scene = document.querySelector('.instrument-library-page .instrument-scene');
+        const art = document.querySelector('.instrument-library-page .instrument-scene__art img');
+        const player = document.querySelector('.instrument-library-page .instrument-preview-player');
+        const nav = document.querySelector('nav[aria-label="主导航"]');
+        if (!scene || !art || !player || !nav) return null;
+        const sceneRect = scene.getBoundingClientRect();
+        const playerRect = player.getBoundingClientRect();
+        const navRect = nav.getBoundingClientRect();
+        return {
+          sceneTop: sceneRect.top,
+          sceneBottom: sceneRect.bottom,
+          sceneHeight: sceneRect.height,
+          playerTop: playerRect.top,
+          playerBottom: playerRect.bottom,
+          navTop: navRect.top,
+          viewportHeight: window.innerHeight,
+          sceneImageLoaded: art.complete && art.naturalWidth > 0,
+        };
+      });
+      assert.ok(layout, 'scene, player, or BottomNav is missing');
+      assert.ok(layout.sceneImageLoaded, 'woodwind scene image did not load');
+      assert.ok(layout.sceneTop >= 0 && layout.sceneBottom <= layout.viewportHeight,
+        `scene is not fully visible at the page bottom: ${JSON.stringify(layout)}`);
+      assert.ok(layout.sceneBottom <= layout.playerTop - 8,
+        `fixed player overlaps the scene or leaves less than 8px of space: ${JSON.stringify(layout)}`);
+      assert.ok(layout.playerBottom <= layout.navTop + 2,
+        `fixed player overlaps BottomNav: ${JSON.stringify(layout)}`);
+    });
+
     await check('Violin detail audio playback, progress, and seek', async () => {
       await navigate(page, '/knowledge/instruments/violin?section=strings');
       const control = page.getByRole('button', { name: /播放|试听|play/i }).first();
@@ -394,9 +528,10 @@ async function main() {
     });
 
     await fs.mkdir(screenshotDir, { recursive: true });
-    for (const { route, file, fullPage } of screenshots) {
+    for (const { route, file, fullPage, bottom } of screenshots) {
       await check(`Screenshot ${file}`, async () => {
         await prepareScreenshot(page, route);
+        if (bottom) await scrollToBottom(page);
         await page.screenshot({ path: path.join(screenshotDir, file), fullPage, animations: 'disabled' });
       });
     }

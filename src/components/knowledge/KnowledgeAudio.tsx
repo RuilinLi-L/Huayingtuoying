@@ -26,6 +26,10 @@ const initialSnapshot: AudioSnapshot = {
 
 const KnowledgeAudioContext = createContext<KnowledgeAudioContextValue | null>(null);
 
+function getKnowledgeInstrumentId(pathname: string): string | null {
+  return /^\/knowledge\/instruments\/([^/]+)\/?$/.exec(pathname)?.[1] ?? null;
+}
+
 export function KnowledgeAudioProvider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -43,7 +47,11 @@ export function KnowledgeAudioProvider({ children }: { children: ReactNode }) {
       currentTime: Number.isFinite(audio.currentTime) ? audio.currentTime : 0,
       duration: Number.isFinite(audio.duration) ? audio.duration : 0,
     }));
-    const handlePlaying = () => setSnapshot((current) => ({ ...current, status: 'playing' }));
+    const handlePlaying = () => setSnapshot((current) => (
+      current.instrumentId !== null && current.instrumentId === activeIdRef.current && !audio.paused
+        ? { ...current, status: 'playing' }
+        : current
+    ));
     const handleWaiting = () => setSnapshot((current) => ({
       ...current,
       status: current.instrumentId ? 'loading' : 'idle',
@@ -53,6 +61,7 @@ export function KnowledgeAudioProvider({ children }: { children: ReactNode }) {
       status: current.status === 'error' || !current.instrumentId ? current.status : 'paused',
     }));
     const handleEnded = () => {
+      if (!activeIdRef.current) return;
       audio.currentTime = 0;
       setSnapshot((current) => ({ ...current, status: 'paused', currentTime: 0 }));
     };
@@ -86,19 +95,6 @@ export function KnowledgeAudioProvider({ children }: { children: ReactNode }) {
       audio.removeEventListener('error', handleError);
     };
   }, []);
-
-  useEffect(() => {
-    if (pathname.startsWith('/knowledge/')) return;
-    requestRef.current += 1;
-    activeIdRef.current = null;
-    const audio = audioRef.current;
-    if (audio) {
-      audio.pause();
-      audio.removeAttribute('src');
-      audio.load();
-    }
-    setSnapshot(initialSnapshot);
-  }, [pathname]);
 
   const toggle = useCallback((instrument: InstrumentEncyclopediaEntry) => {
     const audio = audioRef.current;
@@ -147,6 +143,15 @@ export function KnowledgeAudioProvider({ children }: { children: ReactNode }) {
     }
     setSnapshot(initialSnapshot);
   }, []);
+
+  useEffect(() => {
+    if (/^\/knowledge\/instruments\/?$/.test(pathname)) return;
+
+    const detailInstrumentId = getKnowledgeInstrumentId(pathname);
+    if (detailInstrumentId !== null && activeIdRef.current === detailInstrumentId) return;
+
+    stop();
+  }, [pathname, stop]);
 
   return (
     <KnowledgeAudioContext.Provider value={{ ...snapshot, toggle, seek, stop }}>

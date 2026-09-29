@@ -24,6 +24,10 @@
   color: var(--mobile-ink);
 }
 
+.instrument-library-page {
+  padding-bottom: 72px;
+}
+
 .knowledge-eyebrow {
   color: var(--coral-dark);
   font-size: 10px;
