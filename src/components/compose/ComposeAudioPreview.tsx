@@ -1,16 +1,17 @@
 import { ArrowCounterClockwise, Pause, Play, Waveform } from '@phosphor-icons/react';
 import type { CSSProperties } from 'react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 type Props = {
   file: File;
   sourceLabel: string;
   url: string;
-  disabled: boolean;
+  playbackDisabled: boolean;
+  replaceDisabled: boolean;
   onClear: () => void;
 };
 
-export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear }: Props) {
+export function ComposeAudioPreview({ file, sourceLabel, url, playbackDisabled, replaceDisabled, onClear }: Props) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -31,7 +32,14 @@ export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear 
     };
   }, [url]);
 
+  useLayoutEffect(() => {
+    if (!playbackDisabled) return;
+    audioRef.current?.pause();
+    setIsPlaying(false);
+  }, [playbackDisabled]);
+
   async function togglePlayback() {
+    if (playbackDisabled) return;
     const audio = audioRef.current;
     if (!audio) return;
 
@@ -60,8 +68,8 @@ export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear 
         <button
           aria-label="重新录制或替换音频"
           className="cm-audio-preview__replace"
-          disabled={disabled}
-          onClick={onClear}
+          disabled={replaceDisabled}
+          onClick={() => { if (!replaceDisabled) onClear(); }}
           type="button"
         >
           <ArrowCounterClockwise size={19} />
@@ -76,7 +84,14 @@ export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear 
         onEnded={() => setIsPlaying(false)}
         onError={() => setPreviewError('当前音频无法在浏览器中试听，请尝试替换文件。')}
         onPause={() => setIsPlaying(false)}
-        onPlay={() => setIsPlaying(true)}
+        onPlay={(event) => {
+          if (playbackDisabled) {
+            event.currentTarget.pause();
+            setIsPlaying(false);
+            return;
+          }
+          setIsPlaying(true);
+        }}
         onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
         preload="metadata"
         src={url}
@@ -85,6 +100,7 @@ export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear 
         <button
           aria-label={isPlaying ? '暂停当前动机' : '播放当前动机'}
           className="cm-audio-preview__play"
+          disabled={playbackDisabled}
           onClick={() => void togglePlayback()}
           type="button"
         >
@@ -92,10 +108,11 @@ export function ComposeAudioPreview({ file, sourceLabel, url, disabled, onClear 
         </button>
         <input
           aria-label="当前动机播放进度"
-          disabled={!duration}
+          disabled={playbackDisabled || !duration}
           max={duration || 1}
           min="0"
           onChange={(event) => {
+            if (playbackDisabled || !duration) return;
             const next = Number(event.target.value);
             if (audioRef.current) audioRef.current.currentTime = next;
             setCurrentTime(next);

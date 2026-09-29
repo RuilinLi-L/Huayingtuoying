@@ -73,6 +73,10 @@ export function MusicComposePage() {
   }, []);
 
   function handleFileUpload(event: ChangeEvent<HTMLInputElement>) {
+    if (isGenerating || (recorderBusy && audioFile)) {
+      event.currentTarget.value = '';
+      return;
+    }
     const file = event.currentTarget.files?.[0];
 
     if (file && applyAudioFile(file, file.name)) {
@@ -111,6 +115,7 @@ export function MusicComposePage() {
   }
 
   function clearAudio() {
+    if (isGenerating || recorderBusy) return;
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = '';
@@ -240,6 +245,7 @@ export function MusicComposePage() {
           <ComposeRecorder
             canRecord={canRecord}
             disabled={isGenerating}
+            uploadDisabled={recorderBusy && Boolean(audioFile)}
             micError={micError}
             recordingState={recordingState}
             onRecord={() => { setFormError(''); void startRecording(); }}
@@ -248,7 +254,8 @@ export function MusicComposePage() {
           />
           {audioFile && audioPreviewUrl ? (
             <ComposeAudioPreview
-              disabled={isGenerating || recorderBusy}
+              playbackDisabled={recorderBusy}
+              replaceDisabled={isGenerating || recorderBusy}
               file={audioFile}
               onClear={clearAudio}
               sourceLabel={audioSourceLabel}
@@ -260,6 +267,7 @@ export function MusicComposePage() {
         <section className="cm-section" aria-labelledby="cm-prompt-heading">
           <StepHeading number="02" title="描述音乐" description="让旋律拥有自己的情绪与音色" id="cm-prompt-heading" />
           <ComposePromptPanel
+            disabled={isGenerating}
             onPromptChange={(value) => { setPrompt(value); setFormError(''); }}
             onStyleChange={setStyle}
             onTitleChange={setTitle}
@@ -268,6 +276,7 @@ export function MusicComposePage() {
             title={title}
           />
           <ComposeAdvancedControls
+            disabled={isGenerating}
             audioWeight={audioWeight}
             instrumental={instrumental}
             model={model}

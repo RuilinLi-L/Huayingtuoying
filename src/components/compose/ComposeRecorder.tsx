@@ -6,6 +6,7 @@ import type { RecordingState } from './useComposeRecorder';
 type Props = {
   canRecord: boolean;
   disabled: boolean;
+  uploadDisabled?: boolean;
   micError: string;
   recordingState: RecordingState;
   onRecord: () => void;
@@ -16,6 +17,7 @@ type Props = {
 export function ComposeRecorder({
   canRecord,
   disabled,
+  uploadDisabled = false,
   micError,
   recordingState,
   onRecord,
@@ -26,7 +28,7 @@ export function ComposeRecorder({
   const isRecording = recordingState === 'recording';
   const isStopping = recordingState === 'stopping';
   const isRequesting = recordingState === 'requesting';
-  const uploadDisabled = disabled || isRecording || isStopping;
+  const uploadLocked = disabled || uploadDisabled || isRecording || isStopping;
 
   useEffect(() => {
     if (!isRecording) {
@@ -84,13 +86,13 @@ export function ComposeRecorder({
           >
             {isRecording ? '停止录音' : isStopping ? '正在保存录音…' : isRequesting ? '等待授权…' : '录制哼唱'}
           </button>
-          <label className={`cm-recorder__upload${uploadDisabled ? ' is-disabled' : ''}`}>
+          <label className={`cm-recorder__upload${uploadLocked ? ' is-disabled' : ''}`}>
             <UploadSimple size={18} weight="bold" aria-hidden="true" />
             <span>上传音频</span>
             <input
               accept="audio/*"
               aria-label="上传音频"
-              disabled={uploadDisabled}
+              disabled={uploadLocked}
               onChange={onUpload}
               type="file"
             />

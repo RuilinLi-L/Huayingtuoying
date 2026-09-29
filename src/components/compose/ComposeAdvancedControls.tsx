@@ -3,6 +3,7 @@ import type { CSSProperties } from 'react';
 import { MODEL_OPTIONS } from './composeConfig';
 
 type Props = {
+  disabled?: boolean;
   model: string;
   instrumental: boolean;
   audioWeight: number;
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export function ComposeAdvancedControls({
+  disabled = false,
   model,
   instrumental,
   audioWeight,
@@ -38,7 +40,7 @@ export function ComposeAdvancedControls({
         <div className="cm-advanced__row">
           <label className="cm-field cm-field--model">
             <span className="cm-field__label">模型</span>
-            <select onChange={(event) => onModelChange(event.target.value)} value={model}>
+            <select disabled={disabled} onChange={(event) => onModelChange(event.target.value)} value={model}>
               {MODEL_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>{option.label}</option>
               ))}
@@ -47,6 +49,7 @@ export function ComposeAdvancedControls({
           <label className="cm-switch">
             <span>生成纯音乐</span>
             <input
+              disabled={disabled}
               checked={instrumental}
               onChange={(event) => onInstrumentalChange(event.target.checked)}
               role="switch"
@@ -56,12 +59,13 @@ export function ComposeAdvancedControls({
           </label>
         </div>
         <div className="cm-advanced__sliders">
-          <WeightSlider label="动机影响" value={audioWeight} onChange={onAudioWeightChange} />
-          <WeightSlider label="风格影响" value={styleWeight} onChange={onStyleWeightChange} />
+          <WeightSlider disabled={disabled} label="动机影响" value={audioWeight} onChange={onAudioWeightChange} />
+          <WeightSlider disabled={disabled} label="风格影响" value={styleWeight} onChange={onStyleWeightChange} />
         </div>
         <label className="cm-field">
           <span className="cm-field__label">Negative tags <small>减少不希望出现的音乐特征</small></span>
           <input
+            disabled={disabled}
             onChange={(event) => onNegativeTagsChange(event.target.value)}
             placeholder="例如：noisy recording, low quality"
             type="text"
@@ -74,10 +78,12 @@ export function ComposeAdvancedControls({
 }
 
 function WeightSlider({
+  disabled,
   label,
   value,
   onChange,
 }: {
+  disabled: boolean;
   label: string;
   value: number;
   onChange: (value: number) => void;
@@ -86,6 +92,7 @@ function WeightSlider({
     <label className="cm-weight">
       <span>{label} <strong>{Math.round(value * 100)}%</strong></span>
       <input
+        disabled={disabled}
         max="1"
         min="0.1"
         onChange={(event) => onChange(Number(event.target.value))}

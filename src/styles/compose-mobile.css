@@ -393,6 +393,12 @@
 .cm-audio-preview__player input::-moz-range-thumb { width: 13px; height: 13px; border: 2px solid var(--paper); border-radius: 50%; background: var(--coral); }
 .cm-audio-preview__player input::-moz-range-thumb { background: var(--compose-primary); }
 
+.cm-audio-preview__play:disabled,
+.cm-audio-preview__player input:disabled,
+.cm-prompt-panel :disabled,
+.cm-advanced :disabled,
+.cm-switch:has(input:disabled) { opacity: 0.55; cursor: default; }
+
 .cm-error { display: flex; flex-wrap: wrap; gap: 4px; padding: 9px 11px; border: 1px solid rgba(153, 75, 75, 0.22); border-radius: 12px; background: rgba(254, 255, 247, 0.93); color: var(--coral-dark); font-size: 11px; line-height: 1.5; }
 .cm-error strong { color: var(--coral-dark); }
 .cm-section--generate { gap: 13px; }

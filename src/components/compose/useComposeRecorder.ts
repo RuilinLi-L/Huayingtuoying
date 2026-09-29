@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 
 export type RecordingState =
   | 'idle'
@@ -61,7 +62,8 @@ export function useComposeRecorder(onRecorded: (file: File) => boolean) {
 
     const token = ++requestTokenRef.current;
     setMicError('');
-    setRecordingState('requesting');
+    // Commit busy controls and the preview's pause before requesting microphone access.
+    flushSync(() => setRecordingState('requesting'));
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });

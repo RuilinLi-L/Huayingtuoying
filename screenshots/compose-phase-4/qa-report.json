@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://127.0.0.1:4173",
+  "baseUrl": "http://127.0.0.1:4181",
   "screenshotDir": "screenshots/compose-phase-4",
   "fixturePath": "public/assets/audio/violin-harmony.wav",
   "apiMode": "Playwright route mocks only; no real generation requests",
@@ -9,7 +9,7 @@
     393,
     430
   ],
-  "passed": 26,
+  "passed": 29,
   "failed": 0,
   "results": [
     {
@@ -34,6 +34,14 @@
     },
     {
       "label": "Mocked recorder lifecycle and busy controls",
+      "status": "passed"
+    },
+    {
+      "label": "Preview pauses and locks while recorder is busy",
+      "status": "passed"
+    },
+    {
+      "label": "Preview does not auto-resume after microphone permission failure",
       "status": "passed"
     },
     {
@@ -62,6 +70,10 @@
     },
     {
       "label": "Advanced controls retain values in the submitted request",
+      "status": "passed"
+    },
+    {
+      "label": "Generation locks all parameters while keeping preview playback available",
       "status": "passed"
     },
     {

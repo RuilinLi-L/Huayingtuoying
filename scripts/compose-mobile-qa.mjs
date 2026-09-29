@@ -125,6 +125,11 @@ async function installControlledMicrophone(page) {
     Object.defineProperty(navigator.mediaDevices, 'getUserMedia', {
       configurable: true,
       value: () => new Promise((resolve, reject) => {
+        const preview = document.querySelector('.cm-audio-preview audio');
+        qa.previewPausedAtRequest = preview?.paused;
+        qa.previewTimeAtRequest = preview?.currentTime;
+        qa.previewLockedAtRequest = [...document.querySelectorAll('.cm-audio-preview button, .cm-audio-preview input')]
+          .every((control) => control.disabled);
         resolvePermission = resolve;
         rejectPermission = reject;
       }),
@@ -196,6 +201,35 @@ async function navigate(page) {
   assert.equal(await page.locator('.not-found').count(), 0, 'not-found page rendered');
   const nav = page.getByRole('navigation', { name: '主导航' });
   assert.equal(await nav.getByRole('link', { name: '编创' }).getAttribute('aria-current'), 'page');
+}
+
+async function playPreview(page) {
+  await page.waitForFunction(() => document.querySelector('.cm-audio-preview audio')?.duration > 0);
+  await page.locator('.cm-audio-preview audio').evaluate((audio) => { audio.currentTime = 1; });
+  await page.getByRole('button', { name: '播放当前动机', exact: true }).click();
+  await page.waitForFunction(() => document.querySelector('.cm-audio-preview audio')?.paused === false);
+}
+
+async function assertPreviewLocked(page, expectedUrl) {
+  const audio = page.locator('.cm-audio-preview audio');
+  assert.ok(await audio.evaluate((element) => element.paused), 'preview is still playing while recorder is busy');
+  assert.equal(await audio.getAttribute('src'), expectedUrl, 'busy preview URL was replaced');
+  for (const control of [
+    page.getByRole('button', { name: '播放当前动机', exact: true }),
+    page.getByRole('slider', { name: '当前动机播放进度' }),
+    page.getByRole('button', { name: '重新录制或替换音频' }),
+    uploadInput(page),
+  ]) assert.ok(await control.isDisabled(), 'a busy preview control is enabled');
+  assert.ok(!(await page.evaluate(() => window.__composeQaCleanup.revokedUrls)).includes(expectedUrl),
+    'busy preview URL was revoked');
+}
+
+async function assertParametersDisabled(page, disabled) {
+  const controls = page.locator('.cm-prompt-panel input, .cm-prompt-panel textarea, .cm-prompt-panel button, .cm-advanced input, .cm-advanced select');
+  assert.equal(await controls.count(), 11, 'expected all nine parameter types including three presets');
+  for (const control of await controls.all()) {
+    assert.equal(await control.isDisabled(), disabled, 'generation parameter lock has the wrong state');
+  }
 }
 
 async function assertNoHorizontalOverflow(page, width) {
@@ -380,6 +414,63 @@ async function main() {
       assert.ok(stats.trackStops >= 1, 'recording stream tracks were not stopped');
     });
 
+    await check('Preview pauses and locks while recorder is busy', async () => {
+      await navigate(page);
+      await uploadFixture(page);
+      await installControlledMicrophone(page);
+      await playPreview(page);
+      const audio = page.locator('.cm-audio-preview audio');
+      const previousUrl = await audio.getAttribute('src');
+      await page.getByRole('button', { name: '录制哼唱', exact: true }).first().click();
+      await page.locator('.cm-recorder__status').getByText(/等待麦克风权限/).waitFor();
+      await assertPreviewLocked(page, previousUrl);
+      const atRequest = await page.evaluate(() => window.__composeQaMic);
+      assert.equal(atRequest.previewPausedAtRequest, true, 'preview was not paused before getUserMedia');
+      assert.equal(atRequest.previewLockedAtRequest, true, 'preview was not locked before getUserMedia');
+      assert.ok(atRequest.previewTimeAtRequest >= 1, 'pausing reset the preview playback position');
+
+      await page.evaluate(() => window.__composeQaMic.resolvePermission());
+      await page.locator('.cm-recorder__status').getByText(/正在录音/).waitFor();
+      await assertPreviewLocked(page, previousUrl);
+      assert.equal(await audio.evaluate((element) => element.currentTime), atRequest.previewTimeAtRequest);
+      await page.getByRole('button', { name: '停止录音', exact: true }).first().click();
+      await page.locator('.cm-recorder__status').getByText(/正在保存录音/).waitFor();
+      await assertPreviewLocked(page, previousUrl);
+      await page.getByText('现场录音').waitFor();
+      await page.waitForFunction(() => document.querySelector('.cm-audio-preview audio')?.duration > 0);
+      assert.notEqual(await audio.getAttribute('src'), previousUrl, 'recorded audio did not replace the preview');
+      assert.ok(await audio.evaluate((element) => element.paused), 'new recording auto-played');
+      assert.ok(await page.getByRole('button', { name: '播放当前动机', exact: true }).isEnabled());
+      assert.ok(await page.getByRole('slider', { name: '当前动机播放进度' }).isEnabled());
+      assert.ok(await page.getByRole('button', { name: '重新录制或替换音频' }).isEnabled());
+      assert.ok(await uploadInput(page).isEnabled());
+    });
+
+    await check('Preview does not auto-resume after microphone permission failure', async () => {
+      await navigate(page);
+      await uploadFixture(page);
+      await installControlledMicrophone(page);
+      await playPreview(page);
+      const audio = page.locator('.cm-audio-preview audio');
+      const previousUrl = await audio.getAttribute('src');
+      await page.getByRole('button', { name: '录制哼唱', exact: true }).first().click();
+      await page.locator('.cm-recorder__status').getByText(/等待麦克风权限/).waitFor();
+      await assertPreviewLocked(page, previousUrl);
+      const pausedAt = await audio.evaluate((element) => element.currentTime);
+      await page.evaluate(() => window.__composeQaMic.rejectPermission());
+      await page.getByRole('alert').filter({ hasText: /麦克风|权限/ }).first().waitFor();
+      await page.waitForTimeout(150);
+      assert.ok(await audio.evaluate((element) => element.paused), 'preview auto-resumed after permission failure');
+      assert.equal(await audio.getAttribute('src'), previousUrl);
+      assert.equal(await audio.evaluate((element) => element.currentTime), pausedAt);
+      assert.ok(await page.getByRole('slider', { name: '当前动机播放进度' }).isEnabled());
+      assert.ok(await page.getByRole('button', { name: '重新录制或替换音频' }).isEnabled());
+      assert.ok(await uploadInput(page).isEnabled());
+      await page.getByRole('button', { name: '播放当前动机', exact: true }).click();
+      await page.waitForFunction(() => document.querySelector('.cm-audio-preview audio')?.paused === false);
+      await page.getByRole('button', { name: '暂停当前动机', exact: true }).click();
+    });
+
     await check('Uploading during permission request ignores late rejection', async () => {
       await navigate(page);
       await installControlledMicrophone(page);
@@ -493,6 +584,33 @@ async function main() {
       await page.getByText('编曲草图 B').waitFor();
     });
 
+    await check('Generation locks all parameters while keeping preview playback available', async () => {
+      setMock({ statusPlan: [status('queued', '模拟排队中')] });
+      await navigate(page);
+      await uploadFixture(page);
+      await openAdvanced(page);
+      await assertParametersDisabled(page, false);
+      await generateButton(page).click();
+      await waitForCount(() => statusCallCount, 1);
+      await assertParametersDisabled(page, true);
+      assert.notEqual(await page.locator('.cm-advanced').getAttribute('open'), null);
+      assert.ok(await page.getByRole('button', { name: '重新录制或替换音频' }).isDisabled());
+      assert.ok(await uploadInput(page).isDisabled());
+      assert.ok(await page.getByRole('slider', { name: '当前动机播放进度' }).isEnabled());
+      await playPreview(page);
+      await page.getByRole('button', { name: '暂停当前动机', exact: true }).click();
+      for (const width of [320, 360, 393, 430]) {
+        await page.setViewportSize({ width, height: 852 });
+        await assertNoHorizontalOverflow(page, width);
+      }
+      await page.setViewportSize({ width: 393, height: 852 });
+      await page.getByRole('button', { name: '停止等待' }).click();
+      await assertParametersDisabled(page, false);
+      assert.ok(await page.getByRole('button', { name: '重新录制或替换音频' }).isEnabled());
+      await promptInput(page).fill('停止等待后可以编辑');
+      assert.equal(await promptInput(page).inputValue(), '停止等待后可以编辑');
+    });
+
     await check('Queued, processing, first, complete, and two result tracks', async () => {
       setMock({ statusPlan: [
         status('queued', '模拟排队中'),
@@ -515,6 +633,7 @@ async function main() {
       await page.getByText('编曲草图 B').waitFor();
       assert.equal(await page.locator('audio[src^="/assets/audio/"]').count(), 2, 'both result players are not present');
       assert.ok(await page.getByText(/生成完成/).count(), 'complete state was not shown');
+      await assertParametersDisabled(page, false);
     });
 
     await check('Compose request failure stops before polling', async () => {
@@ -524,6 +643,7 @@ async function main() {
       await generateButton(page).click();
       await page.getByRole('alert').filter({ hasText: /模拟生成请求失败/ }).first().waitFor();
       assert.equal(statusCallCount, 0, 'status polling continued after compose failed');
+      await assertParametersDisabled(page, false);
     });
 
     await check('Failed status shows the returned message', async () => {
@@ -534,6 +654,7 @@ async function main() {
       await waitForCount(() => statusCallCount, 1);
       await page.getByRole('alert').filter({ hasText: /模拟第三方生成失败/ }).first().waitFor();
       assert.ok(await page.getByText(/生成失败/).count(), 'failed status was not shown');
+      await assertParametersDisabled(page, false);
     });
 
     await check('Complete status without tracks presents an unusable result', async () => {
