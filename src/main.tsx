@@ -13,6 +13,7 @@ import './styles/shell.css';
 import './styles/pages.css';
 import './styles/stage.css';
 import './styles/mobile-shell.css';
+import './styles/knowledge-mobile.css';
 import './styles/home.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

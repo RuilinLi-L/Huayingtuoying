@@ -18,6 +18,8 @@ export function TopBar() {
   }).format(new Date());
   const title = pathname.startsWith('/knowledge/instruments/')
     ? '乐器知识'
+    : pathname.startsWith('/knowledge/theory/')
+      ? '乐理知识'
     : pageNames[pathname] ?? '华音拓影';
 
   useEffect(() => setMenuOpen(false), [pathname]);

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AppShell } from './components/AppShell';
+import { KnowledgeAudioProvider } from './components/knowledge/KnowledgeAudio';
 import { MobileShell } from './components/layout/MobileShell';
 
 const EntryPage = lazy(() =>
@@ -31,8 +32,14 @@ const OrchestraDemoPage = lazy(() =>
 const StagePage = lazy(() =>
   import('./pages/StagePage').then((module) => ({ default: module.StagePage })),
 );
-const KnowledgePage = lazy(() =>
-  import('./pages/KnowledgePage').then((module) => ({ default: module.KnowledgePage })),
+const InstrumentLibraryPage = lazy(() =>
+  import('./pages/knowledge/InstrumentLibraryPage').then((module) => ({ default: module.InstrumentLibraryPage })),
+);
+const InstrumentDetailPage = lazy(() =>
+  import('./pages/knowledge/InstrumentDetailPage').then((module) => ({ default: module.InstrumentDetailPage })),
+);
+const TheoryPage = lazy(() =>
+  import('./pages/knowledge/TheoryPage').then((module) => ({ default: module.TheoryPage })),
 );
 
 function RouteFallback() {
@@ -52,9 +59,9 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/stage" element={<StagePage />} />
-        <Route path="/knowledge/instruments" element={<KnowledgePage />} />
-        <Route path="/knowledge/instruments/:instrumentId" element={<KnowledgePage />} />
-        <Route path="/knowledge/theory/:topicId" element={<Navigate to="/learn/fundamentals" replace />} />
+        <Route path="/knowledge/instruments" element={<InstrumentLibraryPage />} />
+        <Route path="/knowledge/instruments/:instrumentId" element={<InstrumentDetailPage />} />
+        <Route path="/knowledge/theory/:topicId" element={<TheoryPage />} />
         <Route path="/compose" element={<MusicComposePage />} />
         <Route path="/demo/base" element={<OrchestraDemoPage />} />
         <Route path="/entry/:entryId" element={<EntryPage />} />
@@ -68,7 +75,7 @@ export default function App() {
   );
 
   return isMobileRoute ? (
-    <MobileShell>{routes}</MobileShell>
+    <KnowledgeAudioProvider><MobileShell>{routes}</MobileShell></KnowledgeAudioProvider>
   ) : (
     <AppShell>{routes}</AppShell>
   );
