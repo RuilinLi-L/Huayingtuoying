@@ -1,0 +1,18 @@
+{
+  "baseCommit": "521151ad74f6719ff62c6e7cf49fdaabd998e602",
+  "scenario": "Delay native AudioContext.resume, navigate Stage → Home, then resolve the old promise.",
+  "before": [
+    {
+      "label": "Stage delayed audio resume → Home cannot revive disposed session",
+      "status": "failed",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n    media: 0,\n    overlaps: [],\n+   voices: 12\n-   voices: 0\n  }\n"
+    }
+  ],
+  "after": [
+    {
+      "label": "Stage delayed audio resume → Home cannot revive disposed session",
+      "status": "passed"
+    }
+  ],
+  "fix": "Check mounted state and engine identity after both asynchronous playback boundaries in useOrchestraSession."
+}

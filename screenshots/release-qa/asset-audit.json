@@ -1,0 +1,346 @@
+{
+  "public/assets/ui": {
+    "totalBytes": 10704757,
+    "fileCount": 60,
+    "top20": [
+      {
+        "file": "public/assets/ui/instruments/woodwind/bassoon.png",
+        "bytes": 1921030
+      },
+      {
+        "file": "public/assets/ui/instruments/woodwind/oboe.png",
+        "bytes": 1886072
+      },
+      {
+        "file": "public/assets/ui/instruments/woodwind/clarinet.png",
+        "bytes": 1779409
+      },
+      {
+        "file": "public/assets/ui/instruments/woodwind/flute.png",
+        "bytes": 1381744
+      },
+      {
+        "file": "public/assets/ui/stage/orchestra-hero.png",
+        "bytes": 204380
+      },
+      {
+        "file": "public/assets/ui/instruments/brass/tuba.jpg",
+        "bytes": 203834
+      },
+      {
+        "file": "public/assets/ui/instruments/brass/horn.jpg",
+        "bytes": 198439
+      },
+      {
+        "file": "public/assets/ui/instruments/strings/violin.jpg",
+        "bytes": 177232
+      },
+      {
+        "file": "public/assets/ui/instruments/strings/viola.jpg",
+        "bytes": 174562
+      },
+      {
+        "file": "public/assets/ui/instruments/strings/cello.jpg",
+        "bytes": 162369
+      },
+      {
+        "file": "public/assets/ui/instruments/strings/double-bass.jpg",
+        "bytes": 161511
+      },
+      {
+        "file": "public/assets/ui/instruments/brass/trumpet.jpg",
+        "bytes": 144724
+      },
+      {
+        "file": "public/assets/ui/instruments/brass/trombone.jpg",
+        "bytes": 141752
+      },
+      {
+        "file": "public/assets/ui/instruments/players/woodwind-listening-card.png",
+        "bytes": 129229
+      },
+      {
+        "file": "public/assets/ui/stage/orchestra-characters.png",
+        "bytes": 112600
+      },
+      {
+        "file": "public/assets/ui/theory/music-book.png",
+        "bytes": 112130
+      },
+      {
+        "file": "public/assets/ui/instruments/players/violin-listening-card.png",
+        "bytes": 108511
+      },
+      {
+        "file": "public/assets/ui/theory/rhythm-controls.png",
+        "bytes": 100654
+      },
+      {
+        "file": "public/assets/ui/instruments/players/flute-listening-card.png",
+        "bytes": 98128
+      },
+      {
+        "file": "public/assets/ui/theory/chord-circle.png",
+        "bytes": 89732
+      }
+    ]
+  },
+  "public/assets/audio": {
+    "totalBytes": 218420436,
+    "fileCount": 45,
+    "top20": [
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Bass_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Bassoon_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Cello_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Clarinet_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Flute_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Horn_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Oboe_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Trumbone_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Trumpet_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Tuba_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Viola_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/Violin_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Bass_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Bassoon_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Cello_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Clarinet_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Flute_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Horn_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Oboe_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "public/assets/audio/The Sleeping Beauty Waltz/mobile/Trumbone_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      }
+    ]
+  },
+  "public/assets/models": {
+    "totalBytes": 276760772,
+    "fileCount": 32,
+    "top20": [
+      {
+        "file": "public/assets/models/violin/scene.glb",
+        "bytes": 60499536
+      },
+      {
+        "file": "public/assets/models/viola/scene.glb",
+        "bytes": 28733900
+      },
+      {
+        "file": "public/assets/models/oboe/scene.glb",
+        "bytes": 28162740
+      },
+      {
+        "file": "public/assets/models/bass/scene.glb",
+        "bytes": 24325148
+      },
+      {
+        "file": "public/assets/models/trombone/scene.glb",
+        "bytes": 24290540
+      },
+      {
+        "file": "public/assets/models/cello/scene.glb",
+        "bytes": 17442900
+      },
+      {
+        "file": "public/assets/models/bassoon/scene.glb",
+        "bytes": 16252544
+      },
+      {
+        "file": "public/assets/models/flute/scene.glb",
+        "bytes": 14864312
+      },
+      {
+        "file": "public/assets/models/horn/scene.glb",
+        "bytes": 13263264
+      },
+      {
+        "file": "public/assets/models/violin/scene.optimized.glb",
+        "bytes": 8402400
+      },
+      {
+        "file": "public/assets/models/cello/scene.optimized.glb",
+        "bytes": 6999712
+      },
+      {
+        "file": "public/assets/models/bassoon/scene.optimized.glb",
+        "bytes": 4630724
+      },
+      {
+        "file": "public/assets/models/oboe/scene.optimized.glb",
+        "bytes": 4294016
+      },
+      {
+        "file": "public/assets/models/viola/scene.optimized.glb",
+        "bytes": 3705804
+      },
+      {
+        "file": "public/assets/models/clarinet/scene.glb",
+        "bytes": 3587552
+      },
+      {
+        "file": "public/assets/models/tuba/scene.glb",
+        "bytes": 3365120
+      },
+      {
+        "file": "public/assets/models/bass/scene.optimized.glb",
+        "bytes": 3185768
+      },
+      {
+        "file": "public/assets/models/trombone/scene.optimized.glb",
+        "bytes": 2736964
+      },
+      {
+        "file": "public/assets/models/flute/scene.optimized.glb",
+        "bytes": 2194088
+      },
+      {
+        "file": "public/assets/models/horn/scene.optimized.glb",
+        "bytes": 1764576
+      }
+    ]
+  },
+  "dist/assets": {
+    "totalBytes": 303665513,
+    "fileCount": 1145,
+    "top20": [
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Bass_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Bassoon_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Cello_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Clarinet_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Flute_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Horn_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Oboe_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Trumbone_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Trumpet_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Tuba_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Viola_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/Violin_睡美人圆舞曲.mp3",
+        "bytes": 11761088
+      },
+      {
+        "file": "dist/assets/models/violin/scene.optimized.glb",
+        "bytes": 8402400
+      },
+      {
+        "file": "dist/assets/models/cello/scene.optimized.glb",
+        "bytes": 6999712
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Bass_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Bassoon_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Cello_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Clarinet_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Flute_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      },
+      {
+        "file": "dist/assets/audio/The Sleeping Beauty Waltz/mobile/Horn_睡美人圆舞曲.mp3",
+        "bytes": 4705428
+      }
+    ]
+  }
+}

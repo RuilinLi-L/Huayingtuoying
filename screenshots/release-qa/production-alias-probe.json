@@ -1,0 +1,19 @@
+{
+  "testedAt": "2026-09-29T12:06:08.271Z",
+  "previewCommit": "521151ad74f6719ff62c6e7cf49fdaabd998e602",
+  "productionCommit": "771de5c8b7abff7f5a77659344c4c04000de9fbf",
+  "results": [
+    {
+      "url": "https://huayingtuoying.vercel.app/stage",
+      "status": 200,
+      "finalUrl": "https://huayingtuoying.vercel.app/stage",
+      "title": "华音拓影 · NFC + WebAR 古典音乐美育系统"
+    },
+    {
+      "url": "https://huayingtuoying.vercel.app/this-route-does-not-exist",
+      "status": 404,
+      "finalUrl": "https://huayingtuoying.vercel.app/this-route-does-not-exist",
+      "title": "404: NOT_FOUND"
+    }
+  ]
+}

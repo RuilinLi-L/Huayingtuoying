@@ -382,11 +382,14 @@ export function useOrchestraSession({
     setAudioError('');
     try {
       await engine.init();
+      // Resuming an AudioContext can finish after navigation disposed this session.
+      if (!mountedRef.current || audioEngineRef.current !== engine) return;
       const nextAudioError = await engine.setActiveStems(
         compositionStems,
         snapshot.placedMusicianIds,
         { playWhenReady: true },
       );
+      if (!mountedRef.current || audioEngineRef.current !== engine) return;
       if (mountedRef.current) {
         setAudioError(nextAudioError ?? '');
       }

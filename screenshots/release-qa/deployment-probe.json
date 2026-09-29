@@ -1,0 +1,19 @@
+{
+  "testedAt": "2026-09-29T11:58:39.160Z",
+  "previewCommit": "521151ad74f6719ff62c6e7cf49fdaabd998e602",
+  "productionCommit": "771de5c8b7abff7f5a77659344c4c04000de9fbf",
+  "results": [
+    {
+      "url": "https://huayingtuoying-qnf60zr2z-ruilinli-ls-projects.vercel.app/stage",
+      "status": 200,
+      "finalUrl": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fhuayingtuoying-qnf60zr2z-ruilinli-ls-projects.vercel.app%252Fstage%26nonce%3De1fc5c24e9e5e83adc5122df28746037b4d29cc7e6808232dc739751df4c7c90",
+      "title": "Login – Vercel"
+    },
+    {
+      "url": "https://huayingtuoying-hayfdyzis-ruilinli-ls-projects.vercel.app/stage",
+      "status": 200,
+      "finalUrl": "https://vercel.com/login?next=%2Fsso-api%3Furl%3Dhttps%253A%252F%252Fhuayingtuoying-hayfdyzis-ruilinli-ls-projects.vercel.app%252Fstage%26nonce%3D9e0bf46be55685209c5ce5205bb300bcbfb9fed1c2f8ddaa92291d20bbee0b1e",
+      "title": "Login – Vercel"
+    }
+  ]
+}
