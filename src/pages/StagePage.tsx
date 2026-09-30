@@ -16,6 +16,7 @@ export function StagePage() {
     preloadSelectedStems: false,
     audioVariant: 'stage-mobile',
     showAllScenes: true,
+    enableCamera: false,
   });
 
   return (
@@ -30,9 +31,6 @@ export function StagePage() {
       isLoading={session.isLoading}
       audioError={session.audioError}
       nfcError={session.nfcError}
-      cameraReady={session.cameraReady}
-      cameraError={session.cameraError}
-      videoRef={session.videoRef}
       currentScene={session.currentScene}
       sceneOptions={session.sceneOptions}
       onTogglePlayback={() => void session.togglePlayback()}
@@ -40,8 +38,6 @@ export function StagePage() {
       onSelectMusician={session.selectMusician}
       onToggleMusicianInLineup={session.toggleMusician}
       onSceneChange={session.changeScene}
-      onOpenStage={() => void session.openStage()}
-      onCloseStage={session.stopStage}
     />
   );
 }

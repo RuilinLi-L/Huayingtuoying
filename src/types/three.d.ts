@@ -111,5 +111,6 @@ declare module 'three/examples/jsm/controls/OrbitControls.js' {
     constructor(camera: PerspectiveCamera, domElement: HTMLElement);
     dispose(): void;
     update(): boolean;
+    reset(): void;
   }
 }

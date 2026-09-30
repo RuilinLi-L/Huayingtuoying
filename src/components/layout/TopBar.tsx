@@ -39,7 +39,7 @@ export function TopBar() {
           </div>
         ) : null}
         <div className="mobile-topbar__actions">
-          <Link className="mobile-topbar__icon" to="/entry/violin-dialogue" aria-label="打开展签与扫码入口">
+          <Link className="mobile-topbar__icon" to={isStage ? '/experience/oboe-player' : '/entry/violin-dialogue'} aria-label={isStage ? '扫描体验：双簧管 AR' : '打开展签与扫码入口'}>
             <img src="/assets/ui/home/icon-scan.png" alt="" width="25" height="25" />
           </Link>
           {!isStage ? (

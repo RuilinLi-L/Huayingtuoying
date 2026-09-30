@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { oboePlayer } from '../../data/oboePlayer';
 import type {
   MusicianProfile,
   OrchestraSceneDefinition,
@@ -9,6 +11,8 @@ import { StageInsightSheet } from './StageInsightSheet';
 import { StagePlayer } from './StagePlayer';
 import { OrchestraSection } from './OrchestraSection';
 import '../../styles/stage-mobile.css';
+
+const ModelViewer = lazy(() => import('../InstrumentModelViewer').then(module => ({ default: module.InstrumentModelViewer })));
 
 export interface StageExperienceProps {
   musicians: MusicianProfile[];
@@ -21,9 +25,6 @@ export interface StageExperienceProps {
   isLoading: boolean;
   audioError: string;
   nfcError: string;
-  cameraReady: boolean;
-  cameraError: string;
-  videoRef: RefObject<HTMLVideoElement | null>;
   currentScene: OrchestraSceneDefinition;
   sceneOptions: OrchestraSceneDefinition[];
   onTogglePlayback: () => void;
@@ -31,8 +32,6 @@ export interface StageExperienceProps {
   onSelectMusician: (musicianId: string) => void;
   onToggleMusicianInLineup: (musicianId: string) => void;
   onSceneChange: (sceneId: OrchestraSceneDefinition['id']) => void;
-  onOpenStage: () => void;
-  onCloseStage: () => void;
 }
 
 export function StageExperience({
@@ -46,9 +45,6 @@ export function StageExperience({
   isLoading,
   audioError,
   nfcError,
-  cameraReady,
-  cameraError,
-  videoRef,
   currentScene,
   sceneOptions,
   onTogglePlayback,
@@ -56,9 +52,8 @@ export function StageExperience({
   onSelectMusician,
   onToggleMusicianInLineup,
   onSceneChange,
-  onOpenStage,
-  onCloseStage,
 }: StageExperienceProps) {
+  const [view, setView] = useState<'orchestra' | 'oboe'>('orchestra');
   const focusedMusician = musicians.find((item) => item.id === focusedMusicianId) ?? null;
   const previousIds = useRef(selectedIds);
   const [pulseIds, setPulseIds] = useState<string[]>([]);
@@ -74,7 +69,17 @@ export function StageExperience({
 
   return (
     <div className="stage-mobile">
-      <StageHero currentScene={currentScene} selectedIds={selectedIds} highlightIds={heroHighlights} pulseIds={pulseIds} />
+      <div className="stage-mobile__view-tabs" role="group" aria-label="舞台展示方式">
+        <button type="button" aria-pressed={view === 'orchestra'} onClick={() => setView('orchestra')}>乐团</button>
+        <button type="button" aria-pressed={view === 'oboe'} onClick={() => setView('oboe')}>双簧管 3D</button>
+      </div>
+      {view === 'orchestra' ? <StageHero currentScene={currentScene} selectedIds={selectedIds} highlightIds={heroHighlights} pulseIds={pulseIds} /> : (
+        <section className="stage-mobile__character-preview" aria-label="双簧管人物预览">
+          <Suspense fallback={<p>正在准备 3D 预览…</p>}><ModelViewer modelUrl={oboePlayer.modelUrl} title={oboePlayer.title} accentColor={oboePlayer.themeColor!} /></Suspense>
+          <p>双簧管演奏家 · 拖动旋转，双指缩放</p>
+          <Link className="button" to="/experience/oboe-player">扫描体验</Link>
+        </section>
+      )}
       <StagePlayer
         currentTime={currentTime}
         duration={duration}
@@ -97,13 +102,6 @@ export function StageExperience({
           <p>{nfcError}</p>
         </div>
       ) : null}
-      {cameraError ? (
-        <div className="stage-mobile__notice stage-mobile__notice--error" role="alert">
-          <strong>相机未启动</strong>
-          <p>{cameraError}</p>
-        </div>
-      ) : null}
-
       <header className="stage-mobile__intro">
         <h1>Orchestra</h1>
         <p>点选乐器，加入或移出演奏。让不同声部交织，听见你的交响乐团。</p>
@@ -140,15 +138,10 @@ export function StageExperience({
       </div>
 
       <StageActions
-        cameraError={cameraError}
-        cameraReady={cameraReady}
         currentScene={currentScene}
-        onCloseStage={onCloseStage}
-        onOpenStage={onOpenStage}
         onSceneChange={onSceneChange}
         sceneOptions={sceneOptions}
         selectedCount={selectedIds.length}
-        videoRef={videoRef}
       />
 
       <StageInsightSheet

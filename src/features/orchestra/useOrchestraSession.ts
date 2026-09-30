@@ -37,6 +37,7 @@ interface UseOrchestraSessionOptions {
   audioVariant?: SleepingBeautyAudioVariant;
   /** Expose every scene when the stage lets visitors switch freely. */
   showAllScenes?: boolean;
+  enableCamera?: boolean;
 }
 
 function parseLineup(value: string | null, defaultLineupIds: string[]) {
@@ -58,6 +59,7 @@ export function useOrchestraSession({
   preloadSelectedStems = true,
   audioVariant = 'mobile',
   showAllScenes = false,
+  enableCamera = true,
 }: UseOrchestraSessionOptions = {}) {
   const compositionStems = useMemo<AudioStem[]>(
     () => fixedComposition.stems.map((stem) => ({
@@ -304,7 +306,7 @@ export function useOrchestraSession({
   }, []);
 
   const openStage = useCallback(async () => {
-    if (streamRef.current || cameraOpeningRef.current) {
+    if (!enableCamera || streamRef.current || cameraOpeningRef.current) {
       return;
     }
     if (!capabilities.canUseCamera) {
@@ -336,7 +338,7 @@ export function useOrchestraSession({
     } finally {
       cameraOpeningRef.current = false;
     }
-  }, [capabilities.canUseCamera]);
+  }, [capabilities.canUseCamera, enableCamera]);
 
   useEffect(() => {
     mountedRef.current = true;

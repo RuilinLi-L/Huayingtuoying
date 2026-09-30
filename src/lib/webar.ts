@@ -12,10 +12,11 @@ const defaultModelPosition: Vector3Value = { x: 0, y: 0.02, z: 0.12 };
 const defaultModelScale: Vector3Value = { x: 0.005, y: 0.005, z: 0.005 };
 
 export interface ResolvedWebArScene
-  extends Omit<WebArSceneConfig, 'provider' | 'modelPosition' | 'modelScale'> {
+  extends Omit<WebArSceneConfig, 'provider' | 'modelPosition' | 'modelScale' | 'modelRotation'> {
   provider: WebArProvider;
   modelPosition: Vector3Value;
   modelScale: Vector3Value;
+  modelRotation: Vector3Value;
   accentColor: string;
 }
 
@@ -59,6 +60,7 @@ function buildLegacyScene(entry: EntryManifest): ResolvedWebArScene {
     placementPrompt: '将相机对准识别图，识别后显示 3D 模型与知识热点。',
     modelPosition: defaultModelPosition,
     modelScale: defaultModelScale,
+    modelRotation: { x: 0, y: 0, z: 0 },
     accentColor: entry.themeColor ?? '#8b5cf6',
   };
 }
@@ -74,6 +76,7 @@ export function resolveWebArConfig(entry: EntryManifest): ResolvedWebArConfig {
       provider: scene.provider ?? provider,
       modelPosition: mergeVector3(scene.modelPosition, defaultModelPosition),
       modelScale: mergeVector3(scene.modelScale, defaultModelScale),
+      modelRotation: mergeVector3(scene.modelRotation, { x: 0, y: 0, z: 0 }),
       accentColor: scene.accentColor ?? entry.themeColor ?? '#8b5cf6',
     })) ?? [legacyScene];
   const defaultSceneId = entry.webar?.defaultSceneId ?? scenes[0]?.id ?? legacyScene.id;

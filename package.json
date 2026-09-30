@@ -11,17 +11,23 @@
     "generate:demo-audio": "node ./scripts/generate-demo-audio.mjs",
     "sync:demo-assets": "node ./scripts/sync-demo-assets.mjs",
     "export:links": "node ./scripts/generate-links.mjs",
-    "check": "npm run build"
+    "check": "npm run build",
+    "prepare:oboe-player": "node scripts/prepare-oboe-player.mjs",
+    "test:oboe-player": "node scripts/oboe-player-qa.mjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@gltf-transform/core": "^4.4.0",
+    "@gltf-transform/functions": "^4.4.0",
     "@types/node": "^25.3.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "meshoptimizer": "^0.24.0",
+    "sharp": "^0.34.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"

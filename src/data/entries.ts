@@ -3,12 +3,14 @@ import {
   sleepingBeautyStemCatalog,
 } from './sleepingBeauty';
 import type { EntryManifest } from '../types/manifest';
+import { oboePlayer } from './oboePlayer';
 
 const ensembleEntryStems = sleepingBeautyStemCatalog.map((stem) =>
   createSleepingBeautyAudioStem(stem.id),
 );
 
 export const entries: EntryManifest[] = [
+  oboePlayer,
   {
     id: 'violin-dialogue',
     title: '弦光小提琴',

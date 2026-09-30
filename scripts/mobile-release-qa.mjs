@@ -226,12 +226,13 @@ try {
         assert.ok(await page.evaluate(() => __release.contexts.every(c => c.state === 'closed')));
       } finally { releaseDownloads(); await page.unroute('**/stage-mobile/**'); }
     });
-    await check('Stage pending camera permission → Home stops late stream', async () => {
+    await check('Stage scan entry opens dedicated AR page without acquiring camera', async () => {
       await go('/stage');
-      await page.evaluate(() => { const get = navigator.mediaDevices.getUserMedia; Object.defineProperty(navigator.mediaDevices, 'getUserMedia', { configurable: true, value: options => new Promise(resolve => { window.__releaseCamera = async () => resolve(await get(options)); }) }); });
-      await page.locator('.stage-mobile__actions summary').click(); await page.getByRole('button', { name: '开启相机舞台' }).click();
-      await page.waitForFunction(() => !!window.__releaseCamera); await nav('首页'); await page.evaluate(() => __releaseCamera()); await page.waitForTimeout(200);
-      assert.ok(await page.evaluate(() => __release.streams.length > 0 && __release.streams.every(s => s.stream.getTracks().every(t => t.readyState === 'ended'))));
+      await page.locator('.stage-mobile__actions summary').click();
+      await page.getByRole('link', { name: '扫描体验 · 双簧管 AR', exact: true }).click();
+      await page.getByRole('button', { name: '开始扫描', exact: true }).waitFor();
+      assert.ok(page.url().endsWith('/experience/oboe-player'));
+      assert.ok(await page.evaluate(() => __release.streams.every(s => s.stream.getTracks().every(t => t.readyState === 'ended'))));
     });
     await check('Home play / pause / resume / switch → Stage cleanup', async () => {
       await go('/'); const buttons = page.locator('.home-symphony__play'); await buttons.nth(0).click(); await voices(1); await buttons.nth(0).click(); await voices(0); await buttons.nth(0).click(); await voices(1); await buttons.nth(1).click(); await voices(1);

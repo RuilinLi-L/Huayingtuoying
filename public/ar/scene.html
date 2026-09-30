@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>摄像头识图场景</title>
+  <style>
+    html, body, #stage { margin: 0; width: 100%; height: 100%; overflow: hidden; background: transparent; }
+    #stage { position: relative; isolation: isolate; }
+    a-scene { position: absolute !important; inset: 0; width: 100%; height: 100%; z-index: 1; }
+    video { z-index: 0 !important; }
+    #hint { position: absolute; bottom: 16px; left: 12px; right: 12px; z-index: 2; padding: 12px; border-radius: 12px; color: white; background: #172321cc; font: 14px/1.5 system-ui; pointer-events: none; text-align: center; }
+  </style>
+  <script src="/ar/scene.js" defer></script>
+</head>
+<body><div id="stage"><div id="hint" role="status">正在加载识图场景…</div></div></body>
+</html>

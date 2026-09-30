@@ -240,7 +240,7 @@ export function ExperiencePage() {
       pushDebugMessage(
         `开始请求相机权限：${capabilities.browserName}，releaseDelay=${cameraProfile.releaseDelayMs}ms`,
       );
-      await requestCameraAccess(cameraProfile);
+      if (scene.provider !== 'mindar') await requestCameraAccess(cameraProfile);
       pushDebugMessage('相机权限通过，准备进入场景');
       setSceneStarted(true);
       void startAudio().catch((error) => {

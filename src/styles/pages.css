@@ -4098,3 +4098,6 @@
     opacity: 1;
   }
 }
+
+.ar-runtime-frame { display: block; width: 100%; height: clamp(380px, 62dvh, 650px); border: 0; border-radius: 16px; background: #182320; }
+.instrument-model__reset { position: absolute; top: 12px; right: 12px; z-index: 2; padding: 9px 14px; border: 1px solid #d8dfd2; border-radius: 20px; background: #fffffff0; color: #314a38; cursor: pointer; }

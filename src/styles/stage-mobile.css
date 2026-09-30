@@ -419,3 +419,10 @@
   .stage-mobile__scene-label, .stage-mobile__musician, .stage-mobile__musician-info,
   .stage-mobile__scene { transition: none; }
 }
+
+.stage-mobile__view-tabs { display: flex; gap: 8px; padding: 12px 16px; background: #f6f3e8; }
+.stage-mobile__view-tabs button { flex: 1; border: 1px solid #d4dbcb; border-radius: 22px; padding: 10px 14px; color: #52634a; background: transparent; font: inherit; cursor: pointer; }
+.stage-mobile__view-tabs button[aria-pressed="true"] { color: #fff; background: #506449; border-color: #506449; }
+.stage-mobile__character-preview { padding: 0 14px 18px; text-align: center; background: #f6f3e8; }
+.stage-mobile__character-preview .instrument-model, .stage-mobile__character-preview .instrument-model__stage { min-height: 380px; }
+.stage-mobile__character-preview p { font-size: 13px; color: #66705f; margin: 12px 0; }

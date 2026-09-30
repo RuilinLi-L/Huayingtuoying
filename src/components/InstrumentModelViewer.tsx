@@ -199,6 +199,8 @@ export function InstrumentModelViewer({
   accentColor,
 }: InstrumentModelViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const resetViewRef = useRef<(() => void) | null>(null);
+  const [retryKey, setRetryKey] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [loadProgress, setLoadProgress] = useState<number | null>(null);
   const [status, setStatus] = useState<ModelStatus>(modelUrl ? 'waiting' : 'empty');
@@ -259,7 +261,9 @@ export function InstrumentModelViewer({
     const cameraFov = 36;
     const camera = new PerspectiveCamera(cameraFov, 1, 0.1, 100);
     const root = new Group();
-    const renderer = new WebGLRenderer({ alpha: true, antialias: true });
+    let renderer: WebGLRenderer;
+    try { renderer = new WebGLRenderer({ alpha: true, antialias: true }); }
+    catch { setStatus('error'); return; }
     let modelFitSize = { width: 1.8, height: 1.8 };
     let disposed = false;
     let animationFrame = 0;
@@ -311,7 +315,7 @@ export function InstrumentModelViewer({
       const fovRadians = (cameraFov * Math.PI) / 180;
 
       return Math.max(
-        (requiredViewHeight * 1.16) / (2 * Math.tan(fovRadians / 2)),
+        (requiredViewHeight * 1.3) / (2 * Math.tan(fovRadians / 2)),
         2.2,
       );
     };
@@ -319,12 +323,17 @@ export function InstrumentModelViewer({
     const fitInitialView = () => {
       const cameraDistance = getCameraDistance();
 
+      controls.enableDamping = false;
+      controls.update();
       camera.position.set(0, 0, cameraDistance);
       controls.target.set(0, 0, 0);
       controls.minDistance = Math.max(cameraDistance * 0.35, 0.4);
       controls.maxDistance = cameraDistance * 3.2;
+      controls.enableDamping = true;
       controls.update();
     };
+
+    resetViewRef.current = () => { controls.reset(); fitInitialView(); };
 
     const resize = () => {
       const width = container.clientWidth || 640;
@@ -358,7 +367,7 @@ export function InstrumentModelViewer({
     })
       .then((buffer) => parseModel(loader, buffer, modelUrl))
       .then((model) => {
-        if (disposed) {
+        if (disposed || abortController.signal.aborted) {
           disposeObject(model);
           return;
         }
@@ -399,6 +408,7 @@ export function InstrumentModelViewer({
 
     return () => {
       disposed = true;
+      resetViewRef.current = null;
       abortController.abort();
       window.clearTimeout(timeoutId);
       window.cancelAnimationFrame(animationFrame);
@@ -409,7 +419,7 @@ export function InstrumentModelViewer({
       renderer.dispose();
       renderer.domElement.remove();
     };
-  }, [accentColor, isVisible, modelUrl]);
+  }, [accentColor, isVisible, modelUrl, retryKey]);
 
   const progressLabel =
     typeof loadProgress === 'number'
@@ -417,12 +427,12 @@ export function InstrumentModelViewer({
       : '处理中';
 
   const message = {
-    empty: '暂未配置百科模型。',
+    empty: '暂未配置模型。',
     waiting: '模型将在滚动到这里时加载。',
-    loading: `正在加载轻量百科模型 ${progressLabel}`,
+    loading: `正在加载 3D 模型 ${progressLabel}`,
     ready: '',
     timeout: '模型加载超时，当前仍保留文字与音频内容。',
-    error: '百科模型加载失败，可能是文件路径、缓存或浏览器解码失败。',
+    error: '模型加载失败，请检查网络或换用支持 3D 的浏览器。',
   }[status];
 
   return (
@@ -432,6 +442,9 @@ export function InstrumentModelViewer({
         <div className="instrument-model__status">
           <strong>{title}</strong>
           <span>{message}</span>
+          {status === 'error' || status === 'timeout' ? (
+            <button type="button" className="button" onClick={() => setRetryKey(key => key + 1)}>重新加载模型</button>
+          ) : null}
           {status === 'loading' ? (
             <span
               className="instrument-model__progress"
@@ -445,6 +458,7 @@ export function InstrumentModelViewer({
           ) : null}
         </div>
       ) : null}
+      {status === 'ready' ? <button type="button" className="instrument-model__reset" onClick={() => resetViewRef.current?.()}>恢复视角</button> : null}
       {status === 'ready' ? (
         <div className="instrument-model__hint" aria-hidden="true">
           拖拽旋转 · 滚轮/双指缩放 · 右键/双指平移

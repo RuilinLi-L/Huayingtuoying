@@ -32,6 +32,9 @@ const OrchestraDemoPage = lazy(() =>
 const StagePage = lazy(() =>
   import('./pages/StagePage').then((module) => ({ default: module.StagePage })),
 );
+const CharacterExperiencePage = lazy(() =>
+  import('./pages/CharacterExperiencePage').then(module => ({ default: module.CharacterExperiencePage })),
+);
 const InstrumentLibraryPage = lazy(() =>
   import('./pages/knowledge/InstrumentLibraryPage').then((module) => ({ default: module.InstrumentLibraryPage })),
 );
@@ -59,6 +62,7 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/stage" element={<StagePage />} />
+        <Route path="/experience/oboe-player" element={<CharacterExperiencePage />} />
         <Route path="/knowledge/instruments" element={<InstrumentLibraryPage />} />
         <Route path="/knowledge/instruments/:instrumentId" element={<InstrumentDetailPage />} />
         <Route path="/knowledge/theory/:topicId" element={<TheoryPage />} />
@@ -73,6 +77,8 @@ export default function App() {
       </Routes>
     </Suspense>
   );
+
+  if (location.pathname === '/experience/oboe-player') return routes;
 
   return isMobileRoute ? (
     <KnowledgeAudioProvider><MobileShell>{routes}</MobileShell></KnowledgeAudioProvider>
