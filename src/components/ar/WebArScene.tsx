@@ -3,6 +3,7 @@ import { resolveWebArScene } from '../../lib/webar';
 import type { EntryLaunchSource, EntryManifest, KnowledgeCard } from '../../types/manifest';
 import { MindArScene } from './MindArScene';
 import { WebArPlaceholderScene } from './WebArPlaceholderScene';
+import { WorldArScene } from './WorldArScene';
 
 interface WebArSceneProps {
   entry: EntryManifest;
@@ -22,6 +23,10 @@ export function WebArScene({
   onDebug,
 }: WebArSceneProps) {
   const scene = useMemo(() => resolveWebArScene(entry, source), [entry, source]);
+
+  if (scene.provider === '8thwall' && scene.trackingMode === 'surface-placement') {
+    return <WorldArScene modelUrl={entry.modelUrl} />;
+  }
 
   if (scene.provider === 'mindar' && scene.trackingMode === 'image-target') {
     return (

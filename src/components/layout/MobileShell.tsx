@@ -40,13 +40,14 @@ export function MobileShell({ children }: { children: ReactNode }) {
       ? 'stage'
       : location.pathname.startsWith('/knowledge')
         ? 'knowledge'
-        : 'compose';
+        : location.pathname.startsWith('/compose') ? 'compose' : 'knowledge';
+  const inAr=section==='stage'&&['ar','image-test'].includes(new URLSearchParams(location.search).get('view')??'');
 
   return (
-    <div className={`mobile-shell mobile-shell--${section}`}>
+    <div className={`mobile-shell mobile-shell--${section}${inAr?' mobile-shell--ar':''}`}>
       <TopBar />
       <main className="mobile-shell__main" ref={mainRef}>{children}</main>
-      <BottomNav />
+      {!inAr&&<BottomNav />}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { ResolvedWebArScene } from '../../lib/webar';
 import type { EntryManifest, KnowledgeCard } from '../../types/manifest';
 
@@ -24,6 +24,10 @@ export function MindArScene(props: MindArSceneProps) {
   const [error, setError] = useState('');
   const config = JSON.stringify({ modelUrl: entry.modelUrl, scene,
     cards: entry.knowledgeCards.map(card => ({ id: card.id })) });
+  useLayoutEffect(() => {
+    const owner = frameRef.current?.contentWindow;
+    return () => { owner?.dispatchEvent(new Event('orchestra-stop')); };
+  }, [attempt, error, config]);
 
   useEffect(() => {
     if (error) return;

@@ -122,7 +122,7 @@ export function TheoryPage() {
             <Link to={`/knowledge/theory/${next.id}`}>下一章 · {next.id}<CaretRight size={18} /></Link>
           ) : <span />}
         </nav>
-        <Link className="theory-mobile__legacy" to={`/learn/fundamentals#${topic.card.id}`}>在完整导学页阅读这张卡片</Link>
+        <Link className="theory-mobile__legacy" to="/knowledge/guide">返回完整知识导览</Link>
       </article>
       <TheoryDial activeId={topic.id} />
     </div>

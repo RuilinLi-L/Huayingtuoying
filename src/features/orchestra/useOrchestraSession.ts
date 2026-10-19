@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { baseAnchorId, fixedComposition } from '../../data/orchestraDemo';
 import {
   getSleepingBeautyStemFile,
+  getSleepingBeautyManifest,
   normalizeMusicianIds,
   type SleepingBeautyAudioVariant,
 } from '../../data/sleepingBeauty';
@@ -66,6 +67,7 @@ export function useOrchestraSession({
       id: stem.id,
       name: stem.name,
       file: getSleepingBeautyStemFile(stem.id, audioVariant),
+      segmentManifest: getSleepingBeautyManifest(stem.id),
       defaultEnabled: true,
       group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
       stereoPan: stem.stereoPan,
@@ -95,6 +97,7 @@ export function useOrchestraSession({
   const mountedRef = useRef(true);
   const audioEngineRef = useRef<AudioEngine | null>(null);
   const playbackRequestRef = useRef(false);
+  const playbackGenerationRef = useRef(0);
   const [mockAdapter] = useState(() => createMockNfcSessionAdapter(urlLineupIds));
   const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
   const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>(() => ({
@@ -189,6 +192,8 @@ export function useOrchestraSession({
         return;
       }
 
+      if (engine.getError()) setAudioError(engine.getError());
+      if (!playbackRequestRef.current) setIsLoading(engine.isBuffering());
       const nextDuration = engine.getDuration();
       const nextTime = engine.getCurrentTime();
       const nextPlaying = engine.isPlaying();
@@ -385,12 +390,13 @@ export function useOrchestraSession({
     }
 
     playbackRequestRef.current = true;
+    const generation=++playbackGenerationRef.current;
     setIsLoading(true);
     setAudioError('');
     try {
       await engine.init();
       // Resuming an AudioContext can finish after navigation disposed this session.
-      if (!mountedRef.current || audioEngineRef.current !== engine) return;
+      if (!mountedRef.current || audioEngineRef.current !== engine || generation!==playbackGenerationRef.current) return;
       const requestedIds = snapshotRef.current.placedMusicianIds;
       const nextAudioError = await engine.setActiveStems(
         compositionStems,
@@ -408,8 +414,8 @@ export function useOrchestraSession({
         setAudioError(getAudioErrorMessage(error));
       }
     } finally {
-      playbackRequestRef.current = false;
-      if (mountedRef.current) {
+      if(generation===playbackGenerationRef.current) playbackRequestRef.current = false;
+      if (mountedRef.current && generation===playbackGenerationRef.current) {
         setPlaybackTime(engine.getCurrentTime());
         setDuration(engine.getDuration());
         setIsPlaying(engine.isPlaying());
@@ -418,6 +424,20 @@ export function useOrchestraSession({
     }
   }, [snapshot.placedMusicianIds, compositionStems]);
 
+  const pausePlayback = useCallback(() => {
+    playbackGenerationRef.current++;
+    playbackRequestRef.current = false;
+    const engine = audioEngineRef.current;
+    engine?.pause(); setIsPlaying(false); setIsLoading(false);
+    setPlaybackTime(engine?.getCurrentTime() ?? 0);
+  }, []);
+  useEffect(() => {
+    const hidden = () => { if(document.hidden) pausePlayback(); };
+    document.addEventListener('visibilitychange', hidden);
+    return () => document.removeEventListener('visibilitychange', hidden);
+  }, [pausePlayback]);
+  const setMasterVolume = useCallback((value:number) => audioEngineRef.current?.setMasterVolume(value), []);
+  const setSoloStem = useCallback((id:string|null) => audioEngineRef.current?.setSoloStem(id), []);
   const seek = useCallback((timeInSeconds: number) => {
     const engine = audioEngineRef.current;
     if (!engine) {
@@ -462,6 +482,9 @@ export function useOrchestraSession({
     audioError,
     toggleMusician,
     togglePlayback,
+    pausePlayback,
+    setMasterVolume,
+    setSoloStem,
     seek,
     changeScene,
     selectMusician,

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>双簧管实景 AR</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #182d2a;
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        touch-action: none;
+      }
+      #start {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-content: center;
+        text-align: center;
+        padding: 24px;
+        color: #fff;
+        font: 16px/1.8 system-ui;
+        background: #264e46;
+      }
+      button {
+        font: inherit;
+        padding: 14px 22px;
+        border: 0;
+        border-radius: 24px;
+        background: #dcecd9;
+        color: #163d30;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="camera"></canvas>
+    <div id="start">
+      <p>缓慢移动手机，让镜头看清桌面或地面。</p>
+      <button id="permission" disabled>开始实景 AR</button>
+    </div>
+    <script type="module" src="/src/ar/world.js"></script>
+  </body>
+</html>

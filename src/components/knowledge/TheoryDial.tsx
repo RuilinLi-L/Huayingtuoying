@@ -7,7 +7,6 @@ interface TheoryDialProps {
   activeId: TheoryTopicId;
 }
 
-const ornaments = ['rhythm-controls', 'dynamics', 'accidentals', 'guqin'];
 const step = 32;
 
 export function TheoryDial({ activeId }: TheoryDialProps) {
@@ -49,11 +48,7 @@ export function TheoryDial({ activeId }: TheoryDialProps) {
               </div>
             </div>
           ))}
-          {ornaments.map((name, index) => (
-            <div className="theory-dial__node theory-dial__ornament" style={position(index + 3)} key={name} aria-hidden="true">
-              <div className="theory-dial__upright"><img src={`/assets/ui/theory/${name}.png`} alt="" width="44" height="44" /></div>
-            </div>
-          ))}
+
         </div>
         <span className="theory-dial__pointer" aria-hidden="true" />
         <svg className="theory-dial__landscape" viewBox="25 22 155 155" aria-hidden="true">

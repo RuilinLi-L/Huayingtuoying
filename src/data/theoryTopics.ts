@@ -2,23 +2,8 @@ import { tutorials } from './tutorials';
 import type { TutorialKnowledgeCard } from '../types/tutorial';
 
 /** Mobile presentation order and artwork; all explanatory copy stays in tutorials. */
-export const theoryTopics = [
-  {
-    id: '01',
-    cardId: 'pitch-register',
-    illustration: '/assets/ui/theory/music-book.png',
-  },
-  {
-    id: '02',
-    cardId: 'rhythm-meter',
-    illustration: '/assets/ui/theory/metronome.png',
-  },
-  {
-    id: '03',
-    cardId: 'harmony-texture',
-    illustration: '/assets/ui/theory/chord-circle.png',
-  },
-] as const;
+import { theoryTopics } from './theoryTopicDefinitions';
+export { theoryTopics } from './theoryTopicDefinitions';
 
 export type TheoryTopicId = (typeof theoryTopics)[number]['id'];
 

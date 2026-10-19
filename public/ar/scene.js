@@ -33,7 +33,9 @@
     ? '相机权限未开启，请在浏览器站点设置中允许访问相机后重试。'
     : error.name === 'NotFoundError' ? '没有找到可用摄像头，可以切换到普通 3D 预览。'
     : '相机无法启动，请关闭其他占用相机的应用后重试。';
-  window.addEventListener('pagehide', () => { closed = true; clearTimeout(startupTimer); clearTimeout(modelTimer); stopStreams(); });
+  const stop = () => { closed = true; clearTimeout(startupTimer); clearTimeout(modelTimer); stopStreams(); };
+  window.addEventListener('pagehide', stop);
+  window.addEventListener('orchestra-stop', stop);
   window.addEventListener('error', event => { if (event.message) fail('识图场景运行异常，请重试。'); });
   window.addEventListener('unhandledrejection', event => fail(`识图场景启动失败：${event.reason?.message ?? '资源加载异常，请重试。'}`));
   window.addEventListener('message', async event => {

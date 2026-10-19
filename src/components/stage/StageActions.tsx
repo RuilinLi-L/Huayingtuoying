@@ -1,8 +1,9 @@
 import { Camera } from '@phosphor-icons/react';
-import { Link } from 'react-router-dom';
 import type { OrchestraSceneDefinition } from '../../types/demo';
 
 interface StageActionsProps {
+  onOpenAr:()=>void;
+  onOpenImageTest:()=>void;
   selectedCount: number;
   currentScene: OrchestraSceneDefinition;
   sceneOptions: OrchestraSceneDefinition[];
@@ -10,6 +11,7 @@ interface StageActionsProps {
 }
 
 export function StageActions({
+  onOpenAr, onOpenImageTest,
   selectedCount,
   currentScene,
   sceneOptions,
@@ -35,9 +37,10 @@ export function StageActions({
             </button>
           ))}
         </div>
-        <Link className="stage-mobile__camera-action" to="/experience/oboe-player">
-          <Camera size={18} aria-hidden="true" /><span>扫描体验 · 双簧管 AR</span>
-        </Link>
+        <button type="button" className="stage-mobile__camera-action" onClick={onOpenAr}>
+          <Camera size={18} aria-hidden="true" /><span>实景 AR · 放置演奏家</span>
+        </button>
+        <button type="button" className="button--ghost" onClick={onOpenImageTest}>识别卡测试</button>
       </div>
     </details>
   );

@@ -16,6 +16,7 @@ export interface AudioStem {
   id: string;
   name: string;
   file: string;
+  segmentManifest?: string;
   defaultEnabled: boolean;
   group: string;
   stereoPan?: number;

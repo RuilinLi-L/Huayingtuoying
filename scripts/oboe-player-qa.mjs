@@ -39,7 +39,7 @@ const results=[];
 async function check(label,task) { const start=Date.now(); await task(); results.push({label,passed:true,ms:Date.now()-start}); console.log('PASS',label); }
 const context=await browser.newContext({viewport:{width:393,height:852}});
 await context.addInitScript(() => {
-  if (window === window.top) { window.__streams=[]; window.__states=[]; window.__audioContexts=[];
+  if (window === window.top) { window.__streams=[]; window.__states=[]; window.__audioContexts=[];window.__previewAudio=[];const AudioNative=Audio;window.Audio=new Proxy(AudioNative,{construct(T,args){const a=new T(...args);window.__previewAudio.push(a);return a}});
     const NativeAudioContext=window.AudioContext;
     window.AudioContext=new Proxy(NativeAudioContext,{construct(Target,args){const context=new Target(...args);window.__audioContexts.push(context);return context;}}); window.addEventListener('message',event=>{if(event.data?.channel==='orchestra-ar')window.__states.push(event.data);}); }
   if (navigator.mediaDevices?.getUserMedia) {
@@ -49,7 +49,7 @@ await context.addInitScript(() => {
 });
 const page=await context.newPage(), errors=[];
 page.on('pageerror',error=>errors.push(error.message));
-const modelPath='/assets/models/characters/oboe/scene.mobile.glb';
+const modelPath=JSON.parse(await readFile('src/data/mediaAssets.json','utf8')).models['oboe-player'];
 let modelRequests=0, audioRequests=0;
 page.on('request',request=>{if(request.url().includes(modelPath))modelRequests++;if(/\.(mp3|m4a|wav)(\?|$)/.test(request.url()))audioRequests++;});
 try {
@@ -58,9 +58,9 @@ try {
       const response=await page.request.get(base+path);assert.equal(response.status(),200,path);
       if(!path.endsWith('.html'))assert.ok(!response.headers()['content-type']?.includes('text/html'),path);
     }
-    const data=await readFile('public/assets/models/characters/oboe/scene.mobile.glb');
+    const data=await readFile('public'+modelPath);
     const gltf=JSON.parse(data.subarray(20,20+data.readUInt32LE(12)).toString());
-    assert.ok(data.length<10_000_000);assert.deepEqual(gltf.extensionsRequired??[],[]);
+    assert.ok(data.length<2_000_000);assert.deepEqual(gltf.extensionsRequired??[],[]);
     const triangles=gltf.meshes.flatMap(m=>m.primitives).reduce((n,p)=>n+gltf.accessors[p.indices].count/3,0);
     assert.ok(triangles<=50000);
   });
@@ -72,9 +72,9 @@ try {
     const canvas=page.locator('.instrument-model canvas');const box=await canvas.boundingBox();
     await page.mouse.move(box.x+box.width/2,box.y+box.height/2);await page.mouse.down();await page.mouse.move(box.x+box.width/2+50,box.y+box.height/2+20,{steps:10});await page.mouse.up();
     await page.getByRole('button',{name:'恢复视角'}).click();await page.screenshot({path:join(output,'stage.png')});
-    await page.getByRole('button',{name:'乐团',exact:true}).click();assert.equal(await canvas.count(),0);
+    await page.getByRole('button',{name:'乐团',exact:true}).click();await canvas.waitFor({state:'detached'});
     await page.getByRole('button',{name:'双簧管 3D',exact:true}).click();await page.getByRole('button',{name:'恢复视角'}).waitFor();
-    await page.getByRole('link',{name:'扫描体验',exact:true}).click();await page.getByRole('button',{name:'开始扫描',exact:true}).waitFor();
+    await page.locator('.stage-mobile__actions summary').click();await page.getByRole('button',{name:'识别卡测试',exact:true}).click();await page.getByRole('button',{name:'开始扫描',exact:true}).waitFor();
     await page.screenshot({path:join(output,'entry.png'),fullPage:true});assert.equal(audioRequests,0);
   });
   await check('Actual tracker recognizes card, loses blank frames, and reacquires',async()=>{
@@ -89,50 +89,50 @@ try {
     for(let i=0;i<5;i++) {
       if(i>0) {await page.getByRole('button',{name:'开始扫描',exact:true}).click();await page.frameLocator('iframe').locator('video').waitFor({timeout:30000});
         await page.waitForFunction(()=>window.__streams.some(s=>s.getTracks().some(t=>t.readyState==='live')));}
-      await page.getByRole('button',{name:'关闭相机',exact:true}).click();assert.equal(await page.locator('iframe').count(),0);
+      await page.getByRole('button',{name:'关闭相机',exact:true}).click();await page.locator('iframe').waitFor({state:'detached'});
       await page.waitForFunction(()=>window.__streams.every(s=>s.getTracks().every(t=>t.readyState==='ended')),{},{timeout:10000});
     }
   });
   await check('AR model download failure offers retry and ordinary 3D fallback',async()=>{
     await page.route('**'+modelPath,route=>route.fulfill({status:404,body:'missing'}));
     await page.getByRole('button',{name:'开始扫描',exact:true}).click();await page.getByRole('button',{name:'重新启动相机'}).waitFor({timeout:45000});
-    assert.equal(await page.locator('iframe').count(),0);await page.unroute('**'+modelPath);
+    await page.locator('iframe').waitFor({state:'detached'});await page.unroute('**'+modelPath);
     await page.getByRole('button',{name:'普通 3D 预览',exact:true}).click();await page.getByRole('button',{name:'恢复视角'}).waitFor();
   });
   await check('Viewer download failure retries successfully',async()=>{
-    await page.goto(base+'/experience/oboe-player');await page.route('**'+modelPath,route=>route.fulfill({status:404,body:'missing'}));
+    await page.goto(base+'/stage?view=image-test&entry=oboe-player');await page.route('**'+modelPath,route=>route.fulfill({status:404,body:'missing'}));
     await page.getByRole('button',{name:'普通 3D 预览',exact:true}).click();await page.getByRole('button',{name:'重新加载模型'}).waitFor();
     await page.unroute('**'+modelPath);await page.getByRole('button',{name:'重新加载模型'}).click();await page.getByRole('button',{name:'恢复视角'}).waitFor();
   });
   await check('Camera permission denial is recoverable',async()=>{
     const denied=await browser.newContext({viewport:{width:393,height:852}});
     await denied.addInitScript(()=>{if(navigator.mediaDevices)navigator.mediaDevices.getUserMedia=async()=>{throw new DOMException('Denied','NotAllowedError');};});
-    const p=await denied.newPage();await p.goto(base+'/experience/oboe-player');await p.getByRole('button',{name:'开始扫描',exact:true}).click();
+    const p=await denied.newPage();await p.goto(base+'/stage?view=image-test&entry=oboe-player');await p.getByRole('button',{name:'开始扫描',exact:true}).click();
     await p.getByText('相机权限未开启',{exact:false}).waitFor({timeout:30000});await p.getByRole('button',{name:'普通 3D 预览',exact:true}).click();await p.getByRole('button',{name:'恢复视角'}).waitFor();await denied.close();
   });
   await check('No-camera fallback, WeChat guidance, and mobile layout',async()=>{
     const fallback=await browser.newContext({viewport:{width:393,height:852},userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) MicroMessenger/8.0'});
     await fallback.addInitScript(()=>Object.defineProperty(navigator,'mediaDevices',{value:undefined,configurable:true}));
-    const p=await fallback.newPage();await p.goto(base+'/experience/oboe-player');await p.getByText('在 Safari 中打开',{exact:false}).waitFor();
+    const p=await fallback.newPage();await p.goto(base+'/stage?view=image-test&entry=oboe-player');await p.getByText('在 Safari 中打开',{exact:false}).waitFor();
     assert.equal(await p.getByRole('button',{name:'开始扫描',exact:true}).count(),0);
     await p.getByRole('button',{name:'普通 3D 预览',exact:true}).click();await p.getByRole('button',{name:'恢复视角'}).waitFor();
     assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await fallback.close();
   });
   await check('Manual audio survives target loss and stops on leaving the page',async()=>{
-    await page.goto(base+'/experience/oboe-player');
-    await page.getByRole('button',{name:'双簧管试听',exact:true}).click();
-    await page.getByRole('button',{name:'暂停试听',exact:true}).waitFor({timeout:30000});
+    await page.goto(base+'/stage?view=image-test&entry=oboe-player');
+    await page.getByRole('button',{name:'试听 · 双簧管',exact:true}).click();
+    await page.getByRole('button',{name:'暂停 · 双簧管',exact:true}).waitFor({timeout:30000});
     assert.ok(audioRequests>0);
     await page.getByRole('button',{name:'开始扫描',exact:true}).click();
     await page.waitForFunction(()=>window.__states.some(item=>item.type==='status'&&item.value==='lost'),{},{timeout:45000});
-    assert.ok(await page.getByRole('button',{name:'暂停试听',exact:true}).isVisible());
-    await page.getByRole('button',{name:'暂停试听',exact:true}).click();
-    await page.getByRole('button',{name:'双簧管试听',exact:true}).click();
-    await page.getByRole('button',{name:'暂停试听',exact:true}).waitFor();
-    const oldContexts=await page.evaluate(()=>window.__audioContexts.length);
-    await page.getByRole('link',{name:'← 返回舞台',exact:true}).click();
-    await page.waitForFunction(count=>window.__audioContexts.slice(0,count).every(context=>context.state==='closed'),oldContexts);
-    assert.equal(await page.locator('iframe').count(),0);
+    assert.ok(await page.getByRole('button',{name:'暂停 · 双簧管',exact:true}).isVisible());
+    await page.getByRole('button',{name:'暂停 · 双簧管',exact:true}).click();
+    await page.getByRole('button',{name:'试听 · 双簧管',exact:true}).click();
+    await page.getByRole('button',{name:'暂停 · 双簧管',exact:true}).waitFor();
+    const preview=await page.evaluateHandle(()=>window.__previewAudio.at(-1));
+    await page.getByRole('button',{name:'关闭体验',exact:true}).click();
+    await page.waitForFunction(audio=>audio.paused&&!audio.getAttribute('src'),preview);
+    await page.locator('iframe').waitFor({state:'detached'});
     await page.waitForFunction(()=>window.__streams.every(s=>s.getTracks().every(t=>t.readyState==='ended')));
   });
   await check('Original orchestra selection and playback, plus encyclopedia model',async()=>{

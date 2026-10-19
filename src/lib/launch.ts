@@ -4,11 +4,17 @@ export interface LaunchContext {
   entryId?: string;
   source: EntryLaunchSource;
   autostart: boolean;
+  lineup?: string;
+  scene?: string;
+  highlight?: string;
 }
 
 export interface LaunchOptions {
   source?: EntryLaunchSource;
   autostart?: boolean;
+  lineup?: string;
+  scene?: string;
+  highlight?: string;
 }
 
 const launchSources = new Set<EntryLaunchSource>(['manual', 'qr', 'nfc']);
@@ -19,6 +25,9 @@ function appendLaunchOptions(
 ) {
   const source = options.source ?? 'manual';
   const autostart = options.autostart ?? source !== 'manual';
+  for (const key of ['lineup','scene','highlight'] as const) {
+    if (options[key] !== undefined) searchParams.set(key, options[key]);
+  }
 
   if (source !== 'manual') {
     searchParams.set('source', source);
@@ -49,6 +58,9 @@ export function parseLaunchSearchParams(
 
   return {
     entryId: searchParams.get('entry') ?? undefined,
+    lineup: searchParams.get('lineup') ?? undefined,
+    scene: searchParams.get('scene') ?? undefined,
+    highlight: searchParams.get('highlight') ?? undefined,
     source,
     autostart:
       autostartParam === '1' ||

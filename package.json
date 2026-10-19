@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build && node ./scripts/prune-dist-assets.mjs",
+    "dev": "node scripts/sync-ar-runtime.mjs && vite --host 0.0.0.0",
+    "build": "node scripts/sync-ar-runtime.mjs && tsc -b && vite build && node scripts/prune-dist-assets.mjs",
     "preview": "vite preview --host 0.0.0.0",
     "serve:dist": "node ./scripts/serve-dist.mjs",
     "generate:demo-audio": "node ./scripts/generate-demo-audio.mjs",
@@ -13,7 +13,11 @@
     "export:links": "node ./scripts/generate-links.mjs",
     "check": "npm run build",
     "prepare:oboe-player": "node scripts/prepare-oboe-player.mjs",
-    "test:oboe-player": "node scripts/oboe-player-qa.mjs"
+    "test:oboe-player": "node scripts/oboe-player-qa.mjs",
+    "sync:ar-runtime": "node scripts/sync-ar-runtime.mjs",
+    "prepare:mobile-assets": "node scripts/prepare-mobile-assets.mjs",
+    "test:mobile-optimization": "node --import tsx scripts/audio-surface-qa.mjs && node scripts/mobile-optimization-qa.mjs",
+    "test:mobile-performance": "node scripts/mobile-performance.mjs"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +29,7 @@
     "@types/node": "^25.3.5",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.183.1",
     "@vitejs/plugin-react": "^5.1.4",
     "meshoptimizer": "^0.24.0",
     "sharp": "^0.34.5",
@@ -33,6 +38,7 @@
     "vite": "^7.3.1"
   },
   "dependencies": {
+    "@8thwall/engine-binary": "1.0.0",
     "@fontsource/noto-sans-sc": "^5.2.9",
     "@fontsource/noto-serif-sc": "^5.2.9",
     "@phosphor-icons/react": "^2.1.10",

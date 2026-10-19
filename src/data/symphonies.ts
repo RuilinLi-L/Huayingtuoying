@@ -1,4 +1,4 @@
-import { sleepingBeautyStemCatalog } from './sleepingBeauty';
+import { sleepingBeautyStemCatalog, getSleepingBeautyManifest } from './sleepingBeauty';
 import type { AudioStem } from '../types/manifest';
 
 export type SymphonyFilter = 'all' | 'strings' | 'woodwind' | 'brass';
@@ -45,6 +45,7 @@ export const symphonyPreviews: SymphonyPreview[] = featuredStemIds.map((id) => {
       id: stem.id,
       name: stem.name,
       file: stem.file,
+      segmentManifest: getSleepingBeautyManifest(stem.id),
       group: stem.group,
       defaultEnabled: true,
       stereoPan: stem.stereoPan,

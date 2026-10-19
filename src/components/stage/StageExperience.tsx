@@ -1,5 +1,4 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { oboePlayer } from '../../data/oboePlayer';
 import type {
   MusicianProfile,
@@ -15,6 +14,11 @@ import '../../styles/stage-mobile.css';
 const ModelViewer = lazy(() => import('../InstrumentModelViewer').then(module => ({ default: module.InstrumentModelViewer })));
 
 export interface StageExperienceProps {
+  view: 'orchestra' | 'model';
+  suspended: boolean;
+  onViewChange: (view:'orchestra'|'model') => void;
+  onOpenAr: () => void;
+  onOpenImageTest: () => void;
   musicians: MusicianProfile[];
   selectedIds: string[];
   highlightIds: string[];
@@ -35,6 +39,7 @@ export interface StageExperienceProps {
 }
 
 export function StageExperience({
+  view, suspended, onViewChange, onOpenAr, onOpenImageTest,
   musicians,
   selectedIds,
   highlightIds,
@@ -53,7 +58,6 @@ export function StageExperience({
   onToggleMusicianInLineup,
   onSceneChange,
 }: StageExperienceProps) {
-  const [view, setView] = useState<'orchestra' | 'oboe'>('orchestra');
   const focusedMusician = musicians.find((item) => item.id === focusedMusicianId) ?? null;
   const previousIds = useRef(selectedIds);
   const [pulseIds, setPulseIds] = useState<string[]>([]);
@@ -70,14 +74,14 @@ export function StageExperience({
   return (
     <div className="stage-mobile">
       <div className="stage-mobile__view-tabs" role="group" aria-label="舞台展示方式">
-        <button type="button" aria-pressed={view === 'orchestra'} onClick={() => setView('orchestra')}>乐团</button>
-        <button type="button" aria-pressed={view === 'oboe'} onClick={() => setView('oboe')}>双簧管 3D</button>
+        <button type="button" aria-pressed={view === 'orchestra'} onClick={() => onViewChange('orchestra')}>乐团</button>
+        <button type="button" aria-pressed={view === 'model'} onClick={() => onViewChange('model')}>双簧管 3D</button>
       </div>
       {view === 'orchestra' ? <StageHero currentScene={currentScene} selectedIds={selectedIds} highlightIds={heroHighlights} pulseIds={pulseIds} /> : (
         <section className="stage-mobile__character-preview" aria-label="双簧管人物预览">
-          <Suspense fallback={<p>正在准备 3D 预览…</p>}><ModelViewer modelUrl={oboePlayer.modelUrl} title={oboePlayer.title} accentColor={oboePlayer.themeColor!} /></Suspense>
+          <Suspense fallback={<p>正在准备 3D 预览…</p>}>{!suspended&&<ModelViewer modelUrl={oboePlayer.modelUrl} title={oboePlayer.title} accentColor={oboePlayer.themeColor!} />}</Suspense>
           <p>双簧管演奏家 · 拖动旋转，双指缩放</p>
-          <Link className="button" to="/experience/oboe-player">扫描体验</Link>
+          <button className="button" onClick={onOpenAr}>打开实景 AR</button>
         </section>
       )}
       <StagePlayer
@@ -89,6 +93,7 @@ export function StageExperience({
         onSeek={onSeek}
         onTogglePlayback={onTogglePlayback}
       />
+      {isLoading&&!isPlaying&&<p className="stage-mobile__notice" role="status">{currentTime>0?'正在缓冲，所有声部已同步暂停，准备好后继续。':'正在准备起播片段，所有声部就绪后一起开始。'}</p>}
 
       {audioError ? (
         <div className="stage-mobile__notice stage-mobile__notice--error" role="alert">
@@ -138,6 +143,8 @@ export function StageExperience({
       </div>
 
       <StageActions
+        onOpenAr={onOpenAr}
+        onOpenImageTest={onOpenImageTest}
         currentScene={currentScene}
         onSceneChange={onSceneChange}
         sceneOptions={sceneOptions}
@@ -147,7 +154,7 @@ export function StageExperience({
       <StageInsightSheet
         currentScene={currentScene}
         isInLineup={focusedMusician ? selectedIds.includes(focusedMusician.id) : false}
-        musician={focusedMusician}
+        musician={suspended ? null : focusedMusician}
         onClose={() => focusedMusician && onSelectMusician(focusedMusician.id)}
         onToggleLineup={onToggleMusicianInLineup}
       />
