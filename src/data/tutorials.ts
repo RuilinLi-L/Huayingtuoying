@@ -1,10 +1,12 @@
+import media from './mediaAssets.json';
+import { guidePath, stagePath } from '../lib/navigation';
 import type { TutorialModule } from '../types/tutorial';
 
 const tutorialPath = (chapterId?: string) =>
-  chapterId ? `/learn/fundamentals#${chapterId}` : '/learn/fundamentals';
+  guidePath(chapterId);
 
 const entryPath = (entryId: string) => `/entry/${entryId}`;
-const experiencePath = (entryId: string) => `/experience/${entryId}`;
+const experiencePath = (entryId: string) => stagePath(entryId === 'oboe-player' ? 'ar' : 'image-test', entryId);
 
 export const tutorials: TutorialModule[] = [
   {
@@ -621,7 +623,7 @@ export const tutorials: TutorialModule[] = [
             observation:
               '把旋律想成一条会升降的线，听它何时抬起、何时落下，再回头听其他声部如何托住它。',
             relatedEntryIds: ['violin-dialogue'],
-            audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Violin_睡美人圆舞曲.mp3',
+            audioSrc: media.audio.violin.file,
             audioLabel: '小提琴声部导赏',
             links: [
               {
@@ -711,7 +713,7 @@ export const tutorials: TutorialModule[] = [
             observation:
               '读节奏时先数总拍数，再看重音位置。遇到附点、切分或休止时，不要急着唱旋律，先把“停多久、从哪里进”数清楚。',
             relatedEntryIds: ['flute-color'],
-            audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Flute_睡美人圆舞曲.mp3',
+            audioSrc: media.audio.flute.file,
             audioLabel: '长笛声部导赏',
             links: [
               {
@@ -734,7 +736,7 @@ export const tutorials: TutorialModule[] = [
             observation:
               '先听完整合奏，再分别独奏低音、弦乐和木管。少掉支撑层时，重心会变轻；只听装饰层时，节奏会更碎、更灵动。',
             relatedEntryIds: ['ensemble-stage'],
-            audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Bass_睡美人圆舞曲.mp3',
+            audioSrc: media.audio.bass.file,
             audioLabel: '低音提琴声部导赏',
             links: [
               {
@@ -744,7 +746,7 @@ export const tutorials: TutorialModule[] = [
               },
               {
                 label: '查看底座 Demo',
-                to: '/demo/base',
+                to: '/stage',
               },
             ],
           },
@@ -761,7 +763,7 @@ export const tutorials: TutorialModule[] = [
           },
           {
             label: '查看底座 Demo',
-            to: '/demo/base',
+            to: '/stage',
             variant: 'ghost',
           },
         ],
@@ -816,7 +818,7 @@ export const tutorials: TutorialModule[] = [
             observation:
               '先找主线，再关心低音支撑和色彩层；少听一层之后，哪里变薄，哪里就是那件乐器的功能。',
             relatedEntryIds: ['ensemble-stage'],
-            audioSrc: '/assets/audio/The Sleeping Beauty Waltz/Cello_睡美人圆舞曲.mp3',
+            audioSrc: media.audio.cello.file,
             audioLabel: '大提琴声部导赏',
             links: [
               {
@@ -826,7 +828,7 @@ export const tutorials: TutorialModule[] = [
               },
               {
                 label: '查看底座 Demo',
-                to: '/demo/base',
+                to: '/stage',
               },
             ],
           },
@@ -843,7 +845,7 @@ export const tutorials: TutorialModule[] = [
           },
           {
             label: '直接查看底座 Demo',
-            to: '/demo/base',
+            to: '/stage',
             variant: 'ghost',
           },
         ],

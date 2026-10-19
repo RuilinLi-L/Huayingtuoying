@@ -1,0 +1,16 @@
+.character-experience { width: min(100% - 32px, 880px); margin: 24px auto 60px; color: var(--ink-strong, #24392d); }
+.character-back { display: inline-block; padding: 10px 0; color: inherit; }
+.character-experience header { padding: 20px 0; }
+.character-experience h1 { font-size: clamp(28px, 5vw, 40px); margin: 8px 0 16px; }
+.character-experience p, .character-experience li { line-height: 1.8; }
+.character-card { padding: clamp(16px, 4vw, 28px); background: #fffdf7; border: 1px solid #dfdfcf; border-radius: 20px; margin: 16px 0; }
+.character-card h2 { font-size: 20px; margin: 0 0 18px; }
+.character-instructions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+.character-instructions img { width: 100%; border-radius: 12px; }
+.character-instructions ol { padding-left: 22px; }
+.character-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 18px 0; }
+.character-caption { font-size: 13px; color: #66705f; }
+.character-notice { padding: 14px; background: #f1e9d5; border-radius: 12px; }
+.character-knowledge { padding-top: 18px; }
+.character-knowledge h3 { font-size: 16px; margin: 0; }
+@media (max-width: 600px) { .character-instructions { grid-template-columns: 1fr; } .character-instructions img { max-height: 220px; object-fit: contain; } }

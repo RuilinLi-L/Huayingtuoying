@@ -1,3 +1,4 @@
+import { guidePath } from './navigation';
 import { tutorials } from '../data/tutorials';
 
 export function getAllTutorialModules() {
@@ -13,7 +14,7 @@ export function getTutorialModule(moduleId?: string) {
 }
 
 export function buildTutorialPath(moduleId: string, chapterId?: string) {
-  return chapterId ? `/learn/${moduleId}#${chapterId}` : `/learn/${moduleId}`;
+  return moduleId === 'fundamentals' ? guidePath(chapterId) : '/not-found';
 }
 
 export function getTutorialSpotlightForEntry(entryId: string) {

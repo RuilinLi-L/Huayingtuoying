@@ -11,3 +11,4 @@ Set-Service -Name ssh-agent -StartupType Automatic*
 Thumbs.db
 
 .vercel
+public/vendor/8thwall-1.0.0/

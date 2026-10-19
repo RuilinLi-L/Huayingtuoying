@@ -1,3 +1,4 @@
+import media from './mediaAssets.json';
 import type { MusicianSection } from '../types/demo';
 import { musicians } from './orchestraDemo';
 import {
@@ -211,7 +212,7 @@ function buildInstrumentEntry(id: SleepingBeautyStemId): InstrumentEncyclopediaE
     structure: copy.structure,
     featuredWorks: copy.featuredWorks ?? musician.featuredWorks,
     audioSrc: stem.file,
-    modelUrl: `/assets/models/${id}/scene.optimized.glb`,
+    modelUrl: media.models[id],
     color: musician.color,
   };
 }

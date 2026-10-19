@@ -9,13 +9,11 @@ import '@fontsource/noto-serif-sc/400.css';
 import '@fontsource/noto-serif-sc/600.css';
 import './styles/tokens.css';
 import './styles/base.css';
-import './styles/shell.css';
-import './styles/pages.css';
-import './styles/stage.css';
 import './styles/mobile-shell.css';
 import './styles/knowledge-mobile.css';
 import './styles/home.css';
 import './styles/compose-mobile.css';
+import './styles/experience-mobile.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

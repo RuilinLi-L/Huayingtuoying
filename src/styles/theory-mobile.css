@@ -267,76 +267,51 @@
   line-height: 1.55;
 }
 
+/* Only the upper arc is visible, above the app navigation and safe area. */
+.theory-mobile { padding-bottom: 190px; }
 .theory-dial {
-  display: grid;
-  justify-items: center;
-  gap: 5px;
-  margin: 22px -7px 0;
-}
-
-.theory-dial__disc {
-  position: relative;
-  width: min(288px, calc(100vw - 60px));
-  aspect-ratio: 1;
-}
-
-.theory-dial__art {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.theory-dial__center {
-  position: absolute;
-  top: 50%;
+  position: fixed;
+  z-index: 18;
   left: 50%;
-  display: grid;
-  justify-items: center;
-  transform: translate(-50%, -50%);
-  color: var(--paper);
-  line-height: 1.05;
+  bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+  width: min(430px, 100vw);
+  height: min(178px, 45vw);
+  transform: translateX(-50%);
+  overflow: hidden;
   pointer-events: none;
+  color: var(--theory-primary);
 }
-
-.theory-dial__center small { font-size: 9px; font-weight: 800; letter-spacing: 0.1em; }
-.theory-dial__center strong { color: var(--paper); font-size: 34px; letter-spacing: -0.08em; }
-
+.theory-dial__disc { position: absolute; top: 0; left: 0; width: 108%; aspect-ratio: 1; }
+.theory-dial__base, .theory-dial__orbit, .theory-dial__ticks { position: absolute; inset: 0; width: 100%; height: 100%; }
+.theory-dial__orbit { transform: rotate(var(--dial-angle)); transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1); }
+.theory-dial__node { position: absolute; width: 13%; aspect-ratio: 1; transform: translate(-50%, -50%); }
+.theory-dial__upright { width: 100%; height: 100%; transform: rotate(calc(-1 * var(--dial-angle))); transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1); }
 .theory-dial__button {
-  position: absolute;
+  position: relative;
   display: grid;
   place-items: center;
-  width: 43px;
-  height: 43px;
-  transform: translate(-50%, -50%);
-  border: 2px solid var(--paper);
+  width: 100%;
+  height: 100%;
+  border: 2px solid transparent;
   border-radius: 50%;
-  background: var(--paper);
-  box-shadow: 0 4px 12px color-mix(in srgb, var(--theory-primary) 27%, transparent);
+  background: #d4e1eb;
   color: var(--theory-primary);
-  font-size: 13px;
-  font-weight: 900;
-  transition: scale 200ms ease, background-color 200ms ease;
+  pointer-events: auto;
+  touch-action: manipulation;
+  transition: transform 240ms ease, background-color 240ms ease, box-shadow 240ms ease;
 }
-
-.theory-dial__button--1 { top: 17%; left: 51%; }
-.theory-dial__button--2 { top: 55%; left: 87%; }
-.theory-dial__button--3 { top: 86%; left: 33%; }
-
-.theory-dial__button--active {
-  background: var(--coral);
-  color: var(--paper);
-  scale: 1.13;
-}
-
-.theory-dial__button:active { scale: 0.96; }
-
-.theory-dial > p {
-  margin: 0;
-  color: var(--theory-primary);
-  font-size: 11px;
-  font-weight: 700;
-}
+.theory-dial__button img { width: 65%; height: 65%; object-fit: contain; }
+.theory-dial__button span { position: absolute; right: -2px; bottom: -2px; display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--paper); font-size: 10px; font-weight: 800; }
+.theory-dial__button--active { transform: scale(1.13); border-color: #edf3f0; background: #b2d1d4; box-shadow: 0 0 0 7px rgba(219, 231, 240, 0.48); }
+.theory-dial__button--active span { background: var(--theory-primary); color: var(--paper); }
+.theory-dial__button:active { transform: scale(0.95); }
+.theory-dial__ornament .theory-dial__upright { display: grid; place-items: center; border-radius: 50%; background: #d4e1eb; opacity: 0.6; }
+.theory-dial__ornament img { width: 60%; height: 60%; object-fit: contain; }
+.theory-dial__pointer { position: absolute; top: 22%; left: calc(50% - 7px); width: 14px; height: 12px; background: #edf3f0; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+.theory-dial__landscape { position: absolute; top: 4%; left: 3%; width: 26%; height: 26%; }
+.theory-dial__center { position: absolute; top: 45%; left: 50%; display: grid; justify-items: center; transform: translateX(-50%); color: #edf3f0; line-height: 1.1; }
+.theory-dial__center small { font-size: 9px; letter-spacing: 0.1em; }
+.theory-dial__center strong { color: inherit; font-size: 28px; }
 
 .theory-mobile__takeaway {
   margin: 28px 0 0;
@@ -410,5 +385,7 @@
   .theory-mobile__chapter { animation: none; }
   .theory-mobile__chapter-link,
   .theory-mobile__section-toggle svg,
-  .theory-dial__button { transition: none; }
+  .theory-dial__button,
+  .theory-dial__orbit,
+  .theory-dial__upright { transition: none; }
 }

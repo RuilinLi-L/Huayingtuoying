@@ -1,0 +1,440 @@
+.knowledge-guide,
+.entry-mobile {
+  padding: 0 24px 32px;
+  color: var(--mobile-ink, #24493f);
+}
+.knowledge-guide h1,
+.entry-mobile h1 {
+  font-size: 32px;
+  line-height: 1.35;
+  margin: 12px 0;
+}
+.knowledge-guide p,
+.entry-mobile p,
+.stage-ar-panel p {
+  line-height: 1.8;
+  color: #536c62;
+}
+.knowledge-guide section {
+  margin-top: 32px;
+}
+.knowledge-guide h2,
+.stage-ar-panel h2 {
+  font-size: 20px;
+}
+.guide-grid {
+  display: grid;
+  gap: 12px;
+}
+.guide-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: 22px;
+  background: #f5f7ed;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #b7d6c6;
+}
+.guide-card div {
+  flex: 1;
+  min-width: 0;
+}
+.guide-card h3 {
+  font-size: 16px;
+  margin: 5px 0;
+}
+.guide-card p {
+  font-size: 13px;
+  margin: 0;
+}
+.guide-card small {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.guide-card img {
+  object-fit: contain;
+}
+.guide-section {
+  padding: 16px 0;
+}
+.guide-section h3 {
+  font-size: 17px;
+}
+.guide-section a {
+  color: inherit;
+}
+.guide-instruments {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.guide-instruments a {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 15px;
+  background: #f5f7ed;
+  color: #24493f;
+  text-decoration: none;
+  font-size: 14px;
+}
+.guide-instruments small {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+}
+.mobile-action-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+.mobile-shell .button,
+.mobile-shell .button--ghost {
+  width: auto;
+  border-radius: 22px;
+  min-height: 42px;
+  padding: 10px 16px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.4;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid #87ad99;
+  background: #f4f7ed;
+  color: #24493f;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.mobile-shell .button {
+  background: #397867;
+  color: #fff;
+  border-color: #397867;
+}
+.mobile-shell button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.entry-mobile__poster {
+  display: block;
+  width: 100%;
+  max-height: 230px;
+  object-fit: contain;
+  border-radius: 22px;
+  background: #edf1e3;
+  padding: 18px;
+  box-sizing: border-box;
+}
+.entry-mobile__card,
+.ar-knowledge {
+  background: #f4f7ed;
+  border: 1px solid #b5d2c1;
+  padding: 18px;
+  border-radius: 20px;
+  margin: 18px 0;
+  overflow: hidden;
+}
+.entry-mobile__card h2 {
+  font-size: 18px;
+  margin-top: 0;
+}
+.entry-mobile__url {
+  font-size: 12px;
+  overflow-wrap: anywhere;
+  color: #397867;
+}
+.entry-mobile__marker {
+  display: block;
+  max-height: 220px;
+  max-width: 100%;
+  margin: 12px auto;
+}
+.entry-mobile .qr-preview {
+  max-width: 100%;
+}
+.entry-mobile img {
+  max-width: 100%;
+}
+.ar-knowledge summary,
+.entry-mobile__card summary,
+.stage-extras summary {
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.6;
+}
+.ar-knowledge img {
+  max-width: 100%;
+}
+.stage-ar-panel {
+  margin: 0 18px 24px;
+  color: #24493f;
+}
+.stage-ar-panel__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  justify-content: space-between;
+}
+.stage-ar-panel__heading h1 {
+  font-size: 24px;
+  margin: 6px 0;
+}
+.stage-ar-panel__heading .button--ghost {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  font-size: 12px;
+}
+.ar-status {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #e8f1e4;
+  font-size: 14px;
+  line-height: 1.7;
+  color: #34564a;
+  margin: 14px 0;
+}
+.stage-ar-panel__heading > div {
+  min-width: 0;
+  flex: 1;
+}
+.stage-ar-panel__heading h1 {
+  font-size: 22px;
+}
+.stage-ar-panel .knowledge-eyebrow {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+.ar-attribution {
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 24px;
+}
+.ar-attribution a {
+  color: inherit;
+}
+.ar-progress {
+  font-size: 12px !important;
+}
+.world-ar__frame,
+.stage-ar-panel .ar-runtime-frame {
+  display: block;
+  width: 100%;
+  height: 44dvh;
+  min-height: 300px;
+  max-height: 580px;
+  border: 0;
+  border-radius: 24px;
+  background: #203e35;
+}
+.mobile-shell--ar .mobile-shell__main {padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
+.ar-adjustments {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  font-size: 13px;
+}
+.ar-adjustments label {
+  display: grid;
+  gap: 8px;
+}
+.ar-adjustments input {
+  width: 100%;
+  accent-color: #397867;
+}
+.ar-card-help img {
+  display: block;
+  width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 20px;
+}
+.ar-listening {
+  margin: 24px 0;
+}
+.ar-listening button {
+  margin: 4px;
+}
+.stage-extras {
+  margin: 16px 22px;
+  padding: 18px;
+  border: 1px solid #97b9a6;
+  border-radius: 20px;
+  background: #f4f7ed;
+  color: #24493f;
+}
+.stage-extras label {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0;
+}
+.stage-extras select {
+  max-width: 65%;
+  padding: 8px;
+  border-radius: 10px;
+}
+.stage-extras pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+.stage-extras p {
+  line-height: 1.7;
+  font-size: 14px;
+}
+.theory-mobile__chapters {
+  overflow-x: auto;
+  justify-content: flex-start !important;
+}
+.theory-mobile__chapter-link {
+  flex-shrink: 0;
+  min-width: 74px;
+}
+.route-fallback {
+  padding: 28px;
+  color: #34564a;
+  text-align: center;
+}
+.mobile-shell [hidden] {
+  display: none !important;
+}
+@media (min-width: 700px) {
+  .guide-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .knowledge-guide,
+  .entry-mobile,
+  .stage-ar-panel {
+    max-width: 860px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .guide-instruments {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.instrument-model {
+  position: relative;
+  display: grid;
+  min-height: clamp(520px, 42vw, 640px);
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 50% 26%, rgba(255, 255, 255, 0.82), transparent 30%),
+    linear-gradient(180deg, rgba(238, 232, 220, 0.76), rgba(249, 247, 241, 0.96));
+}
+
+.instrument-model__stage {
+  min-height: clamp(520px, 42vw, 640px);
+  touch-action: none;
+}
+
+.instrument-model__stage canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: grab;
+  touch-action: none;
+}
+
+.instrument-model__stage canvas:active {
+  cursor: grabbing;
+}
+
+.instrument-model__hint {
+  position: absolute;
+  inset: auto 18px 18px;
+  z-index: 1;
+  max-width: calc(100% - 36px);
+  padding: 8px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: var(--radius-pill);
+  background: rgba(252, 250, 246, 0.62);
+  color: color-mix(in oklch, var(--ink-muted) 78%, transparent);
+  font-size: 0.76rem;
+  line-height: 1.3;
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.instrument-model__status {
+  position: absolute;
+  inset: auto 18px 18px;
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: var(--radius-md);
+  background: rgba(252, 250, 246, 0.88);
+  color: var(--ink-muted);
+  backdrop-filter: blur(8px);
+}
+
+.instrument-model__progress {
+  position: relative;
+  width: min(260px, 64vw);
+  height: 6px;
+  margin-top: 4px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: rgba(57, 47, 34, 0.12);
+}
+
+.instrument-model__progress::after {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--progress, 35%);
+  min-width: 28px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), color-mix(in oklch, var(--accent) 55%, white));
+  content: '';
+  transition: width 180ms ease;
+}
+
+.instrument-model__status strong {
+  font-size: 0.95rem;
+}
+
+.instrument-model__status span {
+  font-size: 0.86rem;
+}
+.instrument-model__reset {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  padding: 9px 14px;
+  border: 1px solid #b8cdbc;
+  border-radius: 20px;
+  background: #fffffff0;
+  color: #314a38;
+  cursor: pointer;
+}
+.qr-preview {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+.qr-preview img {
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+.fallback-box {
+  padding: 20px;
+  background: #edf1df;
+  border-radius: 20px;
+  line-height: 1.7;
+}
+.instrument-model__stage {
+  min-height: 320px;
+}

@@ -4,7 +4,7 @@ import { ExperienceCarousel } from '../components/home/ExperienceCarousel';
 import { SymphonyFilters } from '../components/home/SymphonyFilters';
 import { SymphonyList } from '../components/home/SymphonyList';
 import { symphonyFilters, symphonyPreviews, type SymphonyFilter } from '../data/symphonies';
-import { buildEntryPath, buildExperiencePath } from '../lib/entries';
+import { buildEntryPath, buildExperiencePath, getEntryById } from '../lib/entries';
 import { parseLaunchSearchParams } from '../lib/launch';
 
 export function HomePage() {
@@ -18,13 +18,11 @@ export function HomePage() {
 
   useEffect(() => {
     if (launchContext.entryId) {
+      if(!getEntryById(launchContext.entryId)){navigate('/not-found',{replace:true});return}
       navigate(
         launchContext.autostart
-          ? buildExperiencePath(launchContext.entryId, {
-              source: launchContext.source,
-              autostart: launchContext.autostart,
-            })
-          : buildEntryPath(launchContext.entryId),
+          ? buildExperiencePath(launchContext.entryId, launchContext)
+          : `${buildEntryPath(launchContext.entryId)}?${searchParams}`,
         { replace: true },
       );
       return;
@@ -35,7 +33,10 @@ export function HomePage() {
       searchParams.get('source') === 'nfc' ||
       searchParams.get('autostart') === '1'
     ) {
-      navigate(`/demo/base?${searchParams.toString()}`, { replace: true });
+      const next = new URLSearchParams(searchParams);
+      if (!next.has('lineup')) next.set('lineup', '');
+      if (next.get('autostart') === '1') { next.set('view', 'ar'); next.set('entry', 'oboe-player'); }
+      navigate(`/stage?${next}`, { replace: true });
     }
   }, [launchContext, navigate, searchParams]);
 

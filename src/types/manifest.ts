@@ -16,6 +16,7 @@ export interface AudioStem {
   id: string;
   name: string;
   file: string;
+  segmentManifest?: string;
   defaultEnabled: boolean;
   group: string;
   stereoPan?: number;
@@ -51,6 +52,11 @@ export interface WebArSceneConfig {
   placementPrompt?: string;
   modelPosition?: Vector3Value;
   modelScale?: Vector3Value;
+  modelRotation?: Vector3Value;
+  /** Legacy demos float above a printed plane; grounded characters opt out. */
+  floating?: boolean;
+  showTargetPlane?: boolean;
+  showHotspots?: boolean;
   accentColor?: string;
 }
 

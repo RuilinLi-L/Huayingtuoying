@@ -1,0 +1,258 @@
+{
+  "baseUrl": "http://127.0.0.1:4173",
+  "screenshotDir": "screenshots/release-qa/knowledge",
+  "routes": [
+    "/knowledge/instruments",
+    "/knowledge/instruments?section=woodwind",
+    "/knowledge/instruments?section=brass",
+    "/knowledge/instruments?section=strings",
+    "/knowledge/instruments/violin?section=strings",
+    "/knowledge/instruments/flute?section=woodwind",
+    "/knowledge/theory/01",
+    "/knowledge/theory/02",
+    "/knowledge/theory/03"
+  ],
+  "widths": [
+    320,
+    360,
+    393,
+    430
+  ],
+  "passed": 58,
+  "failed": 0,
+  "results": [
+    {
+      "label": "320px /knowledge/instruments",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/instruments?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/instruments?section=brass",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/instruments?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/instruments/violin?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/instruments/flute?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/theory/01",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/theory/02",
+      "status": "passed"
+    },
+    {
+      "label": "320px /knowledge/theory/03",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments?section=brass",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments/violin?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/instruments/flute?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/theory/01",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/theory/02",
+      "status": "passed"
+    },
+    {
+      "label": "360px /knowledge/theory/03",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments?section=brass",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments/violin?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/instruments/flute?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/theory/01",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/theory/02",
+      "status": "passed"
+    },
+    {
+      "label": "393px /knowledge/theory/03",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments?section=brass",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments/violin?section=strings",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/instruments/flute?section=woodwind",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/theory/01",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/theory/02",
+      "status": "passed"
+    },
+    {
+      "label": "430px /knowledge/theory/03",
+      "status": "passed"
+    },
+    {
+      "label": "Section click and history navigation",
+      "status": "passed"
+    },
+    {
+      "label": "Instrument detail preserves section return URL",
+      "status": "passed"
+    },
+    {
+      "label": "Theory 01 → 02 → 03 and browser history",
+      "status": "passed"
+    },
+    {
+      "label": "Knowledge mode tabs connect instruments and theory",
+      "status": "passed"
+    },
+    {
+      "label": "Library preview strip is visible and clickable above BottomNav",
+      "status": "passed"
+    },
+    {
+      "label": "Flute preview play, pause, resume, then switch to clarinet",
+      "status": "passed"
+    },
+    {
+      "label": "Library flute stops and resets on Theory 01",
+      "status": "passed"
+    },
+    {
+      "label": "Library flute stops before clarinet detail",
+      "status": "passed"
+    },
+    {
+      "label": "Library violin continues on its own detail page",
+      "status": "passed"
+    },
+    {
+      "label": "Violin detail stops before cello detail",
+      "status": "passed"
+    },
+    {
+      "label": "393px woodwind scene clears fixed player at page bottom",
+      "status": "passed"
+    },
+    {
+      "label": "Violin detail audio playback, progress, and seek",
+      "status": "passed"
+    },
+    {
+      "label": "3D model waits for an explicit detail-page request",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-woodwind-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-woodwind-bottom-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-brass-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-strings-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot knowledge-violin-detail-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot theory-01-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot theory-02-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "Screenshot theory-03-393.png",
+      "status": "passed"
+    },
+    {
+      "label": "No uncaught page errors",
+      "status": "passed"
+    }
+  ],
+  "pageErrors": []
+}

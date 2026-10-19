@@ -1,0 +1,67 @@
+{
+  "models": {
+    "violin": "/assets/models/violin/mobile.046643686109.glb",
+    "viola": "/assets/models/viola/mobile.50eca1db5d40.glb",
+    "cello": "/assets/models/cello/mobile.4e9cc97b05b7.glb",
+    "bass": "/assets/models/bass/mobile.1c42ae38e10f.glb",
+    "flute": "/assets/models/flute/mobile.5ae5cb2e1544.glb",
+    "oboe": "/assets/models/oboe/mobile.0872c9bd4aed.glb",
+    "clarinet": "/assets/models/clarinet/mobile.add92a9679a0.glb",
+    "bassoon": "/assets/models/bassoon/mobile.14c461ba977a.glb",
+    "horn": "/assets/models/horn/mobile.d7e9e43496eb.glb",
+    "trumpet": "/assets/models/trumpet/mobile.9b6a62af7db0.glb",
+    "trombone": "/assets/models/trombone/mobile.0350194eb423.glb",
+    "tuba": "/assets/models/tuba/mobile.4ef8b0215526.glb",
+    "oboe-player": "/assets/models/characters/oboe/mobile.59c9f09d18a5.glb"
+  },
+  "audio": {
+    "bass": {
+      "file": "/assets/audio/stream/bass.40e2c3c35407/preview.40e2c3c35407.mp3",
+      "segmentManifest": "/assets/audio/stream/bass.40e2c3c35407/manifest.json"
+    },
+    "bassoon": {
+      "file": "/assets/audio/stream/bassoon.a4e84d494f08/preview.a4e84d494f08.mp3",
+      "segmentManifest": "/assets/audio/stream/bassoon.a4e84d494f08/manifest.json"
+    },
+    "cello": {
+      "file": "/assets/audio/stream/cello.11134bfe6b27/preview.11134bfe6b27.mp3",
+      "segmentManifest": "/assets/audio/stream/cello.11134bfe6b27/manifest.json"
+    },
+    "clarinet": {
+      "file": "/assets/audio/stream/clarinet.5ce57ca11f76/preview.5ce57ca11f76.mp3",
+      "segmentManifest": "/assets/audio/stream/clarinet.5ce57ca11f76/manifest.json"
+    },
+    "flute": {
+      "file": "/assets/audio/stream/flute.e747047f13aa/preview.e747047f13aa.mp3",
+      "segmentManifest": "/assets/audio/stream/flute.e747047f13aa/manifest.json"
+    },
+    "horn": {
+      "file": "/assets/audio/stream/horn.7293e7bfb911/preview.7293e7bfb911.mp3",
+      "segmentManifest": "/assets/audio/stream/horn.7293e7bfb911/manifest.json"
+    },
+    "oboe": {
+      "file": "/assets/audio/stream/oboe.5095b0537cb5/preview.5095b0537cb5.mp3",
+      "segmentManifest": "/assets/audio/stream/oboe.5095b0537cb5/manifest.json"
+    },
+    "trombone": {
+      "file": "/assets/audio/stream/trombone.48d84e02c0e5/preview.48d84e02c0e5.mp3",
+      "segmentManifest": "/assets/audio/stream/trombone.48d84e02c0e5/manifest.json"
+    },
+    "trumpet": {
+      "file": "/assets/audio/stream/trumpet.246b27d776d0/preview.246b27d776d0.mp3",
+      "segmentManifest": "/assets/audio/stream/trumpet.246b27d776d0/manifest.json"
+    },
+    "tuba": {
+      "file": "/assets/audio/stream/tuba.4745acb71adb/preview.4745acb71adb.mp3",
+      "segmentManifest": "/assets/audio/stream/tuba.4745acb71adb/manifest.json"
+    },
+    "viola": {
+      "file": "/assets/audio/stream/viola.60cd8ad35131/preview.60cd8ad35131.mp3",
+      "segmentManifest": "/assets/audio/stream/viola.60cd8ad35131/manifest.json"
+    },
+    "violin": {
+      "file": "/assets/audio/stream/violin.619808eb642b/preview.619808eb642b.mp3",
+      "segmentManifest": "/assets/audio/stream/violin.619808eb642b/manifest.json"
+    }
+  }
+}

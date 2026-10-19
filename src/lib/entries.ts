@@ -1,6 +1,7 @@
+import { stagePath } from './navigation';
 import { entries } from '../data/entries';
-import { buildLaunchSearch, buildLaunchStateSearch } from './launch';
-import type { EntryLaunchSource, EntryManifest } from '../types/manifest';
+import { buildLaunchSearch, buildLaunchStateSearch, type LaunchOptions } from './launch';
+import type { EntryManifest } from '../types/manifest';
 
 export function getAllEntries(): EntryManifest[] {
   return entries;
@@ -20,22 +21,16 @@ export function buildEntryPath(entryId: string): string {
 
 export function buildExperiencePath(
   entryId: string,
-  options?: {
-    source?: EntryLaunchSource;
-    autostart?: boolean;
-  },
+  options?: LaunchOptions,
 ): string {
   const search = buildLaunchStateSearch(options);
-  return `/experience/${entryId}${search}`;
+  return stagePath(entryId === 'oboe-player' ? 'ar' : 'image-test', entryId, search);
 }
 
 export function buildDeepLink(
   entryId: string,
   origin = window.location.origin,
-  options?: {
-    source?: EntryLaunchSource;
-    autostart?: boolean;
-  },
+  options?: LaunchOptions,
 ): string {
   const url = new URL(origin);
   const search = buildLaunchSearch(entryId, options);

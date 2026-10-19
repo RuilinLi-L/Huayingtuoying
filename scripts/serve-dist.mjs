@@ -24,6 +24,9 @@ const contentTypes = {
   '.wav': 'audio/wav',
   '.mp3': 'audio/mpeg',
   '.m4a': 'audio/mp4',
+  '.flac': 'audio/flac',
+  '.wasm': 'application/wasm',
+  '.txt': 'text/plain; charset=utf-8',
   '.glb': 'model/gltf-binary',
   '.gltf': 'model/gltf+json',
   '.bin': 'application/octet-stream',
@@ -43,6 +46,8 @@ const cacheableAssetExtensions = new Set([
   '.wav',
   '.mp3',
   '.m4a',
+  '.flac',
+  '.wasm',
   '.glb',
   '.gltf',
   '.bin',
@@ -107,14 +112,14 @@ const server = createServer(async (req, res) => {
 
     if (existsSync(filePath) && !filePath.endsWith('\\') && !filePath.endsWith('/')) {
       const ext = extname(filePath).toLowerCase();
-      const contentType = contentTypes[ext] || 'application/octet-stream';
+      const contentType = filePath.endsWith('/LICENSE') ? 'text/plain; charset=utf-8' : contentTypes[ext] || 'application/octet-stream';
       const fileSize = statSync(filePath).size;
       const range = parseRangeHeader(req.headers.range, fileSize);
 
       res.setHeader('Content-Type', contentType);
       res.setHeader('Accept-Ranges', 'bytes');
 
-      if (cacheableAssetExtensions.has(ext)) {
+      if (cacheableAssetExtensions.has(ext) && !requestUrl.pathname.startsWith('/ar/')) {
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       } else {
         res.setHeader('Cache-Control', 'no-cache');
@@ -140,6 +145,11 @@ const server = createServer(async (req, res) => {
       return;
     }
 
+    if (/^\/(assets|vendor|ar)\//.test(requestUrl.pathname)) {
+      res.statusCode = 404;
+      res.end('Asset not found');
+      return;
+    }
     const indexHtml = await readFile(join(distDir, 'index.html'));
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.end(indexHtml);

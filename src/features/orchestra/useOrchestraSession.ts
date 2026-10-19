@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { baseAnchorId, fixedComposition } from '../../data/orchestraDemo';
 import {
   getSleepingBeautyStemFile,
+  getSleepingBeautyManifest,
   normalizeMusicianIds,
   type SleepingBeautyAudioVariant,
 } from '../../data/sleepingBeauty';
@@ -37,6 +38,7 @@ interface UseOrchestraSessionOptions {
   audioVariant?: SleepingBeautyAudioVariant;
   /** Expose every scene when the stage lets visitors switch freely. */
   showAllScenes?: boolean;
+  enableCamera?: boolean;
 }
 
 function parseLineup(value: string | null, defaultLineupIds: string[]) {
@@ -58,12 +60,14 @@ export function useOrchestraSession({
   preloadSelectedStems = true,
   audioVariant = 'mobile',
   showAllScenes = false,
+  enableCamera = true,
 }: UseOrchestraSessionOptions = {}) {
   const compositionStems = useMemo<AudioStem[]>(
     () => fixedComposition.stems.map((stem) => ({
       id: stem.id,
       name: stem.name,
       file: getSleepingBeautyStemFile(stem.id, audioVariant),
+      segmentManifest: getSleepingBeautyManifest(stem.id),
       defaultEnabled: true,
       group: getMusicianById(stem.musicianId)?.section ?? 'ensemble',
       stereoPan: stem.stereoPan,
@@ -93,6 +97,7 @@ export function useOrchestraSession({
   const mountedRef = useRef(true);
   const audioEngineRef = useRef<AudioEngine | null>(null);
   const playbackRequestRef = useRef(false);
+  const playbackGenerationRef = useRef(0);
   const [mockAdapter] = useState(() => createMockNfcSessionAdapter(urlLineupIds));
   const [reservedAdapter] = useState(() => createReservedNfcSessionAdapter());
   const [snapshot, setSnapshot] = useState<NfcSessionSnapshot>(() => ({
@@ -103,6 +108,8 @@ export function useOrchestraSession({
     updatedAt: new Date().toISOString(),
   }));
   const [nfcConnectionError, setNfcConnectionError] = useState('');
+  // The adapter notifies synchronously, including multiple toggles before React renders.
+  const snapshotRef = useRef(snapshot);
   const [nfcSnapshotError, setNfcSnapshotError] = useState('');
   const [cameraReady, setCameraReady] = useState(false);
   const [cameraError, setCameraError] = useState('');
@@ -137,6 +144,7 @@ export function useOrchestraSession({
     try {
       unsubscribe = mockAdapter.subscribe((nextSnapshot) => {
         if (active) {
+          snapshotRef.current = nextSnapshot;
           setSnapshot(nextSnapshot);
         }
       });
@@ -184,6 +192,8 @@ export function useOrchestraSession({
         return;
       }
 
+      if (engine.getError()) setAudioError(engine.getError());
+      if (!playbackRequestRef.current) setIsLoading(engine.isBuffering());
       const nextDuration = engine.getDuration();
       const nextTime = engine.getCurrentTime();
       const nextPlaying = engine.isPlaying();
@@ -210,7 +220,8 @@ export function useOrchestraSession({
 
     void engine
       .setActiveStems(compositionStems, snapshot.placedMusicianIds, {
-        load: engine.isPlaying(),
+        load: engine.isPlaying() || playbackRequestRef.current,
+        playWhenReady: playbackRequestRef.current,
       })
       .then((nextAudioError) => {
         if (!active) {
@@ -300,7 +311,7 @@ export function useOrchestraSession({
   }, []);
 
   const openStage = useCallback(async () => {
-    if (streamRef.current || cameraOpeningRef.current) {
+    if (!enableCamera || streamRef.current || cameraOpeningRef.current) {
       return;
     }
     if (!capabilities.canUseCamera) {
@@ -332,7 +343,7 @@ export function useOrchestraSession({
     } finally {
       cameraOpeningRef.current = false;
     }
-  }, [capabilities.canUseCamera]);
+  }, [capabilities.canUseCamera, enableCamera]);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -351,9 +362,10 @@ export function useOrchestraSession({
 
   const toggleMusician = useCallback(
     (musicianId: string) => {
-      const nextIds = snapshot.placedMusicianIds.includes(musicianId)
-        ? snapshot.placedMusicianIds.filter((id) => id !== musicianId)
-        : [...snapshot.placedMusicianIds, musicianId];
+      const currentIds = snapshotRef.current.placedMusicianIds;
+      const nextIds = currentIds.includes(musicianId)
+        ? currentIds.filter((id) => id !== musicianId)
+        : [...currentIds, musicianId];
       try {
         mockAdapter.pushSnapshot(nextIds, deepLinkSource);
         setNfcSnapshotError('');
@@ -361,12 +373,12 @@ export function useOrchestraSession({
         setNfcSnapshotError(getAudioErrorMessage(error));
       }
     },
-    [deepLinkSource, mockAdapter, snapshot.placedMusicianIds],
+    [deepLinkSource, mockAdapter],
   );
 
   const togglePlayback = useCallback(async () => {
     const engine = audioEngineRef.current;
-    if (!engine || !snapshot.placedMusicianIds.length || playbackRequestRef.current) {
+    if (!engine || !snapshotRef.current.placedMusicianIds.length || playbackRequestRef.current) {
       return;
     }
 
@@ -378,30 +390,32 @@ export function useOrchestraSession({
     }
 
     playbackRequestRef.current = true;
+    const generation=++playbackGenerationRef.current;
     setIsLoading(true);
     setAudioError('');
     try {
       await engine.init();
+      // Resuming an AudioContext can finish after navigation disposed this session.
+      if (!mountedRef.current || audioEngineRef.current !== engine || generation!==playbackGenerationRef.current) return;
+      const requestedIds = snapshotRef.current.placedMusicianIds;
       const nextAudioError = await engine.setActiveStems(
         compositionStems,
-        snapshot.placedMusicianIds,
+        requestedIds,
         { playWhenReady: true },
       );
-      if (mountedRef.current) {
+      if (!mountedRef.current || audioEngineRef.current !== engine) return;
+      if (requestedIds.join(',') === snapshotRef.current.placedMusicianIds.join(',')) {
         setAudioError(nextAudioError ?? '');
       }
-      if (!nextAudioError || engine.hasPlayableActiveStems()) {
-        if (!engine.isPlaying()) {
-          await engine.resume();
-        }
-      }
+      // setActiveStems starts the latest request. A superseded request must never
+      // resume playback after the visitor has removed every voice or navigated.
     } catch (error) {
       if (mountedRef.current) {
         setAudioError(getAudioErrorMessage(error));
       }
     } finally {
-      playbackRequestRef.current = false;
-      if (mountedRef.current) {
+      if(generation===playbackGenerationRef.current) playbackRequestRef.current = false;
+      if (mountedRef.current && generation===playbackGenerationRef.current) {
         setPlaybackTime(engine.getCurrentTime());
         setDuration(engine.getDuration());
         setIsPlaying(engine.isPlaying());
@@ -410,6 +424,20 @@ export function useOrchestraSession({
     }
   }, [snapshot.placedMusicianIds, compositionStems]);
 
+  const pausePlayback = useCallback(() => {
+    playbackGenerationRef.current++;
+    playbackRequestRef.current = false;
+    const engine = audioEngineRef.current;
+    engine?.pause(); setIsPlaying(false); setIsLoading(false);
+    setPlaybackTime(engine?.getCurrentTime() ?? 0);
+  }, []);
+  useEffect(() => {
+    const hidden = () => { if(document.hidden) pausePlayback(); };
+    document.addEventListener('visibilitychange', hidden);
+    return () => document.removeEventListener('visibilitychange', hidden);
+  }, [pausePlayback]);
+  const setMasterVolume = useCallback((value:number) => audioEngineRef.current?.setMasterVolume(value), []);
+  const setSoloStem = useCallback((id:string|null) => audioEngineRef.current?.setSoloStem(id), []);
   const seek = useCallback((timeInSeconds: number) => {
     const engine = audioEngineRef.current;
     if (!engine) {
@@ -454,6 +482,9 @@ export function useOrchestraSession({
     audioError,
     toggleMusician,
     togglePlayback,
+    pausePlayback,
+    setMasterVolume,
+    setSoloStem,
     seek,
     changeScene,
     selectMusician,

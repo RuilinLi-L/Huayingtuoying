@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import { instrumentSections } from '../../data/instrumentEncyclopedia';
 import type { MusicianSection } from '../../types/demo';
 import { useKnowledgeAudio } from './KnowledgeAudio';
@@ -11,7 +12,8 @@ export function InstrumentSectionTabs({ section, onChange }: InstrumentSectionTa
   const { stop } = useKnowledgeAudio();
 
   return (
-    <div className="instrument-section-tabs" role="group" aria-label="乐器声部">
+    <div className="instrument-section-tabs" role="group" aria-label="乐器声部"
+      style={{ '--section-index': instrumentSections.findIndex((item) => item.id === section) } as CSSProperties}>
       {instrumentSections.map((item) => (
         <button
           key={item.id}

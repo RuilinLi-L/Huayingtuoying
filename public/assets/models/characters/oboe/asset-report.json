@@ -1,0 +1,64 @@
+{
+  "originalBytes": 97420824,
+  "outputBytes": 3774248,
+  "originalTriangles": 542438,
+  "outputTriangles": 46106,
+  "bounds": {
+    "min": [
+      -0.17482535242642117,
+      0,
+      -0.2844053765795471
+    ],
+    "max": [
+      0.17482535242642117,
+      1,
+      0.2844053765795471
+    ]
+  },
+  "textures": [
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    },
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    },
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    },
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    },
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    },
+    {
+      "size": [
+        2048,
+        2048
+      ],
+      "mimeType": "image/jpeg"
+    }
+  ],
+  "animations": 0,
+  "copyright": "宋美佳"
+}

@@ -1,3 +1,4 @@
+import media from './mediaAssets.json';
 import type {
   CompositionStemDefinition,
   MusicianSection,
@@ -31,14 +32,12 @@ export interface SleepingBeautyStemDefinition {
   gain: number;
 }
 
-const sleepingBeautyAudioRootPath = '/assets/audio/The Sleeping Beauty Waltz';
-const sleepingBeautyAudioBasePath = `${sleepingBeautyAudioRootPath}/mobile`;
 
 export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'flute',
     name: '长笛',
-    file: `${sleepingBeautyAudioBasePath}/Flute_睡美人圆舞曲.mp3`,
+    file: media.audio.flute.file,
     section: 'woodwind',
     group: 'woodwind',
     defaultEnabled: true,
@@ -48,7 +47,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'clarinet',
     name: '单簧管',
-    file: `${sleepingBeautyAudioBasePath}/Clarinet_睡美人圆舞曲.mp3`,
+    file: media.audio.clarinet.file,
     section: 'woodwind',
     group: 'woodwind',
     defaultEnabled: true,
@@ -58,7 +57,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'oboe',
     name: '双簧管',
-    file: `${sleepingBeautyAudioBasePath}/Oboe_睡美人圆舞曲.mp3`,
+    file: media.audio.oboe.file,
     section: 'woodwind',
     group: 'woodwind',
     defaultEnabled: true,
@@ -68,7 +67,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'bassoon',
     name: '巴松',
-    file: `${sleepingBeautyAudioBasePath}/Bassoon_睡美人圆舞曲.mp3`,
+    file: media.audio.bassoon.file,
     section: 'woodwind',
     group: 'woodwind',
     defaultEnabled: true,
@@ -78,7 +77,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'horn',
     name: '圆号',
-    file: `${sleepingBeautyAudioBasePath}/Horn_睡美人圆舞曲.mp3`,
+    file: media.audio.horn.file,
     section: 'brass',
     group: 'brass',
     defaultEnabled: true,
@@ -88,7 +87,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'trumpet',
     name: '小号',
-    file: `${sleepingBeautyAudioBasePath}/Trumpet_睡美人圆舞曲.mp3`,
+    file: media.audio.trumpet.file,
     section: 'brass',
     group: 'brass',
     defaultEnabled: true,
@@ -98,7 +97,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'trombone',
     name: '长号',
-    file: `${sleepingBeautyAudioBasePath}/Trumbone_睡美人圆舞曲.mp3`,
+    file: media.audio.trombone.file,
     section: 'brass',
     group: 'brass',
     defaultEnabled: true,
@@ -108,7 +107,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'tuba',
     name: '大号',
-    file: `${sleepingBeautyAudioBasePath}/Tuba_睡美人圆舞曲.mp3`,
+    file: media.audio.tuba.file,
     section: 'brass',
     group: 'brass',
     defaultEnabled: true,
@@ -118,7 +117,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'violin',
     name: '小提琴',
-    file: `${sleepingBeautyAudioBasePath}/Violin_睡美人圆舞曲.mp3`,
+    file: media.audio.violin.file,
     section: 'strings',
     group: 'strings',
     defaultEnabled: true,
@@ -128,7 +127,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'viola',
     name: '中提琴',
-    file: `${sleepingBeautyAudioBasePath}/Viola_睡美人圆舞曲.mp3`,
+    file: media.audio.viola.file,
     section: 'strings',
     group: 'strings',
     defaultEnabled: true,
@@ -138,7 +137,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'cello',
     name: '大提琴',
-    file: `${sleepingBeautyAudioBasePath}/Cello_睡美人圆舞曲.mp3`,
+    file: media.audio.cello.file,
     section: 'strings',
     group: 'strings',
     defaultEnabled: true,
@@ -148,7 +147,7 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
   {
     id: 'bass',
     name: '低音提琴（Bass）',
-    file: `${sleepingBeautyAudioBasePath}/Bass_睡美人圆舞曲.mp3`,
+    file: media.audio.bass.file,
     section: 'strings',
     group: 'strings',
     defaultEnabled: true,
@@ -156,6 +155,10 @@ export const sleepingBeautyStemCatalog: SleepingBeautyStemDefinition[] = [
     gain: 0.84,
   },
 ];
+
+export function getSleepingBeautyManifest(id: string) {
+  return media.audio[id as SleepingBeautyStemId]?.segmentManifest;
+}
 
 const sleepingBeautyStemMap = new Map(
   sleepingBeautyStemCatalog.map((stem) => [stem.id, stem]),
@@ -214,12 +217,8 @@ export function getSleepingBeautyStemFile(
     throw new Error(`Unknown Sleeping Beauty stem: ${stemId}`);
   }
 
-  if (variant === 'mobile') {
-    return stem.file;
-  }
-
-  const filename = stem.file.slice(sleepingBeautyAudioBasePath.length + 1);
-  return `${sleepingBeautyAudioRootPath}/${variant}/${filename}`;
+  void variant;
+  return stem.file;
 }
 
 export function createSleepingBeautyAudioStem(
@@ -236,6 +235,7 @@ export function createSleepingBeautyAudioStem(
     id: stem.id,
     name: stem.name,
     file: stem.file,
+    segmentManifest: getSleepingBeautyManifest(stem.id),
     defaultEnabled: stem.defaultEnabled,
     group: stem.group,
     stereoPan: stem.stereoPan,
