@@ -1,0 +1,83 @@
+.knowledge-guide {
+  padding: 0 24px 32px;
+  color: var(--mobile-ink, #24493f);
+}
+.knowledge-guide h1 {
+  font-size: 32px;
+  line-height: 1.35;
+  margin: 12px 0;
+}
+.knowledge-guide p {
+  line-height: 1.8;
+  color: #536c62;
+}
+.knowledge-guide section {
+  margin-top: 32px;
+}
+.knowledge-guide h2 {
+  font-size: 20px;
+}
+.guide-grid {
+  display: grid;
+  gap: 12px;
+}
+.guide-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 16px;
+  border-radius: 22px;
+  background: #f5f7ed;
+  color: inherit;
+  text-decoration: none;
+  border: 1px solid #b7d6c6;
+}
+.guide-card div {
+  flex: 1;
+  min-width: 0;
+}
+.guide-card h3 {
+  font-size: 16px;
+  margin: 5px 0;
+}
+.guide-card p {
+  font-size: 13px;
+  margin: 0;
+}
+.guide-card small {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.guide-card img {
+  object-fit: contain;
+}
+.guide-section {
+  padding: 16px 0;
+}
+.guide-section h3 {
+  font-size: 17px;
+}
+.guide-section a {
+  color: inherit;
+}
+.guide-instruments {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 16px 0;
+}
+.guide-instruments a {
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  border-radius: 15px;
+  background: #f5f7ed;
+  color: #24493f;
+  text-decoration: none;
+  font-size: 14px;
+}
+.guide-instruments small {
+  font-size: 11px;
+  opacity: 0.7;
+  margin-top: 4px;
+}

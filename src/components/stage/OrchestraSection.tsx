@@ -1,12 +1,14 @@
+import { Info } from '@phosphor-icons/react';
 import type { MusicianProfile, MusicianSection } from '../../types/demo';
 
 interface OrchestraSectionProps {
   section: MusicianSection;
   musicians: MusicianProfile[];
   selectedIds: string[];
-  highlightIds: string[];
+  pulseIds: string[];
   focusedMusicianId: string | null;
   onSelectMusician: (musicianId: string) => void;
+  onToggleMusician: (musicianId: string) => void;
 }
 
 // The IDs describe the left-to-right positions in the existing artwork. Names,
@@ -39,15 +41,15 @@ export function OrchestraSection({
   section,
   musicians,
   selectedIds,
-  highlightIds,
+  pulseIds,
   focusedMusicianId,
   onSelectMusician,
+  onToggleMusician,
 }: OrchestraSectionProps) {
   const artwork = artworkBySection[section];
   const sectionMusicians = artwork.ids
     .map((id) => musicians.find((musician) => musician.id === id))
     .filter((musician): musician is MusicianProfile => Boolean(musician));
-  const hasSpecificHighlight = highlightIds.length > 0 && highlightIds.length < musicians.length;
 
   return (
     <section className={`stage-mobile__section stage-mobile__section--${section}`} aria-label={artwork.title}>
@@ -57,22 +59,25 @@ export function OrchestraSection({
         {sectionMusicians.map((musician) => {
           const isFocused = focusedMusicianId === musician.id;
           const isInLineup = selectedIds.includes(musician.id);
-          const isDimmed = hasSpecificHighlight && !highlightIds.includes(musician.id) && !isFocused;
 
           return (
-            <button
-              className={[
-                'stage-mobile__musician',
-                isFocused ? 'stage-mobile__musician--focused' : '',
-                isInLineup ? 'stage-mobile__musician--in-lineup' : 'stage-mobile__musician--out-of-lineup',
-                isDimmed ? 'stage-mobile__musician--dimmed' : '',
-              ].filter(Boolean).join(' ')}
-              type="button"
-              key={musician.id}
-              onClick={() => onSelectMusician(musician.id)}
-              aria-label={`${musician.instrument}，${isInLineup ? '已加入演奏' : '未加入演奏'}，点击查看详情`}
-              aria-pressed={isFocused}
-            />
+            <div className="stage-mobile__musician-slot" key={musician.id}>
+              <button
+                className={[
+                  'stage-mobile__musician',
+                  isFocused ? 'stage-mobile__musician--focused' : '',
+                  isInLineup ? 'stage-mobile__musician--in-lineup' : 'stage-mobile__musician--out-of-lineup',
+                  pulseIds.includes(musician.id) ? 'stage-mobile__musician--pulse' : '',
+                ].filter(Boolean).join(' ')}
+                type="button"
+                data-musician-id={musician.id}
+                onClick={() => onToggleMusician(musician.id)}
+                aria-label={`${musician.instrument}，${isInLineup ? '已加入演奏，点击移出' : '未加入演奏，点击加入'}`}
+                aria-pressed={isInLineup}
+              />
+              <button className="stage-mobile__musician-info" type="button" onClick={() => onSelectMusician(musician.id)}
+                aria-label={`查看${musician.instrument}详情`} aria-haspopup="dialog"><Info size={18} weight="fill" aria-hidden="true" /></button>
+            </div>
           );
         })}
       </div>

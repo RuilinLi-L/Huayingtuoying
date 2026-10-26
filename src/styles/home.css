@@ -40,9 +40,39 @@
 }
 .home-experiences__rail::-webkit-scrollbar,
 .home-symphony-filters::-webkit-scrollbar { display: none; }
-.home-experience-card { display: block; flex: 0 0 293px; margin-right: -28px; scroll-snap-align: start; transition: transform var(--motion-standard); }
+.home-experience-card { position: relative; display: block; flex: 0 0 293px; margin-right: -28px; scroll-snap-align: start; transition: transform var(--motion-standard); }
 .home-experience-card:hover { transform: translateY(-3px); }
 .home-experience-card img { width: 100%; height: auto; }
+/* The source illustration includes raster lettering. These opaque panels cover
+   that lettering so all visible copy and the tag icon render at device resolution. */
+.home-experience-card__copy {
+  position: absolute;
+  top: 65%;
+  left: 9%;
+  display: grid;
+  align-content: center;
+  gap: 3px;
+  width: 66%;
+  min-height: 28%;
+  padding: 7px 8px;
+  border: 5px solid #fff;
+  border-radius: 15px 13px 14px 12px;
+  background: #f8f8f8;
+}
+.home-experience-card__copy strong { color: #438d80; font-size: 14px; font-weight: 700; line-height: 1.3; }
+.home-experience-card__copy > span { color: #4c5955; font-size: 11px; line-height: 1.5; }
+.home-experience-card__tag {
+  position: absolute;
+  top: 14.5%;
+  left: 61%;
+  display: grid;
+  place-items: center;
+  width: 14%;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  background: #fff;
+  color: #83b5ac;
+}
 .home-symphonies { margin-top: 6px; }
 .home-symphony-filters {
   display: flex;

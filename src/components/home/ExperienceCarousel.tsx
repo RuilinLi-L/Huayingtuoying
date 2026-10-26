@@ -1,4 +1,4 @@
-import { ArrowRight } from '@phosphor-icons/react';
+import { ArrowRight, Tag } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
 
 const experiences = [
@@ -32,7 +32,11 @@ export function ExperienceCarousel() {
         {experiences.map((experience) => (
           <Link className="home-experience-card" to={experience.path} key={experience.path}>
             <img src={experience.image} alt="" width="293" height="223" />
-            <span className="sr-only">{experience.title}：{experience.description}</span>
+            <span className="home-experience-card__tag" aria-hidden="true"><Tag size={27} /></span>
+            <span className="home-experience-card__copy">
+              <strong>{experience.title}</strong>
+              <span>{experience.description}</span>
+            </span>
           </Link>
         ))}
       </div>

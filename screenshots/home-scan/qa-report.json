@@ -1,0 +1,38 @@
+{
+  "baseUrl": "http://127.0.0.1:4190",
+  "checkedAt": "2026-10-25T15:57:28.453Z",
+  "results": [
+    {
+      "label": "Live card copy, original destinations, and layout at 320/393/430px",
+      "status": "passed"
+    },
+    {
+      "label": "Scan opens a modal without navigation or a camera request; Escape restores focus",
+      "status": "passed"
+    },
+    {
+      "label": "Old QR/NFC entry shapes resolve to the current stage with the right instruments",
+      "status": "passed"
+    },
+    {
+      "label": "Unknown QR, unsafe content, and unreadable images show recoverable errors",
+      "status": "passed"
+    },
+    {
+      "label": "Camera permission failure keeps album and stage entries usable",
+      "status": "passed"
+    },
+    {
+      "label": "Real QR decoding from a synthetic camera stream enters the new stage",
+      "status": "passed"
+    },
+    {
+      "label": "Camera streams stop on close, including a permission request that resolves after close",
+      "status": "passed"
+    },
+    {
+      "label": "No browser runtime errors",
+      "status": "passed"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "base": "http://127.0.0.1:4190",
+  "results": [
+    "Legacy route /learn/fundamentals#rhythm-meter → /knowledge/theory/02",
+    "Legacy route /learn/fundamentals#chinese-modes → /knowledge/theory/07",
+    "Legacy route /learn/fundamentals → /knowledge/guide",
+    "Legacy route /demo/base?lineup=flute → /stage",
+    "Legacy route /entry/violin-dialogue → /stage",
+    "Legacy route /experience/flute-color → /stage",
+    "Dial stays mounted, rotates, remains fixed; full guide has 7 chapters and 12 instruments",
+    "All 7 chapters render at 320/393/430px without overflow or legacy links",
+    "Reduced motion respected; no browser runtime errors",
+    "Theory dial replaces bottom shortcuts; other knowledge pages retain navigation"
+  ],
+  "errors": []
+}

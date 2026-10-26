@@ -1,0 +1,60 @@
+{
+  "baseURL": "http://127.0.0.1:4190",
+  "passed": 13,
+  "failed": 0,
+  "results": [
+    {
+      "label": "All twelve artwork masks and independent detail controls",
+      "status": "passed"
+    },
+    {
+      "label": "240ms mask fade, addition pulse, rapid clicks use latest lineup",
+      "status": "passed"
+    },
+    {
+      "label": "Native stems join at current offset, preserve other sources, empty lineup pauses",
+      "status": "passed"
+    },
+    {
+      "label": "Selection during pending initial audio load cannot revive removed voice",
+      "status": "passed"
+    },
+    {
+      "label": "Partial audio failure reports error while remaining stem plays",
+      "status": "passed"
+    },
+    {
+      "label": "All twelve stage characters respond to real pointer clicks and sync cards",
+      "status": "passed"
+    },
+    {
+      "label": "Stage 320: aligned masks and only one fullscreen icon",
+      "status": "passed"
+    },
+    {
+      "label": "Stage 393: aligned masks and only one fullscreen icon",
+      "status": "passed"
+    },
+    {
+      "label": "Stage 430: aligned masks and only one fullscreen icon",
+      "status": "passed"
+    },
+    {
+      "label": "Fullscreen 430: artwork cover scales and controls still work",
+      "status": "passed"
+    },
+    {
+      "label": "Fullscreen 1280: artwork cover scales and controls still work",
+      "status": "passed"
+    },
+    {
+      "label": "Reduced motion keeps both musician controls keyboard accessible",
+      "status": "passed"
+    },
+    {
+      "label": "No uncaught page errors",
+      "status": "passed"
+    }
+  ],
+  "errors": []
+}

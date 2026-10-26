@@ -83,9 +83,13 @@ async function waitForKnowledgePage(page, route) {
   assert.equal(await page.locator('.not-found').count(), 0, 'not-found page rendered');
   const heading = (await page.locator('main.mobile-shell__main h1').first().textContent())?.trim();
   assert.ok(heading, 'page heading is empty');
-  const knowledgeNav = page.getByRole('navigation', { name: '主导航' })
-    .getByRole('link', { name: '知识' });
-  assert.equal(await knowledgeNav.getAttribute('aria-current'), 'page', 'Knowledge bottom nav is inactive');
+  if (route.startsWith('/knowledge/theory/')) {
+    assert.equal(await page.locator('.mobile-bottom-nav').count(), 0, 'Theory uses the dial instead of bottom shortcuts');
+    await page.locator('.theory-dial').waitFor();
+  } else {
+    const knowledgeNav = page.getByRole('navigation', { name: '主导航' }).getByRole('link', { name: '知识' });
+    assert.equal(await knowledgeNav.getAttribute('aria-current'), 'page', 'Knowledge bottom nav is inactive');
+  }
 }
 
 async function navigate(page, route) {

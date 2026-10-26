@@ -82,7 +82,7 @@ html:has(.mobile-shell)::-webkit-scrollbar { display: none; }
   color: var(--paper);
 }
 .mobile-shell--stage .mobile-topbar__back svg { width: 28px; height: 28px; }
-.mobile-shell--stage .mobile-topbar__icon img { filter: brightness(0) invert(1); }
+.mobile-shell--stage .mobile-topbar__icon svg { color: var(--paper); }
 .mobile-shell--stage .mobile-shell__main {
   min-height: calc(100dvh - 106px - var(--mobile-safe-top));
 }
@@ -144,7 +144,7 @@ html:has(.mobile-shell)::-webkit-scrollbar { display: none; }
   cursor: pointer;
 }
 
-.mobile-topbar__icon img { width: 26px; height: 26px; object-fit: contain; }
+.mobile-topbar__icon svg { flex: none; }
 
 .mobile-topbar__menu {
   position: absolute;
@@ -159,14 +159,18 @@ html:has(.mobile-shell)::-webkit-scrollbar { display: none; }
   box-shadow: 0 16px 30px rgba(33, 64, 58, 0.2);
 }
 
-.mobile-topbar__menu a {
+.mobile-topbar__menu a,
+.mobile-topbar__menu button {
   padding: 11px 13px;
   border-radius: 10px;
   color: var(--mobile-ink);
   font-size: 13px;
+  text-align: left;
+  cursor: pointer;
 }
 
-.mobile-topbar__menu a:hover { background: #e8f5f1; }
+.mobile-topbar__menu a:hover,
+.mobile-topbar__menu button:hover { background: #e8f5f1; }
 
 .mobile-bottom-nav {
   position: fixed;

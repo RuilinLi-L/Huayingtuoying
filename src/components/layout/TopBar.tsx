@@ -1,16 +1,25 @@
-import { ArrowLeft, MusicNotes, X } from '@phosphor-icons/react';
-import { useEffect, useState } from 'react';
+import { ArrowLeft, GearSix, MusicNotes, Scan, X } from '@phosphor-icons/react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+
+const ScanSheet = lazy(() => import('./ScanSheet').then((module) => ({ default: module.ScanSheet })));
 
 const pageNames: Record<string, string> = {
   '/stage': '交响舞台',
+  '/knowledge/guide': '完整知识导览',
   '/knowledge/instruments': '乐器知识',
   '/compose': '音乐编创',
 };
 
 export function TopBar() {
-  const { pathname } = useLocation();
+  const { pathname, key: locationKey } = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scanOpen, setScanOpen] = useState(false);
+  const scanButtonRef = useRef<HTMLButtonElement>(null);
+  const closeScan = () => {
+    setScanOpen(false);
+    scanButtonRef.current?.focus();
+  };
   const isHome = pathname === '/';
   const isStage = pathname === '/stage';
   const date = new Intl.DateTimeFormat('zh-CN', {
@@ -22,7 +31,10 @@ export function TopBar() {
       ? '乐理知识'
     : pageNames[pathname] ?? '华音拓影';
 
-  useEffect(() => setMenuOpen(false), [pathname]);
+  useEffect(() => {
+    setMenuOpen(false);
+    setScanOpen(false);
+  }, [locationKey]);
 
   return (
     <header className={isHome ? 'mobile-topbar mobile-topbar--home' : isStage ? 'mobile-topbar mobile-topbar--stage' : 'mobile-topbar'}>
@@ -39,23 +51,24 @@ export function TopBar() {
           </div>
         ) : null}
         <div className="mobile-topbar__actions">
-          <Link className="mobile-topbar__icon" to="/entry/violin-dialogue" aria-label="打开展签与扫码入口">
-            <img src="/assets/ui/home/icon-scan.png" alt="" width="25" height="25" />
-          </Link>
+          <button ref={scanButtonRef} className="mobile-topbar__icon" type="button" aria-label="扫一扫" aria-haspopup="dialog" onClick={() => { setMenuOpen(false); setScanOpen(true); }}>
+            <Scan size={26} weight="bold" />
+          </button>
           {!isStage ? (
             <button className="mobile-topbar__icon" type="button" aria-label={menuOpen ? '关闭菜单' : '打开菜单'} aria-expanded={menuOpen} onClick={() => setMenuOpen((value) => !value)}>
-              {menuOpen ? <X size={23} /> : <img src="/assets/ui/home/icon-settings.png" alt="" width="27" height="27" />}
+              {menuOpen ? <X size={23} /> : <GearSix size={27} weight="bold" />}
             </button>
           ) : null}
         </div>
       </div>
       {menuOpen ? (
         <div className="mobile-topbar__menu">
-          <Link to="/demo/base" onClick={() => setMenuOpen(false)}>交响舞台演示</Link>
-          <Link to="/learn/fundamentals" onClick={() => setMenuOpen(false)}>完整知识导览</Link>
-          <Link to="/entry/violin-dialogue" onClick={() => setMenuOpen(false)}>NFC / QR 展签</Link>
+          <Link to="/stage" onClick={() => setMenuOpen(false)}>交响舞台演示</Link>
+          <Link to="/knowledge/guide" onClick={() => setMenuOpen(false)}>完整知识导览</Link>
+          <button type="button" onClick={() => { setMenuOpen(false); setScanOpen(true); }}>扫一扫展签</button>
         </div>
       ) : null}
+      {scanOpen ? <Suspense fallback={null}><ScanSheet onClose={closeScan} /></Suspense> : null}
     </header>
   );
 }
