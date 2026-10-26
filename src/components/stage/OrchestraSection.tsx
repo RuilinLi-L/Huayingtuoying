@@ -1,5 +1,6 @@
-import { Info } from '@phosphor-icons/react';
+import { ArrowCounterClockwise, Info } from '@phosphor-icons/react';
 import type { MusicianProfile, MusicianSection } from '../../types/demo';
+import { musicianArtwork, musicianPortraitStyle } from './stageArtwork';
 
 interface OrchestraSectionProps {
   section: MusicianSection;
@@ -7,76 +8,44 @@ interface OrchestraSectionProps {
   selectedIds: string[];
   pulseIds: string[];
   focusedMusicianId: string | null;
-  onSelectMusician: (musicianId: string) => void;
-  onToggleMusician: (musicianId: string) => void;
+  onSelectMusician: (id: string) => void;
+  onToggleMusician: (id: string) => void;
+  onReset: (section: MusicianSection) => void;
 }
 
-// The IDs describe the left-to-right positions in the existing artwork. Names,
-// descriptions and lineup state still come from the shared musician catalog.
-const artworkBySection: Record<MusicianSection, { image: string; title: string; ids: string[]; width: number; height: number }> = {
-  strings: {
-    image: '/assets/ui/stage/section-strings.png',
-    title: 'STRING MUSIC',
-    ids: ['violin', 'viola', 'cello', 'bass'],
-    width: 393,
-    height: 204,
-  },
-  woodwind: {
-    image: '/assets/ui/stage/section-woodwinds.png',
-    title: 'WOODWINDS',
-    ids: ['clarinet', 'bassoon', 'flute', 'oboe'],
-    width: 379,
-    height: 206,
-  },
-  brass: {
-    image: '/assets/ui/stage/section-brass.png',
-    title: 'BRASS SECTION',
-    ids: ['trumpet', 'horn', 'tuba', 'trombone'],
-    width: 393,
-    height: 205,
-  },
+const sections: Record<MusicianSection, { title: string; name: string; description: string; ids: string[] }> = {
+  strings: { title: 'STRING MUSIC', name: '弦乐', description: '承托旋律，铺陈乐曲温暖而丰富的底色。', ids: ['violin', 'viola', 'cello', 'bass'] },
+  woodwind: { title: 'WOODWINDS', name: '木管', description: '轻盈的音色交织，为旋律添上鲜明的色彩。', ids: ['clarinet', 'bassoon', 'flute', 'oboe'] },
+  brass: { title: 'BRASS SECTION', name: '铜管', description: '明亮而浑厚的声音，奏出乐团的力量。', ids: ['trumpet', 'horn', 'tuba', 'trombone'] },
 };
 
-export function OrchestraSection({
-  section,
-  musicians,
-  selectedIds,
-  pulseIds,
-  focusedMusicianId,
-  onSelectMusician,
-  onToggleMusician,
-}: OrchestraSectionProps) {
-  const artwork = artworkBySection[section];
-  const sectionMusicians = artwork.ids
-    .map((id) => musicians.find((musician) => musician.id === id))
-    .filter((musician): musician is MusicianProfile => Boolean(musician));
-
+export function OrchestraSection({ section, musicians, selectedIds, pulseIds, focusedMusicianId, onSelectMusician, onToggleMusician, onReset }: OrchestraSectionProps) {
+  const group = sections[section];
   return (
-    <section className={`stage-mobile__section stage-mobile__section--${section}`} aria-label={artwork.title}>
-      <h2 className="stage-mobile__sr-only">{artwork.title}</h2>
-      <img src={artwork.image} alt="" width={artwork.width} height={artwork.height} loading="lazy" />
+    <section className="stage-mobile__section" aria-label={`${group.name}声部`} data-section={section}>
+      <header className="stage-mobile__section-heading">
+        <div><h2>{group.title}</h2><p>{group.description}</p></div>
+        <button type="button" className="stage-mobile__section-reset" onClick={() => onReset(section)}
+          disabled={!group.ids.some(id => selectedIds.includes(id))} aria-label={`重置${group.name}声部`}>
+          <ArrowCounterClockwise size={21} weight="bold" aria-hidden="true" /><span>重置</span>
+        </button>
+      </header>
       <div className="stage-mobile__musicians">
-        {sectionMusicians.map((musician) => {
-          const isFocused = focusedMusicianId === musician.id;
-          const isInLineup = selectedIds.includes(musician.id);
-
+        {group.ids.map(id => {
+          const musician = musicians.find(item => item.id === id)!;
+          const active = selectedIds.includes(id);
+          const label = id === 'bass' ? '低音提琴' : musician.instrument;
           return (
-            <div className="stage-mobile__musician-slot" key={musician.id}>
-              <button
-                className={[
-                  'stage-mobile__musician',
-                  isFocused ? 'stage-mobile__musician--focused' : '',
-                  isInLineup ? 'stage-mobile__musician--in-lineup' : 'stage-mobile__musician--out-of-lineup',
-                  pulseIds.includes(musician.id) ? 'stage-mobile__musician--pulse' : '',
-                ].filter(Boolean).join(' ')}
-                type="button"
-                data-musician-id={musician.id}
-                onClick={() => onToggleMusician(musician.id)}
-                aria-label={`${musician.instrument}，${isInLineup ? '已加入演奏，点击移出' : '未加入演奏，点击加入'}`}
-                aria-pressed={isInLineup}
-              />
-              <button className="stage-mobile__musician-info" type="button" onClick={() => onSelectMusician(musician.id)}
-                aria-label={`查看${musician.instrument}详情`} aria-haspopup="dialog"><Info size={18} weight="fill" aria-hidden="true" /></button>
+            <div className="stage-mobile__musician-slot" key={id}>
+              <button type="button" data-musician-id={id} aria-pressed={active}
+                aria-label={`${label}，${active ? '已加入演奏，点击移出' : '未加入演奏，点击加入'}`}
+                className={`stage-mobile__musician${active ? ' is-selected' : ''}${pulseIds.includes(id) ? ' is-pulsing' : ''}${focusedMusicianId === id ? ' is-focused' : ''}`}
+                onClick={() => onToggleMusician(id)}>
+                <span className="stage-mobile__portrait"><img src={musicianArtwork(id)} style={musicianPortraitStyle(id)} alt="" draggable={false} /></span>
+                <span className="stage-mobile__musician-name">{label}</span>
+              </button>
+              <button className="stage-mobile__musician-info" type="button" onClick={() => onSelectMusician(id)}
+                aria-label={`查看${musician.instrument}详情`} aria-haspopup="dialog"><Info size={17} weight="fill" aria-hidden="true" /></button>
             </div>
           );
         })}

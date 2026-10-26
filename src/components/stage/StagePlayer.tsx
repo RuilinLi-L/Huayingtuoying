@@ -9,6 +9,7 @@ interface StagePlayerProps {
   hasActiveMusicians: boolean;
   onTogglePlayback: () => void;
   onSeek: (timeInSeconds: number) => void;
+  onReset: () => void;
 }
 
 function formatTime(seconds: number) {
@@ -26,6 +27,7 @@ export function StagePlayer({
   hasActiveMusicians,
   onTogglePlayback,
   onSeek,
+  onReset,
 }: StagePlayerProps) {
   const safeDuration = Number.isFinite(duration) && duration > 0 ? duration : 0;
   const safeCurrentTime = Math.min(Math.max(0, currentTime), safeDuration);
@@ -37,8 +39,8 @@ export function StagePlayer({
         className="stage-mobile__player-button"
         type="button"
         onClick={onTogglePlayback}
-        disabled={!hasActiveMusicians || isLoading}
-        aria-label={isLoading ? '音频加载中' : isPlaying ? '暂停演奏' : '播放演奏'}
+        disabled={!hasActiveMusicians}
+        aria-label={isPlaying ? '暂停演奏' : isLoading ? '取消加载并暂停' : '播放演奏'}
       >
         {isLoading ? (
           <SpinnerGap className="stage-mobile__spinner" size={24} aria-hidden="true" />
@@ -72,10 +74,10 @@ export function StagePlayer({
       <button
         className="stage-mobile__player-button stage-mobile__player-button--restart"
         type="button"
-        onClick={() => onSeek(0)}
-        disabled={!safeDuration}
-        aria-label="回到乐曲开头"
-        title="回到开头"
+        onClick={onReset}
+        disabled={!hasActiveMusicians && !isLoading && !safeCurrentTime}
+        aria-label="重置全部演奏"
+        title="清空乐手并回到开头"
       >
         <ArrowCounterClockwise size={22} weight="bold" aria-hidden="true" />
       </button>

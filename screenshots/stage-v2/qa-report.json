@@ -1,0 +1,80 @@
+{
+  "base": "http://127.0.0.1:4190",
+  "results": [
+    {
+      "label": "All 12 supplied originals are served unchanged with the correct musician mapping",
+      "status": "passed"
+    },
+    {
+      "label": "Empty default, independent alpha artwork and native controls",
+      "status": "passed"
+    },
+    {
+      "label": "Every card starts its voice and dims cleanly when removed",
+      "status": "passed"
+    },
+    {
+      "label": "Section reset preserves other audio at current progress; full reset clears all",
+      "status": "passed"
+    },
+    {
+      "label": "Manual pause persists through lineup edits; keyboard and details stay independent",
+      "status": "passed"
+    },
+    {
+      "label": "Reset during pending audio invalidates old requests and loading state",
+      "status": "passed"
+    },
+    {
+      "label": "Audio failure can retry; presets stay silent; leaving disposes sources",
+      "status": "passed"
+    },
+    {
+      "label": "Real pointer hits visible alpha of all 12 stage figures, skips transparent overlap",
+      "status": "passed"
+    },
+    {
+      "label": "Partial failure retries without pausing surviving audio; rapid changes use latest lineup",
+      "status": "passed"
+    },
+    {
+      "label": "Section reset and pause during pending loads cannot revive cancelled voices",
+      "status": "passed"
+    },
+    {
+      "label": "Responsive 320: card edges, labels and distinct sprites",
+      "status": "passed"
+    },
+    {
+      "label": "Responsive 393: card edges, labels and distinct sprites",
+      "status": "passed"
+    },
+    {
+      "label": "Responsive 430: card edges, labels and distinct sprites",
+      "status": "passed"
+    },
+    {
+      "label": "Fullscreen 430: single native control, independent selection",
+      "status": "passed"
+    },
+    {
+      "label": "Fullscreen 1280: single native control, independent selection",
+      "status": "passed"
+    },
+    {
+      "label": "Reduced motion preserves selection and immediate reset",
+      "status": "passed"
+    },
+    {
+      "label": "No uncaught browser errors",
+      "status": "passed"
+    },
+    {
+      "label": "Save interaction walkthrough video",
+      "status": "passed"
+    }
+  ],
+  "errors": [],
+  "passed": 18,
+  "failed": 0
+}

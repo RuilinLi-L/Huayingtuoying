@@ -1,0 +1,13 @@
+{
+  "tool": "built-in imagegen",
+  "assets": [
+    {
+      "id": "background",
+      "referenced_image_paths": [
+        "assets/ui/stage/orchestra-hero.png"
+      ],
+      "transparent_background": false,
+      "prompt": "Edit this orchestra UI artwork into ONLY the EMPTY concert stage background. Remove ALL musicians and their instruments, the top-right fullscreen button, and the entire bottom teal music player bar. Reconstruct the ornate symmetrical concert hall scenery and stepped stage floor behind the removed characters. Preserve original muted sage/teal curtain swags, warm cream/gold art-deco arches, overhead row of warm lights, soft illustrated style and perspective, and pale sage rounded outer proscenium frame. No people, no instruments, no UI controls, no text, no music notes. Stage floor and three curved steps fully visible. Crop composition to original upper stage area, landscape ratio approximately 393:277. High resolution, clean cohesive illustration. Fill canvas with the scene; the outer edge beyond the arch should be warm brown/gold as reference."
+    }
+  ]
+}

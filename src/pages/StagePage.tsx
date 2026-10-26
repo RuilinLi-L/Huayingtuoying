@@ -1,18 +1,10 @@
-import { useSearchParams } from 'react-router-dom';
 import { StageExperience } from '../components/stage/StageExperience';
 import { musicians } from '../data/orchestraDemo';
 import { useOrchestraSession } from '../features/orchestra/useOrchestraSession';
 
-const fullOrchestraLineup = musicians.map((musician) => musician.id);
-const emptyNfcLineup: string[] = [];
-
 export function StagePage() {
-  const [searchParams] = useSearchParams();
-  const defaultLineupIds = searchParams.get('source') === 'nfc'
-    ? emptyNfcLineup
-    : fullOrchestraLineup;
   const session = useOrchestraSession({
-    defaultLineupIds,
+    playOnSelection: true,
     preloadSelectedStems: false,
     audioVariant: 'stage-mobile',
     showAllScenes: true,
@@ -36,7 +28,10 @@ export function StagePage() {
       currentScene={session.currentScene}
       sceneOptions={session.sceneOptions}
       onTogglePlayback={() => void session.togglePlayback()}
+      onRetryPlayback={() => void session.retryPlayback()}
       onSeek={session.seek}
+      onResetAll={session.resetAll}
+      onResetSection={session.resetSection}
       onSelectMusician={session.selectMusician}
       onToggleMusicianInLineup={session.toggleMusician}
       onSceneChange={session.changeScene}

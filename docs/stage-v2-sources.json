@@ -1,0 +1,103 @@
+{
+  "archive": "12人.zip",
+  "archiveSha256": "768f5d957971f35f8c2d70e939bc98f355d0ffe421cc54d28bb2151dc763f382",
+  "processing": "Byte-for-byte copies; transparent padding and portrait framing are handled in CSS, no repainting or resampling.",
+  "assets": [
+    {
+      "id": "flute",
+      "source": "工艺品制作/5ecbf395c4f86653f3909846997a8ad4.png",
+      "file": "public/assets/ui/stage-v2/originals/flute.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "970904395cdc92c561cd81986da074b499c02870787ea5afc0eef057fd62d0a3"
+    },
+    {
+      "id": "horn",
+      "source": "工艺品制作/微信图片_20260702102007_1132_20.png",
+      "file": "public/assets/ui/stage-v2/originals/horn.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "3d3b9b3b2b9e22fbdaa4e2bfaac62d651634a23ad500e2755325afbc59f18286"
+    },
+    {
+      "id": "bassoon",
+      "source": "工艺品制作/微信图片_20260702102046_1133_20.png",
+      "file": "public/assets/ui/stage-v2/originals/bassoon.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "bb55e1ddca7d322c62eae97d9a15ba9874e6f6a98c010c0b15c3483f277855dd"
+    },
+    {
+      "id": "oboe",
+      "source": "工艺品制作/微信图片_20260702102129_1134_20.png",
+      "file": "public/assets/ui/stage-v2/originals/oboe.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "4420bf1743e7d0d0db762fe4b718292d0aea03c5c5664bf72a5a482cf9ec1076"
+    },
+    {
+      "id": "trombone",
+      "source": "工艺品制作/微信图片_20260702102215_1135_20.png",
+      "file": "public/assets/ui/stage-v2/originals/trombone.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "4b3734291bdf3b150988334aef7d976e2d8e2ee46f790a3d3916f3f21cb61ec2"
+    },
+    {
+      "id": "tuba",
+      "source": "工艺品制作/微信图片_20260702102250_1136_20.png",
+      "file": "public/assets/ui/stage-v2/originals/tuba.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "7db1e50d31e8a55f96a69672f386b72c28c6c65806d36b2480c8da0514c9f2c6"
+    },
+    {
+      "id": "trumpet",
+      "source": "工艺品制作/微信图片_20260702102330_1137_20.png",
+      "file": "public/assets/ui/stage-v2/originals/trumpet.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "f75a23a33fc0bc68704206e3b268f22d9e735dd15da73ca57a7c4546d282b05b"
+    },
+    {
+      "id": "violin",
+      "source": "工艺品制作/微信图片_20260702102410_1138_20.png",
+      "file": "public/assets/ui/stage-v2/originals/violin.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "fe48ce8e2acc6efb1f87ce95b213c52190c253b9bcd54cbf38dfe32beeb5cab3"
+    },
+    {
+      "id": "bass",
+      "source": "工艺品制作/微信图片_20260702102446_1139_20.png",
+      "file": "public/assets/ui/stage-v2/originals/bass.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "d03df65f9a8317c1d30b0bd8ca209a762f532aab544763ce56f1ae63e20d99e3"
+    },
+    {
+      "id": "cello",
+      "source": "工艺品制作/微信图片_20260702102714_1140_20.png",
+      "file": "public/assets/ui/stage-v2/originals/cello.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "84f57fe9ba3a61094c338d8eab75f131c70581a74765e09a8a2673d20de52172"
+    },
+    {
+      "id": "viola",
+      "source": "工艺品制作/微信图片_20260702102805_1141_20.png",
+      "file": "public/assets/ui/stage-v2/originals/viola.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "c206c81348a3b08aa08ca266d8c860499ae418f70d50613e3a3f9705759b9a7e"
+    },
+    {
+      "id": "clarinet",
+      "source": "工艺品制作/微信图片_20260702102851_1142_20.png",
+      "file": "public/assets/ui/stage-v2/originals/clarinet.png",
+      "width": 1079,
+      "height": 1553,
+      "sha256": "4cbaab824d778433118ae88c7f38abe3517e715c3e119ecd364631d812b95469"
+    }
+  ]
+}

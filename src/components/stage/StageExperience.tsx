@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type {
   MusicianProfile,
+  MusicianSection,
   OrchestraSceneDefinition,
 } from '../../types/demo';
 import { StageActions } from './StageActions';
@@ -27,7 +28,10 @@ export interface StageExperienceProps {
   currentScene: OrchestraSceneDefinition;
   sceneOptions: OrchestraSceneDefinition[];
   onTogglePlayback: () => void;
+  onRetryPlayback: () => void;
   onSeek: (timeInSeconds: number) => void;
+  onResetAll: () => void;
+  onResetSection: (section: MusicianSection) => void;
   onSelectMusician: (musicianId: string) => void;
   onToggleMusicianInLineup: (musicianId: string) => void;
   onSceneChange: (sceneId: OrchestraSceneDefinition['id']) => void;
@@ -52,7 +56,10 @@ export function StageExperience({
   currentScene,
   sceneOptions,
   onTogglePlayback,
+  onRetryPlayback,
   onSeek,
+  onResetAll,
+  onResetSection,
   onSelectMusician,
   onToggleMusicianInLineup,
   onSceneChange,
@@ -83,6 +90,7 @@ export function StageExperience({
         isPlaying={isPlaying}
         hasActiveMusicians={selectedIds.length > 0}
         onSeek={onSeek}
+        onReset={onResetAll}
         onTogglePlayback={onTogglePlayback}
       />
 
@@ -90,6 +98,7 @@ export function StageExperience({
         <div className="stage-mobile__notice stage-mobile__notice--error" role="alert">
           <strong>音频加载失败</strong>
           <p>{audioError}</p>
+          <button className="stage-mobile__retry" type="button" onClick={onRetryPlayback} disabled={isLoading}>重试演奏</button>
         </div>
       ) : null}
       {nfcError ? (
@@ -119,6 +128,7 @@ export function StageExperience({
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
           onToggleMusician={onToggleMusicianInLineup}
+          onReset={onResetSection}
         />
         <OrchestraSection
           section="woodwind"
@@ -128,6 +138,7 @@ export function StageExperience({
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
           onToggleMusician={onToggleMusicianInLineup}
+          onReset={onResetSection}
         />
         <OrchestraSection
           section="brass"
@@ -137,6 +148,7 @@ export function StageExperience({
           focusedMusicianId={focusedMusicianId}
           onSelectMusician={onSelectMusician}
           onToggleMusician={onToggleMusicianInLineup}
+          onReset={onResetSection}
         />
       </div>
 
